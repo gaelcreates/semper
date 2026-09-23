@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Doto } from "next/font/google";
 import "./globals.css";
 import Pointer from "./Pointer";
 import { site } from "./site";
@@ -14,6 +15,9 @@ const intl = localFont({
   variable: "--font-intl",
   display: "swap",
 });
+
+// Matrice de points : Doto, variable (100 à 900), axe ROND poussé à 100 pour des points ronds façon afficheur.
+const dot = Doto({ subsets: ["latin"], axes: ["ROND"], variable: "--font-dot", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -35,7 +39,7 @@ export const viewport: Viewport = { themeColor: "#f5f5f5" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={intl.variable} suppressHydrationWarning>
+    <html lang="fr" className={`${intl.variable} ${dot.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

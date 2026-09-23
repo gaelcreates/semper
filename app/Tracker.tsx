@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Mark from "./Mark";
+import MarkDots from "./MarkDots";
 
 // Le signe du dernier appel suit la souris : le point tourne pour rester orienté vers le curseur.
 // Au repos (écran tactile, pas de souris), il garde son animation habituelle.
@@ -31,5 +31,5 @@ export default function Tracker() {
     return () => { removeEventListener("pointermove", move); if (raf) cancelAnimationFrame(raf); };
   }, []);
 
-  return <span ref={ref} className="tracker"><Mark className="mark-xl" /></span>;
+  return <span ref={ref} className="tracker"><MarkDots className="mark-xl" /></span>;
 }

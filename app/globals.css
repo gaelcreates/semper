@@ -620,3 +620,58 @@ h3 { font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; }
   .fl { gap: 16px; font-size: 12.5px; }
   .auth-card { padding: 24px 20px; }
 }
+
+
+/* ============================================================
+   Direction matrice (branche pixel) : le point est l'unité.
+   Doto pour ce qui compte (titres, chiffres, signaux), Suisse Intl pour ce qui se lit.
+   ============================================================ */
+.dot-t, h1 .w, .stats b, .app-stats b, .serie-big b, .step-n, .pill, .band, .app-lvl b, .app-url, [data-count], .app-stats small, .weeks-l, .app-date {
+  font-family: var(--font-dot), var(--font-intl), sans-serif;
+  font-variation-settings: "ROND" 100;
+  letter-spacing: 0.01em;
+}
+/* Titres : la première ligne reste en Suisse Black, la seconde passe en points pleins. */
+h1 .w { font-weight: 800; font-size: 0.84em; letter-spacing: 0.02em; }
+.title { max-width: 16ch; }
+h2 .w { font-family: var(--font-dot), sans-serif; font-variation-settings: "ROND" 100; font-weight: 800; font-size: 0.9em; letter-spacing: 0.02em; }
+.stats b { font-weight: 800; letter-spacing: 0.02em; }
+.app-stats b { font-weight: 800; }
+.app-stats b span, .serie-big span { font-family: var(--font-intl), sans-serif; font-variation-settings: normal; letter-spacing: 0; }
+.app-stats small { font-weight: 800; letter-spacing: 0.1em; }
+.pill { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+.band { font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; font-size: 13px; }
+.step-n { font-weight: 800; font-size: 15px; }
+.tagline.dot-t { font-weight: 800; }
+.tagline.dot-t .w { font-weight: 800; color: var(--ink2); }
+
+/* Fond : une matrice de points sur toute la page, qui s'allume en or autour du curseur. */
+.grid-bg::after { opacity: 1; background-size: 22px 22px; background-image: radial-gradient(circle, rgba(var(--fgr), 0.16) 1.1px, transparent 1.7px); }
+:root[data-theme="dark"] .grid-bg::after { background-image: radial-gradient(circle, rgba(var(--fgr), 0.16) 1.1px, transparent 1.7px); }
+.grid-bg .spot {
+  background: radial-gradient(circle, var(--gold) 1.5px, transparent 2.1px);
+  background-size: 22px 22px;
+  -webkit-mask: radial-gradient(180px circle at var(--mx) var(--my), #000, transparent 70%);
+  mask: radial-gradient(180px circle at var(--mx) var(--my), #000, transparent 70%);
+}
+
+/* Barres segmentées, façon afficheur. */
+.app-stats .bar { height: 6px; border-radius: 0; background: repeating-linear-gradient(90deg, rgba(var(--fgr), 0.1) 0 5px, transparent 5px 8px); }
+.app-stats .bar i { border-radius: 0; background: repeating-linear-gradient(90deg, var(--gold) 0 5px, transparent 5px 8px); }
+
+/* La série : un point par semaine, rond, l'or pour les semaines tenues. */
+.weeks { gap: 10px; }
+.weeks i { border-radius: 50%; border: 0; background: rgba(var(--fgr), 0.12); transform: scale(0.55); }
+.weeks i.on { background: var(--gold); transform: scale(0.8); box-shadow: 0 0 0 3px rgba(255, 197, 8, 0.18); }
+.weeks i.now { background: transparent; border: 1.5px dashed var(--gold); transform: scale(0.8); }
+.cv-serie .weeks i { transform: scale(0.6); }
+.cv-serie .weeks i.on, .cv-serie .weeks i.now { transform: scale(0.85); }
+
+/* Le signe en points : les points s'allument à la suite dans le chargement. */
+.mark.dots circle { transition: opacity 300ms; }
+.mark.dots.spin { animation: none; }
+.mark.dots.spin circle:not(.big) { animation: blink 1400ms linear infinite; animation-delay: calc(var(--i) * 100ms); }
+@keyframes blink { 0%, 60% { opacity: 0.18; } 70%, 85% { opacity: 1; } 100% { opacity: 0.18; } }
+
+/* Coins droits pour ce qui est « écran ». */
+.app-stats li, .app-lvl { border-radius: 4px; }
