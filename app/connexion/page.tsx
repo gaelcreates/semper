@@ -4,7 +4,7 @@ import { Footer, TopBar } from "../Frame";
 import LoginForm from "../LoginForm";
 import Mark from "../Mark";
 
-export const metadata: Metadata = { title: "Connexion · Semper" };
+export const metadata: Metadata = { title: "Connexion · Semper", robots: { index: false, follow: false } };
 
 // Entrée de l'espace membre. Connexion par lien e-mail, sans mot de passe.
 export default function Page() {

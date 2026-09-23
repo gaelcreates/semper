@@ -29,3 +29,9 @@ Domaine `trysemper.app` (Hostinger, DNS chez Hostinger, e-mail pro sur le même 
 
 ## Ce qui n'est pas promis sur la page
 Publication automatique, connexion aux comptes Meta ou TikTok, date d'ouverture. Ne pas les ajouter sans décision de Gael.
+
+## SEO et référencement IA (23 sept 2026)
+- `app/sitemap.ts` (4 pages, sans /connexion), `app/robots.ts` (tout ouvert, robots IA compris, sauf /connexion et /api), `public/llms.txt`.
+- Données structurées JSON-LD dans `app/page.tsx` (Organization, WebSite, SoftwareApplication, FAQPage à partir de `faq`).
+- Phrase d'identité dans le pied de page (`.about`), /connexion en noindex, `public/og.png` régénéré (H1 actuel, logo, fond clair).
+- À faire par Gael : Google Search Console et Bing Webmaster Tools avec le sitemap.

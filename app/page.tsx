@@ -6,6 +6,7 @@ import Mark from "./Mark";
 import Curve from "./Curve";
 import Stand from "./Stand";
 import Tracker from "./Tracker";
+import { site } from "./site";
 
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
 const truths = ["Une fiche par vidéo", "Trois vues, une seule vérité", "Ta série compte les semaines", "Zéro configuration", "Sauvegarde immédiate", "Gratuit pour le créateur seul", "Sur ton téléphone"];
@@ -18,6 +19,17 @@ const faq = [
   { q: "Et mes données ?", a: "Chaque geste est sauvegardé immédiatement. Tes fiches t'appartiennent et tu peux demander leur suppression à tout moment, voir la page Confidentialité." },
   { q: "Pourquoi une série et pas des points ?", a: "Parce que ce qui fait grandir un compte, c'est la constance, pas le volume. Semper compte les semaines tenues à ton rythme, jamais le nombre de vidéos." },
 ];
+
+// Données structurées pour Google, Bing et les assistants IA : qui est Semper, ce que c'est, et la FAQ.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "Organization", "@id": `${site.url}/#org`, name: "Semper", url: site.url, logo: `${site.url}/icon.svg`, email: site.contactEmail, address: { "@type": "PostalAddress", addressRegion: "Vaud", addressCountry: "CH" } },
+    { "@type": "WebSite", "@id": `${site.url}/#site`, url: site.url, name: "Semper", inLanguage: "fr", publisher: { "@id": `${site.url}/#org` } },
+    { "@type": "SoftwareApplication", name: "Semper", url: site.url, applicationCategory: "BusinessApplication", operatingSystem: "Web", inLanguage: "fr", description: site.description, offers: { "@type": "Offer", price: "0", priceCurrency: "CHF" }, publisher: { "@id": `${site.url}/#org` } },
+    { "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+  ],
+};
 
 // Fil qui relie deux sections : la ligne se trace quand on arrive dessus.
 function Join() {
@@ -35,6 +47,8 @@ export default function Page() {
     <>
       <Loader />
       <TopBar />
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <main>
         {/* ---------- 00 · Accueil */}

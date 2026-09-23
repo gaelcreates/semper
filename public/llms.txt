@@ -1,0 +1,26 @@
+# Semper
+
+> Semper est un calendrier éditorial gratuit pour les créateurs de contenu, fait en Suisse. Il suit chaque vidéo de l'idée à la publication et compte les semaines tenues sous forme de série.
+
+Site : https://trysemper.app
+Langue : français
+Statut : liste d'attente ouverte, ouverture du produit sans date annoncée.
+
+## Ce que fait Semper
+
+- Une fiche par vidéo, de l'idée à la publication (Idée, À écrire, À tourner, À monter, Publié).
+- Trois vues sur les mêmes fiches : calendrier, kanban, liste.
+- Une série qui compte les semaines tenues au rythme choisi par le créateur, jamais le nombre de vidéos.
+- Gratuit pour un créateur seul, sans carte bancaire, sans configuration.
+- Fonctionne dans le navigateur, sur ordinateur et sur téléphone.
+
+## Ce que Semper ne fait pas
+
+- Semper ne publie pas à la place du créateur et ne demande aucune connexion à ses comptes YouTube, Instagram ou TikTok.
+
+## Pages
+
+- [Accueil](https://trysemper.app) : présentation, questions fréquentes, liste d'attente.
+- [Confidentialité](https://trysemper.app/confidentialite)
+- [Conditions d'utilisation](https://trysemper.app/conditions)
+- [Mentions légales](https://trysemper.app/mentions-legales)

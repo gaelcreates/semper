@@ -42,6 +42,7 @@ export function Footer() {
           <div className="brand"><Logo /></div>
           <p className="tagline"><span className="b">Créer,</span> <span className="w">toujours.</span></p>
         </div>
+        <p className="about">Semper est un calendrier éditorial gratuit pour les créateurs de contenu, fait en Suisse. Il suit chaque vidéo de l&apos;idée à la publication et compte les semaines tenues.</p>
         <div className="footer-bottom">
           <nav className="fl" aria-label="Pages légales">
             <Link href="/confidentialite">Confidentialité</Link>
