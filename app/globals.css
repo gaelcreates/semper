@@ -634,7 +634,7 @@ h3 { font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; }
 .disp, .stats b, .app-stats b, .serie-big b, .step-n, .pill, .band, .app-lvl b, .app-url, .app-stats small, .weeks-l, .app-head small, .tagline, .mock-day small, .cv-fiche small, .roadmap small, .fine-disp {
   font-family: var(--font-dot), var(--font-intl), sans-serif;
   font-variation-settings: "ROND" 100;
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1;
   letter-spacing: 0.02em;
   font-feature-settings: "tnum";
@@ -642,13 +642,13 @@ h3 { font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; }
 /* Étiquettes : capitales, 12 px, interlettrage large (mesuré chez Nothing : 0.1em). */
 .pill, .band, .app-stats small, .app-head small, .weeks-l, .roadmap small, .mock-day small, .cv-fiche small, .lbl { text-transform: uppercase; font-size: 12px; letter-spacing: 0.1em; }
 /* Chiffres : entre 20 et 60 px, jamais plus (chez Nothing la police à points s'arrête à 60 px). */
-.stats b { font-size: clamp(40px, 5vw, 60px); font-weight: 800; letter-spacing: 0.02em; }
-.app-stats b { font-size: 22px; font-weight: 800; }
-.serie-big b { font-size: clamp(56px, 6vw, 60px); font-weight: 800; letter-spacing: 0.02em; }
+.stats b { font-size: clamp(40px, 5vw, 60px); font-weight: 900; letter-spacing: 0.02em; }
+.app-stats b { font-size: 22px; font-weight: 900; }
+.serie-big b { font-size: clamp(56px, 6vw, 60px); font-weight: 900; letter-spacing: 0.02em; }
 .app-stats b span, .serie-big span { font-family: var(--font-intl), sans-serif; font-variation-settings: normal; font-weight: 300; letter-spacing: 0; }
-.step-n { font-size: 15px; font-weight: 800; border-radius: var(--disp-r); }
-.tagline { font-size: 18px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
-.tagline .w { font-weight: 800; color: var(--muted); }
+.step-n { font-size: 15px; font-weight: 900; border-radius: var(--disp-r); }
+.tagline { font-size: 18px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+.tagline .w { font-weight: 900; color: var(--muted); }
 .app-lvl b { font-size: 14px; }
 .band { font-size: 12px; }
 .pill { padding: 8px 14px 8px 10px; border-radius: var(--disp-r); }
@@ -739,6 +739,6 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 .sg-donts { list-style: none; display: grid; gap: 6px; font-size: 15px; color: var(--ink2); }
 .sg-donts li::before { content: "×  "; color: var(--muted); }
 
-/* Les mains en matrice derrière le premier écran : larges, basses, discrètes. */
-.hero-art { position: absolute; left: 50%; width: min(1400px, 100vw); aspect-ratio: 1000 / 300; top: calc(106px - 0.2031 * min(1400px, 100vw)); transform: translateX(-50%); pointer-events: none; z-index: 0; }
-@media (max-width: 860px) { .hero-art { display: none; } }
+
+/* La matrice tonale : un sujet en trame de points, fixe derrière toute la page. */
+.matrix { position: fixed; inset: 0; z-index: -1; pointer-events: none; }

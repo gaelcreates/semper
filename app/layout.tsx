@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Doto } from "next/font/google";
 import "./globals.css";
 import Pointer from "./Pointer";
+import Matrix from "./Matrix";
 import { site } from "./site";
 
 // Identité Semper : Suisse Intl (Light, Bold, Black).
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <div className="grid-bg" aria-hidden="true"><i className="g1" /><i className="g2" /><i className="g3" /><i className="g4" /><i className="spot" /></div>
+        <Matrix />
         <i className="progress" aria-hidden="true" />
         {children}
         <Pointer />

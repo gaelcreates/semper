@@ -6,7 +6,6 @@ import Mark from "./Mark";
 import Curve from "./Curve";
 import Stand from "./Stand";
 import Tracker from "./Tracker";
-import HeroDots from "./HeroDots";
 import { site } from "./site";
 
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
@@ -54,7 +53,6 @@ export default function Page() {
       <main>
         {/* ---------- 00 · Accueil */}
         <section className="hero" id="haut">
-          <HeroDots />
           <div className="wrap hero-in">
             <span className="pill fade"><i className="dot" /> Ouverture bientôt · Gratuit pour les créateurs</span>
             <h1 className="title">
