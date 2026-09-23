@@ -753,3 +753,5 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 /* Téléphone : la pastille tient sur une ligne, la courbe or n'a pas de sens en colonne, la signature se resserre. */
 @media (max-width: 560px) { .pill-more { display: none; } .tagline { font-size: 15px; } }
 @media (max-width: 860px) { .curve { display: none; } }
+/* Téléphone : le formulaire s'empile, le cadre passe en coins de 22 px (la règle papier 999 px plus haut l'écrasait). */
+@media (max-width: 560px) { .form { border-radius: 22px; padding: 8px; gap: 6px; } .form input[type="email"] { min-height: 48px; padding: 0 16px; } .form .btn { min-height: 50px; } }
