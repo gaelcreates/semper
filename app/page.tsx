@@ -54,7 +54,7 @@ export default function Page() {
         {/* ---------- 00 · Accueil */}
         <section className="hero" id="haut">
           <div className="wrap hero-in">
-            <span className="pill fade"><i className="dot" /> Ouverture bientôt · Gratuit pour les créateurs</span>
+            <span className="pill fade"><i className="dot" /> Ouverture bientôt<span className="pill-more"> · Gratuit pour les créateurs</span></span>
             <h1 className="title">
               <span className="line"><span className="b">Reste régulier.</span></span>{" "}
               <span className="line"><span className="w">Pour de bon.</span></span>

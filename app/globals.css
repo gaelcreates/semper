@@ -749,3 +749,7 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 /* Les sections claires respirent un peu moins : l'air était le même que sur la version à trame. */
 :root { --sp: clamp(72px, 8.5vw, 112px); }
 @media (max-width: 860px) { :root { --sp: 56px; } }
+
+/* Téléphone : la pastille tient sur une ligne, la courbe or n'a pas de sens en colonne, la signature se resserre. */
+@media (max-width: 560px) { .pill-more { display: none; } .tagline { font-size: 15px; } }
+@media (max-width: 860px) { .curve { display: none; } }
