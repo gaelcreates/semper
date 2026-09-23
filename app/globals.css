@@ -661,13 +661,14 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 .btn, .form { border-radius: 999px; }
 
 /* Le fond : matrice de points au pas de 24 px, allumée en or autour du curseur. */
-.grid-bg::after, :root[data-theme="dark"] .grid-bg::after { opacity: 1; background-size: var(--pitch) var(--pitch); background-position: calc(var(--pitch) / 2) calc(var(--pitch) / 2); background-image: radial-gradient(circle, rgba(var(--fgr), 0.18) var(--dot), transparent calc(var(--dot) + 0.6px)); }
+.grid-bg::after, :root[data-theme="dark"] .grid-bg::after { display: none; } /* papier nu : la matrice ne s'allume qu'autour du curseur */
 .grid-bg i:not(.spot) { opacity: 0.55; }
 .grid-bg .spot {
   background: radial-gradient(circle, var(--gold) calc(var(--dot) + 0.3px), transparent calc(var(--dot) + 0.9px));
   background-size: var(--pitch) var(--pitch); background-position: calc(var(--pitch) / 2) calc(var(--pitch) / 2);
-  -webkit-mask: radial-gradient(160px circle at var(--mx) var(--my), #000, transparent 70%);
-  mask: radial-gradient(160px circle at var(--mx) var(--my), #000, transparent 70%);
+  -webkit-mask: radial-gradient(220px circle at var(--mx) var(--my), #000, transparent 70%);
+  mask: radial-gradient(220px circle at var(--mx) var(--my), #000, transparent 70%);
+  opacity: 0.8;
 }
 
 /* Barres : segments de 5 px, trou de 3 px, la même respiration que la matrice. */
@@ -742,3 +743,7 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 
 /* La matrice tonale : un sujet en trame de points, fixe derrière toute la page. */
 .matrix { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+/* Les sections claires respirent un peu moins : l'air était le même que sur la version à trame. */
+:root { --sp: clamp(72px, 8.5vw, 112px); }
+@media (max-width: 860px) { :root { --sp: 56px; } }
