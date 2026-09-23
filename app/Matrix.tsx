@@ -30,19 +30,19 @@ function noise(x: number, y: number, z: number) {
   return r;
 }
 // Cratères : des creux ronds de tailles variées, posés au hasard sur la sphère, plus un grain de fbm.
-function buildMap() {
-  const map = new Float32Array(MAP_W * MAP_H);
+// La construction est découpée en tranches (générateur) pour ne jamais bloquer la page plus de quelques ms.
+function* buildMap(map: Float32Array) {
   for (let j = 0; j < MAP_H; j++) {
-    const lat = (j / MAP_H - 0.5) * Math.PI;
+    const lat = (j / MAP_H - 0.5) * Math.PI, cl = Math.cos(lat), y = Math.sin(lat);
     for (let i = 0; i < MAP_W; i++) {
       const lon = (i / MAP_W) * Math.PI * 2;
-      const x = Math.cos(lat) * Math.cos(lon), y = Math.sin(lat), z = Math.cos(lat) * Math.sin(lon);
+      const x = cl * Math.cos(lon), z = cl * Math.sin(lon);
       let h = 0, a = 0.5, f = 2.2;
-      for (let o = 0; o < 5; o++) { h += a * (noise(x * f + 7, y * f + 3, z * f + 11) - 0.5); a *= 0.5; f *= 2.1; }
+      for (let o = 0; o < 4; o++) { h += a * (noise(x * f + 7, y * f + 3, z * f + 11) - 0.5); a *= 0.5; f *= 2.1; }
       map[j * MAP_W + i] = h;                                        // mers et plaines
     }
+    if (j % 24 === 23) yield;
   }
-  // cratères
   let seed = 7;
   const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
   for (let n = 0; n < 190; n++) {
@@ -50,13 +50,16 @@ function buildMap() {
     const r = 0.02 + Math.pow(rnd(), 2.2) * 0.13;                    // beaucoup de petits, quelques grands
     const depth = 0.35 + rnd() * 0.5;
     const cx = Math.cos(clat) * Math.cos(clon), cy = Math.sin(clat), cz = Math.cos(clat) * Math.sin(clon);
-    const j0 = Math.max(0, Math.floor((clat / Math.PI + 0.5) * MAP_H - r * MAP_H * 1.3));
-    const j1 = Math.min(MAP_H - 1, Math.ceil((clat / Math.PI + 0.5) * MAP_H + r * MAP_H * 1.3));
+    const j0 = Math.max(0, Math.floor((clat / Math.PI + 0.5) * MAP_H - r * 1.3 * MAP_H / Math.PI));
+    const j1 = Math.min(MAP_H - 1, Math.ceil((clat / Math.PI + 0.5) * MAP_H + r * 1.3 * MAP_H / Math.PI));
     for (let j = j0; j <= j1; j++) {
-      const lat = (j / MAP_H - 0.5) * Math.PI;
-      for (let i = 0; i < MAP_W; i++) {
+      const lat = (j / MAP_H - 0.5) * Math.PI, cl = Math.cos(lat), y = Math.sin(lat);
+      const span = Math.min(MAP_W / 2, Math.ceil((r * 1.3 / Math.max(0.08, cl)) / (Math.PI * 2) * MAP_W)); // fenêtre de longitude
+      const ic = Math.round(clon / (Math.PI * 2) * MAP_W);
+      for (let k = -span; k <= span; k++) {
+        const i = ((ic + k) % MAP_W + MAP_W) % MAP_W;
         const lon = (i / MAP_W) * Math.PI * 2;
-        const x = Math.cos(lat) * Math.cos(lon), y = Math.sin(lat), z = Math.cos(lat) * Math.sin(lon);
+        const x = cl * Math.cos(lon), z = cl * Math.sin(lon);
         const d = Math.acos(Math.min(1, x * cx + y * cy + z * cz)) / r;   // distance angulaire normalisée
         if (d > 1.25) continue;
         // fond creux, rebord relevé, puis retombée
@@ -64,8 +67,8 @@ function buildMap() {
         map[j * MAP_W + i] += prof * r * 2.4;
       }
     }
+    if (n % 12 === 11) yield;
   }
-  return map;
 }
 
 export default function Matrix() {
@@ -76,7 +79,11 @@ export default function Matrix() {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const map = buildMap();
+    const map = new Float32Array(MAP_W * MAP_H);
+    let ready = 0;                                                    // 0 tant que le relief se construit, puis l'instant où il est prêt
+    const gen = buildMap(map);
+    const step = () => { if (gen.next().done) { ready = performance.now(); if (still) frame(ready); } else setTimeout(step, 0); };
+    setTimeout(step, 0);
     const at = (u: number, v: number) => {                              // lecture bilinéaire de la carte
       const x = ((u % 1) + 1) % 1 * MAP_W, y = Math.min(MAP_H - 1.001, Math.max(0, v * MAP_H));
       const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi, xj = (xi + 1) % MAP_W;
@@ -94,8 +101,9 @@ export default function Matrix() {
 
     const frame = (now: number) => {
       raf = still ? 0 : requestAnimationFrame(frame);
-      if (now - last < 33) return;                                     // 30 images par seconde suffisent
+      if (now - last < 33 || !ready) return;                           // 30 images par seconde suffisent
       last = now;
+      const fade = Math.min(1, (now - ready) / 1200);                  // apparition douce une fois le relief prêt
       const dark = document.documentElement.dataset.theme === "dark";
       const t = now / 1000;
       const spin = t * 0.012;                                          // un tour en ~8 minutes
@@ -107,8 +115,9 @@ export default function Matrix() {
 
       // la lune, en haut à droite, un peu hors cadre, qui glisse à peine avec le défilement
       // au bord droit, deux tiers visibles, à mi-hauteur : la lune se lève à côté du texte, jamais dessus
+      if (W < 860) return;                                             // pas de lune sur téléphone
       const R = Math.min(W, H) * 0.34;
-      const cx = W * 0.72 + R, cy = H * 0.5 - scrollY * 0.05;
+      const cx = Math.max(W * 0.72 + R, W - R * 0.62), cy = H * 0.5 - scrollY * 0.05;
       ctx.clearRect(0, 0, W, H);
       const col = dark ? "245, 245, 245" : "14, 14, 14";
       const x0 = Math.max(0, Math.floor((cx - R) / P)), x1 = Math.min(Math.ceil(W / P), Math.ceil((cx + R) / P));
@@ -136,13 +145,13 @@ export default function Matrix() {
           const cov = (dark ? Math.pow(lum, 1.2) : Math.pow(1 - lum, 1.5) * 0.9) * edge;
           if (cov < 0.04) continue;
           const r = Math.sqrt(cov) * P * 0.5 * 0.96;
-          ctx.fillStyle = `rgba(${col}, ${Math.min(1, 0.25 + cov).toFixed(3)})`;
+          ctx.fillStyle = `rgba(${col}, ${(Math.min(1, 0.25 + cov) * fade).toFixed(3)})`;
           ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill();
         }
       }
     };
 
-    size(); frame(performance.now()); if (!still && !raf) raf = requestAnimationFrame(frame);
+    size(); if (!still) raf = requestAnimationFrame(frame);
     const onResize = () => { size(); if (still) frame(performance.now()); };
     const onVis = () => { hidden = document.hidden; if (hidden) { cancelAnimationFrame(raf); raf = 0; } else if (!still && !raf) raf = requestAnimationFrame(frame); };
     addEventListener("resize", onResize); document.addEventListener("visibilitychange", onVis);

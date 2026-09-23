@@ -741,4 +741,4 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 
 
 /* La matrice tonale : un sujet en trame de points, fixe derrière toute la page. */
-.matrix { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.matrix { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
