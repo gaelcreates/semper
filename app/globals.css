@@ -515,6 +515,8 @@ h3 { font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; }
 .footer-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 .tagline { font-size: clamp(20px, 2.6vw, 26px); line-height: 1; letter-spacing: -0.02em; }
 .footer .about { margin-top: 24px; max-width: 520px; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.footer .lunar { margin-top: 28px; max-width: 560px; font-size: 14px; line-height: 1.6; color: var(--ink2); padding-left: 18px; position: relative; }
+.footer .lunar .dot { position: absolute; left: 0; top: 7px; box-shadow: 0 0 0 3px rgba(255, 197, 8, 0.2); }
 .footer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); }
 .fl { display: flex; gap: 22px; font-size: 13px; color: var(--ink2); }
 .fl a:hover { color: var(--ink); }

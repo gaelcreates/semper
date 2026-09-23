@@ -2,7 +2,17 @@
 
 Landing page de liste d'attente de Semper (calendrier éditorial des créateurs de contenu). Next.js 16, sans Tailwind, CSS dans `app/globals.css`. Toujours en français, jamais de tiret long.
 
-## Direction artistique
+## Direction artistique : « Suisse matricielle » (décidée le 23 sept 2026, branche `pixel`)
+Le mélange de deux univers, nommé par Gael et moi : le style suisse (papier, grille, grotesque, une couleur) et l'affichage matriciel (points ronds façon afficheur à LED, Nothing). Règle en une phrase : **le papier porte, la matrice compte.**
+- Papier : Suisse Intl pour tout ce qui se lit, titres compris (Black + Light). Fond `#F5F5F5` nu, halos d'or qui dérivent, coins 20 px, ombres douces, mouvement fluide.
+- Matrice : Doto (Google Fonts, variable, `ROND` 100, toujours **900**) pour tout ce qui compte : chiffres (20 à 60 px, jamais plus), étiquettes (12 px, capitales, 0.1em), ruban, pastille, signature. Coins 4 px, pas d'ombre, mouvement par pas (`steps(8)`). Icônes bitmap 5×5 (`DotIcon.tsx`), signe en points (`MarkDots.tsx`). Jamais de points dans un titre ou une phrase.
+- Unité : 8 px. Le fond bat à 24 px mais reste éteint : la trame ne s'allume qu'autour du curseur (`.grid-bg .spot`, rayon 340 px, or).
+- Le sujet : la lune en trame tonale (`Matrix.tsx`), fixe derrière toute la page, bord droit, rayon 0,39 × min(largeur, hauteur), relief calculé (bruit + 250 cratères), lumière qui glisse, construction par tranches sans bloquer, fondu à l'arrivée, masquée sous 860 px. Justification : le premier calendrier de l'humanité, la régularité par nature, ne récompense pas le volume. Phrase au pied de page (`.lunar`).
+- Page de travail `/style` (hors index) : tout le système à plat. Mesures prises dans le code de Nothing : Ndot entre 14 et 60 px seulement, corps en grotesque, jaune 255 199 0.
+- Ce qu'on ne fait pas : points dans un titre, or à deux endroits sur un écran, pixels carrés, scanlines, néon, CRT, carte qui mélange papier et afficheur.
+- `main` porte encore l'ancienne version (Suisse Intl seule, trame Sinergia). Ne pas fusionner `pixel` sans l'accord de Gael.
+
+## Direction artistique (version publiée sur main)
 Clair par défaut : fond `#F5F5F5`, texte `#0E0E0E`, or `#FFC508` en accent rare. Sombre via `ThemeToggle` (`data-theme="dark"` sur `<html>`, localStorage). Suisse Intl seulement (Light 300, Bold 700, Black 900) : `.b` = Black, `.w` = Light pour le second mot des titres. Pas de Suisse Works. Logo complet `app/Logo.tsx`, le signe seul `app/Mark.tsx` pour les animations. Tailles de texte mesurées, référence Alytics (Framer) : h1 72 px max, h2 46 px max, corps 16 px.
 
 Toutes les couleurs passent par les variables (`--bg --card --ink --ink2 --muted --fgr --bgr --line`). Une section `.s.dark` inverse tout via les `--alt-*` (dans le thème sombre elle devient claire). Jamais de couleur en dur dans un composant.

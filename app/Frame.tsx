@@ -43,6 +43,7 @@ export function Footer() {
           <p className="tagline dot-t"><span className="b">Créer,</span> <span className="w">toujours.</span></p>
         </div>
         <p className="about">Semper est un calendrier éditorial gratuit pour les créateurs de contenu, fait en Suisse. Il suit chaque vidéo de l&apos;idée à la publication et compte les semaines tenues.</p>
+        <p className="lunar"><i className="dot" /> La lune a été le premier calendrier. On y comptait les nuits bien avant de compter les semaines. Elle ne brille pas plus quand on la regarde, elle revient, c&apos;est tout. Semper est dans cette lignée : il ne compte pas ce que tu produis, il compte ce que tu tiens.</p>
         <div className="footer-bottom">
           <nav className="fl" aria-label="Pages légales">
             <Link href="/confidentialite">Confidentialité</Link>

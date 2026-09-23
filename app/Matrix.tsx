@@ -116,7 +116,7 @@ export default function Matrix() {
       // la lune, en haut à droite, un peu hors cadre, qui glisse à peine avec le défilement
       // au bord droit, deux tiers visibles, à mi-hauteur : la lune se lève à côté du texte, jamais dessus
       if (W < 860) return;                                             // pas de lune sur téléphone
-      const R = Math.min(W, H) * 0.34;
+      const R = Math.min(W, H) * 0.39;
       const cx = Math.max(W * 0.72 + R, W - R * 0.62), cy = H * 0.5 - scrollY * 0.05;
       ctx.clearRect(0, 0, W, H);
       const col = dark ? "245, 245, 245" : "14, 14, 14";
