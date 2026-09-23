@@ -22,8 +22,8 @@ export function TopBar({ cta = true }: { cta?: boolean }) {
           <ThemeToggle />
           {cta ? (
             <>
-              <Link href="/connexion" className="link">Se connecter</Link>
-              <a href="#rejoindre" className="btn btn-sm">Rejoindre la liste</a>
+              <Link href="/connexion" className="link nav-login">Se connecter</Link>
+              <a href="#rejoindre" className="btn btn-sm"><span className="full">Rejoindre la liste</span><span className="short">Rejoindre</span></a>
             </>
           ) : (
             <Link href="/" className="link">Retour</Link>

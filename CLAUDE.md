@@ -18,6 +18,9 @@ Le voyage : fond façon Sinergia (`.grid-bg` : zones d'or floues qui dérivent, 
 ## Formulaire
 `actions.ts` ajoute l'adresse à une audience Resend. Variables : `RESEND_API_KEY`, `RESEND_AUDIENCE_ID` (voir `.env.example`). Sans elles, le formulaire répond « les inscriptions ouvrent dans quelques heures ». Champ piège `site` contre les robots.
 
+## Domaine et déploiement
+Domaine `trysemper.app` (Hostinger, DNS chez Hostinger, e-mail pro sur le même domaine donc ne jamais changer les nameservers). Dépôt `gaelcreates/semper`, déployé sur Vercel (projet `semper`, adresse de secours semper-psi.vercel.app). Un push sur `main` redéploie.
+
 ## Pages
 `/` accueil · `/connexion` (lien e-mail, sans mot de passe ; répond « pas encore ouvert » tant que `SUPABASE_URL` est vide) · `/confidentialite` · `/conditions` · `/mentions-legales`. Infos éditeur dans `app/site.ts` (adresse : « Vaud, Suisse » pour l'instant, à préciser avant la mise en ligne définitive).
 

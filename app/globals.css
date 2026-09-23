@@ -552,3 +552,70 @@ h3 { font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; }
   .mock-wrap, .float { opacity: 1; animation: none; }
   .loader { animation-delay: 0s; }
 }
+
+/* ---------- Téléphone : tout ce qui change sous 860 px et sous 560 px */
+.btn .short { display: none; }
+@media (max-width: 860px) {
+  :root { --sp: 64px; --nav: 60px; }
+  .hero { padding-top: 40px; }
+  .title { margin-top: 18px; }
+  .lead { margin-top: 16px; font-size: 16px; }
+  .hero-form { margin-top: 24px; }
+  /* le visualiseur reste droit, pas de relevé ni d'inclinaison au doigt */
+  .mock-wrap { margin-top: 36px; margin-bottom: -72px; perspective: none; }
+  .app-shell { transform: none; }
+  .app { transform: none; box-shadow: 0 24px 60px -30px rgba(var(--fgr), 0.35); }
+  .app-head { padding: 14px 14px 10px; gap: 10px; }
+  .app-head h4 { font-size: 16px; }
+  .app-head small { font-size: 11px; }
+  .tabs { order: 3; width: 100%; justify-content: space-between; gap: 2px; padding: 3px; }
+  .tabs button { flex: 1; padding: 7px 4px; font-size: 12px; text-align: center; }
+  .app-stats { padding: 4px 14px 14px; gap: 8px; }
+  .app-stats li { padding: 10px 12px; }
+  .app-stats b { font-size: 18px; }
+  .app-body { min-height: 0; }
+  .app .mock-grid { min-height: 0; }
+  .mock-day { padding: 10px 8px 14px; }
+  .mock-card p { font-size: 12px; }
+  .kanban { padding: 12px; gap: 10px; min-height: 0; }
+  .list { padding: 4px 12px 12px; }
+  .row { grid-template-columns: 1.4fr 1fr; padding: 10px 4px; font-size: 12.5px; }
+  .serie { padding: 18px; gap: 18px; min-height: 0; }
+  .weeks { gap: 5px; }
+  .s.problem { padding-top: calc(var(--sp) + 96px); }
+  .stats li { padding: 22px 20px 20px; }
+  .band-run span { padding-inline: 18px; font-size: 12px; }
+  .cards, .steps, .promises { gap: 12px; }
+  .card { padding: 12px 18px 22px; }
+  .cv { height: 160px; }
+  .s.island { margin-inline: 12px; }
+  .mission { gap: 32px; }
+  .roadmap li { padding: 18px 0 18px 26px; }
+  .roadmap li:hover { padding-left: 26px; }
+  .join { height: 64px; }
+  .faq-wrap { gap: 28px; }
+  .qa summary { padding: 16px 16px; font-size: 15px; }
+  .qa p { padding: 0 16px 16px; }
+  .footer { padding-block: 36px 28px; }
+  .footer-bottom { margin-top: 24px; }
+  .curve-dot { display: none; }
+}
+@media (max-width: 560px) {
+  .nav-login { display: none; }
+  .btn .full { display: none; }
+  .btn .short { display: inline; }
+  .btn-sm { padding: 0 14px; }
+  .theme { width: 34px; height: 34px; }
+  .logo { height: 18px; }
+  .pill { font-size: 11.5px; padding: 6px 12px 6px 9px; }
+  h1 { font-size: 36px; }
+  h2 { font-size: 27px; }
+  .hero-form .fine { font-size: 11.5px; }
+  .stats b { font-size: 40px; }
+  .serie-big b { font-size: 56px; }
+  .weeks { grid-template-columns: repeat(6, 1fr); }
+  .weeks-l { display: none; }
+  .tagline { font-size: 20px; }
+  .fl { gap: 16px; font-size: 12.5px; }
+  .auth-card { padding: 24px 20px; }
+}
