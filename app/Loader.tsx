@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import MarkDots from "./MarkDots";
+import Mark from "./Mark";
 
 // Voile de chargement : le signe tourne le temps que les polices arrivent, puis s'efface.
 export default function Loader() {
@@ -20,7 +20,7 @@ export default function Loader() {
 
   return (
     <div className={`loader${gone ? " out" : ""}`} aria-hidden="true">
-      <MarkDots spin />
+      <Mark spin />
     </div>
   );
 }
