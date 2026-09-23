@@ -623,55 +623,118 @@ h3 { font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; }
 
 
 /* ============================================================
-   Direction matrice (branche pixel) : le point est l'unité.
-   Doto pour ce qui compte (titres, chiffres, signaux), Suisse Intl pour ce qui se lit.
+   Suisse matricielle (branche pixel).
+   Le papier porte (Suisse Intl, blanc, coins ronds, mouvement fluide).
+   La matrice compte (Doto, points, coins droits, mouvement par pas).
+   Une seule unité : le point, sur une grille de 8 px. Le fond bat à 24 px (3 unités).
    ============================================================ */
-.dot-t, h1 .w, .stats b, .app-stats b, .serie-big b, .step-n, .pill, .band, .app-lvl b, .app-url, [data-count], .app-stats small, .weeks-l, .app-date {
+:root { --u: 8px; --pitch: 24px; --dot: 1.5px; --disp-r: 4px; --steps: steps(8, end); }
+
+/* La famille afficheur : tout ce qui compte se règle ici, une seule fois. */
+.disp, .stats b, .app-stats b, .serie-big b, .step-n, .pill, .band, .app-lvl b, .app-url, .app-stats small, .weeks-l, .app-head small, .tagline, .mock-day small, .cv-fiche small, .roadmap small, .fine-disp {
   font-family: var(--font-dot), var(--font-intl), sans-serif;
   font-variation-settings: "ROND" 100;
-  letter-spacing: 0.01em;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-feature-settings: "tnum";
 }
-/* Titres : la première ligne reste en Suisse Black, la seconde passe en points pleins. */
-h1 .w { font-weight: 800; font-size: 0.84em; letter-spacing: 0.02em; }
-.title { max-width: 16ch; }
-h2 .w { font-family: var(--font-dot), sans-serif; font-variation-settings: "ROND" 100; font-weight: 800; font-size: 0.9em; letter-spacing: 0.02em; }
-.stats b { font-weight: 800; letter-spacing: 0.02em; }
-.app-stats b { font-weight: 800; }
-.app-stats b span, .serie-big span { font-family: var(--font-intl), sans-serif; font-variation-settings: normal; letter-spacing: 0; }
-.app-stats small { font-weight: 800; letter-spacing: 0.1em; }
-.pill { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
-.band { font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; font-size: 13px; }
-.step-n { font-weight: 800; font-size: 15px; }
-.tagline.dot-t { font-weight: 800; }
-.tagline.dot-t .w { font-weight: 800; color: var(--ink2); }
+/* Étiquettes : capitales, 12 px, interlettrage large (mesuré chez Nothing : 0.1em). */
+.pill, .band, .app-stats small, .app-head small, .weeks-l, .roadmap small, .mock-day small, .cv-fiche small, .lbl { text-transform: uppercase; font-size: 12px; letter-spacing: 0.1em; }
+/* Chiffres : entre 20 et 60 px, jamais plus (chez Nothing la police à points s'arrête à 60 px). */
+.stats b { font-size: clamp(40px, 5vw, 60px); font-weight: 800; letter-spacing: 0.02em; }
+.app-stats b { font-size: 22px; font-weight: 800; }
+.serie-big b { font-size: clamp(56px, 6vw, 60px); font-weight: 800; letter-spacing: 0.02em; }
+.app-stats b span, .serie-big span { font-family: var(--font-intl), sans-serif; font-variation-settings: normal; font-weight: 300; letter-spacing: 0; }
+.step-n { font-size: 15px; font-weight: 800; border-radius: var(--disp-r); }
+.tagline { font-size: 18px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.tagline .w { font-weight: 800; color: var(--muted); }
+.app-lvl b { font-size: 14px; }
+.band { font-size: 12px; }
+.pill { padding: 8px 14px 8px 10px; border-radius: var(--disp-r); }
+/* Les titres restent en Suisse Intl : le papier porte le sens. */
+h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-variation-settings: normal; }
 
-/* Fond : une matrice de points sur toute la page, qui s'allume en or autour du curseur. */
-.grid-bg::after { opacity: 1; background-size: 22px 22px; background-image: radial-gradient(circle, rgba(var(--fgr), 0.16) 1.1px, transparent 1.7px); }
-:root[data-theme="dark"] .grid-bg::after { background-image: radial-gradient(circle, rgba(var(--fgr), 0.16) 1.1px, transparent 1.7px); }
+/* Coins : droits pour l'afficheur, ronds pour le papier. */
+.app-stats li, .app-lvl, .app-stats .bar, .glass, .stats .glass, .app-url, .float, .f-tag, .mock-card .tag, .kanban li, .app-side li, .tabs, .tabs button { border-radius: var(--disp-r); }
+.card, .step, .btn, .form, .faq .qa, .promises li { border-radius: 20px; }
+.btn, .form { border-radius: 999px; }
+
+/* Le fond : matrice de points au pas de 24 px, allumée en or autour du curseur. */
+.grid-bg::after, :root[data-theme="dark"] .grid-bg::after { opacity: 1; background-size: var(--pitch) var(--pitch); background-position: calc(var(--pitch) / 2) calc(var(--pitch) / 2); background-image: radial-gradient(circle, rgba(var(--fgr), 0.18) var(--dot), transparent calc(var(--dot) + 0.6px)); }
+.grid-bg i:not(.spot) { opacity: 0.55; }
 .grid-bg .spot {
-  background: radial-gradient(circle, var(--gold) 1.5px, transparent 2.1px);
-  background-size: 22px 22px;
-  -webkit-mask: radial-gradient(180px circle at var(--mx) var(--my), #000, transparent 70%);
-  mask: radial-gradient(180px circle at var(--mx) var(--my), #000, transparent 70%);
+  background: radial-gradient(circle, var(--gold) calc(var(--dot) + 0.3px), transparent calc(var(--dot) + 0.9px));
+  background-size: var(--pitch) var(--pitch); background-position: calc(var(--pitch) / 2) calc(var(--pitch) / 2);
+  -webkit-mask: radial-gradient(160px circle at var(--mx) var(--my), #000, transparent 70%);
+  mask: radial-gradient(160px circle at var(--mx) var(--my), #000, transparent 70%);
 }
 
-/* Barres segmentées, façon afficheur. */
-.app-stats .bar { height: 6px; border-radius: 0; background: repeating-linear-gradient(90deg, rgba(var(--fgr), 0.1) 0 5px, transparent 5px 8px); }
-.app-stats .bar i { border-radius: 0; background: repeating-linear-gradient(90deg, var(--gold) 0 5px, transparent 5px 8px); }
+/* Barres : segments de 5 px, trou de 3 px, la même respiration que la matrice. */
+.app-stats .bar { height: 6px; background: repeating-linear-gradient(90deg, rgba(var(--fgr), 0.1) 0 5px, transparent 5px 8px); }
+.app-stats .bar i { border-radius: 0; background: repeating-linear-gradient(90deg, var(--gold) 0 5px, transparent 5px 8px); animation-timing-function: var(--steps); }
 
-/* La série : un point par semaine, rond, l'or pour les semaines tenues. */
-.weeks { gap: 10px; }
-.weeks i { border-radius: 50%; border: 0; background: rgba(var(--fgr), 0.12); transform: scale(0.55); }
-.weeks i.on { background: var(--gold); transform: scale(0.8); box-shadow: 0 0 0 3px rgba(255, 197, 8, 0.18); }
-.weeks i.now { background: transparent; border: 1.5px dashed var(--gold); transform: scale(0.8); }
-.cv-serie .weeks i { transform: scale(0.6); }
-.cv-serie .weeks i.on, .cv-serie .weeks i.now { transform: scale(0.85); }
+/* La série : un point par semaine. Éteint, allumé (or), en cours (contour). */
+.weeks { gap: var(--u); }
+.weeks i { border-radius: 50%; border: 0; background: rgba(var(--fgr), 0.12); transform: scale(0.5); }
+.weeks i.on { background: var(--gold); transform: scale(0.75); box-shadow: 0 0 0 3px rgba(255, 197, 8, 0.18); animation-timing-function: var(--steps); }
+.weeks i.now { background: transparent; border: 1.5px dashed var(--gold); transform: scale(0.75); }
+.cv-serie .weeks i { transform: scale(0.55); }
+.cv-serie .weeks i.on, .cv-serie .weeks i.now { transform: scale(0.8); }
 
-/* Le signe en points : les points s'allument à la suite dans le chargement. */
-.mark.dots circle { transition: opacity 300ms; }
+/* Icônes : bitmap 5×5, même point que le reste. */
+.di { width: 15px; height: 15px; flex: none; }
+.app-side li i { display: none; }
+.app-side li .di { opacity: 0.6; }
+.app-side li.on .di { opacity: 1; color: var(--gold); }
+
+/* Le signe en points : au chargement, les points s'allument à la suite. */
 .mark.dots.spin { animation: none; }
-.mark.dots.spin circle:not(.big) { animation: blink 1400ms linear infinite; animation-delay: calc(var(--i) * 100ms); }
+.mark.dots.spin circle:not(.big) { animation: blink 1400ms var(--steps) infinite; animation-delay: calc(var(--i) * 100ms); }
 @keyframes blink { 0%, 60% { opacity: 0.18; } 70%, 85% { opacity: 1; } 100% { opacity: 0.18; } }
 
-/* Coins droits pour ce qui est « écran ». */
-.app-stats li, .app-lvl { border-radius: 4px; }
+/* Mouvement : ce qui est afficheur s'allume par pas, ce qui est papier glisse. */
+[data-count] { animation-timing-function: var(--steps); }
+.stats .glass .fade { animation-timing-function: var(--steps); }
+.curve-dot { animation-timing-function: var(--steps); }
+
+/* ---------- Page /style : le système à plat. */
+.sg { padding-block: calc(var(--nav) + 48px) 120px; }
+.sg header.sg-head { margin-bottom: 64px; max-width: 720px; }
+.sg h1 { font-size: clamp(34px, 4.6vw, 56px); margin-bottom: 16px; }
+.sg h2 { font-size: 22px; margin: 0 0 8px; }
+.sg-rule { font-size: 15px; color: var(--ink2); max-width: 640px; margin-bottom: 24px; }
+.sg section { padding-block: 40px; border-top: 1px solid var(--line); }
+.sg-row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.sg-box { display: grid; gap: 10px; }
+.sg-box .lbl, .lbl { color: var(--ink2); }
+.sg-sw { width: 96px; height: 96px; border-radius: var(--disp-r); border: 1px solid var(--line); }
+.sg-grid { position: relative; width: 240px; height: 120px; border: 1px solid var(--line); border-radius: var(--disp-r); background-image: radial-gradient(circle, rgba(var(--fgr), 0.35) var(--dot), transparent calc(var(--dot) + 0.6px)); background-size: var(--pitch) var(--pitch); background-position: calc(var(--pitch) / 2) calc(var(--pitch) / 2); }
+.sg-grid i { position: absolute; width: var(--u); height: var(--u); border-radius: 50%; background: var(--gold); left: calc(var(--pitch) * 3 - var(--u) / 2); top: calc(var(--pitch) * 2 - var(--u) / 2); box-shadow: 0 0 0 3px rgba(255, 197, 8, 0.18); }
+.sg-type p { margin: 0; }
+.sg-paper { display: grid; gap: 6px; }
+.sg-disp { display: grid; gap: 10px; }
+.sg-num { font-size: 60px; }
+.sg-num.m { font-size: 40px; }
+.sg-num.s { font-size: 22px; }
+.sg-card { padding: 20px 24px; border: 1px solid var(--line); background: var(--card); max-width: 300px; }
+.sg-card.paper { border-radius: 20px; box-shadow: 0 20px 40px -30px rgba(var(--fgr), 0.25); }
+.sg-card.disp { border-radius: var(--disp-r); display: grid; gap: 8px; }
+.sg-card.disp .bar { display: block; height: 6px; background: repeating-linear-gradient(90deg, rgba(var(--fgr), 0.1) 0 5px, transparent 5px 8px); }
+.sg-card.disp .bar i { display: block; height: 100%; width: 58%; background: repeating-linear-gradient(90deg, var(--gold) 0 5px, transparent 5px 8px); }
+.sg-icons { display: flex; gap: 20px; flex-wrap: wrap; }
+.sg-icons div { display: grid; gap: 8px; justify-items: center; font-size: 12px; color: var(--muted); }
+.sg-icons .di { width: 30px; height: 30px; }
+.sg-marks { display: flex; gap: 32px; align-items: center; }
+.sg-marks .mark { width: 56px; height: 56px; animation: none; }
+.sg-marks .mark.dots.spin circle:not(.big) { animation: blink 1400ms var(--steps) infinite; animation-delay: calc(var(--i) * 100ms); }
+.sg-weeks { width: 320px; }
+.sg-dark { background: var(--ink); color: var(--bg); padding: 24px; border-radius: var(--disp-r); }
+.sg-dark .sg-num { color: var(--bg); }
+.sg-motion { display: flex; gap: 24px; }
+.sg-motion div { width: 120px; height: 8px; background: rgba(var(--fgr), 0.1); overflow: hidden; }
+.sg-motion div i { display: block; height: 100%; background: var(--gold); transform-origin: left; animation: fill 2s infinite alternate; }
+.sg-motion .paper i { animation-timing-function: var(--ease); }
+.sg-motion .disp i { animation-timing-function: var(--steps); }
+.sg-donts { list-style: none; display: grid; gap: 6px; font-size: 15px; color: var(--ink2); }
+.sg-donts li::before { content: "×  "; color: var(--muted); }

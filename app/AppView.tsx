@@ -4,6 +4,7 @@ import { useState } from "react";
 import AppMock from "./AppMock";
 import Logo from "./Logo";
 import Mark from "./Mark";
+import DotIcon from "./DotIcon";
 
 type Tab = "calendrier" | "kanban" | "liste" | "serie";
 const tabs: { id: Tab; label: string }[] = [
@@ -12,6 +13,7 @@ const tabs: { id: Tab; label: string }[] = [
   { id: "liste", label: "Liste" },
   { id: "serie", label: "Série" },
 ];
+const sideIcons = ["semaine", "idee", "serie", "script", "reglages"] as const;
 const side = ["Ma semaine", "Idées", "Série", "Scripts", "Réglages"];
 
 // Visualiseur de l'espace Semper : barre latérale, en-tête, chiffres de la semaine,
@@ -26,7 +28,7 @@ export default function AppView() {
           <aside className="app-side">
             <Logo />
             <ul>
-              {side.map((s, i) => <li key={s} className={i === 0 ? "on" : ""}><i /><span>{s}</span></li>)}
+              {side.map((s, i) => <li key={s} className={i === 0 ? "on" : ""}><DotIcon name={sideIcons[i]} /><span>{s}</span></li>)}
             </ul>
             <div className="app-lvl"><b>Niveau 2</b><span>Régulier</span></div>
           </aside>
