@@ -664,11 +664,11 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 .grid-bg::after, :root[data-theme="dark"] .grid-bg::after { display: none; } /* papier nu : la matrice ne s'allume qu'autour du curseur */
 .grid-bg i:not(.spot) { opacity: 0.55; }
 .grid-bg .spot {
-  background: radial-gradient(circle, var(--gold) calc(var(--dot) + 0.3px), transparent calc(var(--dot) + 0.9px));
+  background: radial-gradient(circle, var(--gold) calc(var(--dot) + 0.8px), transparent calc(var(--dot) + 1.5px));
   background-size: var(--pitch) var(--pitch); background-position: calc(var(--pitch) / 2) calc(var(--pitch) / 2);
-  -webkit-mask: radial-gradient(220px circle at var(--mx) var(--my), #000, transparent 70%);
-  mask: radial-gradient(220px circle at var(--mx) var(--my), #000, transparent 70%);
-  opacity: 0.8;
+  -webkit-mask: radial-gradient(340px circle at var(--mx) var(--my), #000 10%, transparent 72%);
+  mask: radial-gradient(340px circle at var(--mx) var(--my), #000 10%, transparent 72%);
+  opacity: 1;
 }
 
 /* Barres : segments de 5 px, trou de 3 px, la même respiration que la matrice. */
