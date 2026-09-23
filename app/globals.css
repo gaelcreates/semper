@@ -373,7 +373,7 @@ h3 { font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; }
   @keyframes enter { from { transform: translateY(48px) scale(0.985); opacity: 0.4; } to { transform: none; opacity: 1; } }
 }
 
-.join { position: relative; display: grid; justify-items: center; height: clamp(88px, 11vw, 150px); }
+.join { position: relative; display: grid; justify-items: center; height: clamp(72px, 8vw, 104px); }
 .join-line { width: 1px; height: 100%; background: linear-gradient(to bottom, transparent, var(--line-strong) 20%, var(--line-strong) 80%, transparent); transform-origin: top; }
 .join-dot { position: absolute; bottom: 10px; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 5px rgba(255, 197, 8, 0.18); }
 @supports (animation-timeline: view()) {
