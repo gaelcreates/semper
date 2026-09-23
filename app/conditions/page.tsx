@@ -9,7 +9,7 @@ export default function Page() {
     <Legal title="Conditions d'utilisation" updated="22 septembre 2026">
       <h2>Ce que couvre ce texte</h2>
       <p>
-        Ces conditions s&apos;appliquent au site sempr.app et à sa liste d&apos;attente. Les conditions de
+        Ces conditions s&apos;appliquent au site trysemper.app et à sa liste d&apos;attente. Les conditions de
         l&apos;application Semper elle-même te seront présentées à la création de ton compte, le jour de
         l&apos;ouverture.
       </p>

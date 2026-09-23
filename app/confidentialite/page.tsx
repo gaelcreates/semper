@@ -9,7 +9,7 @@ export default function Page() {
     <Legal title="Politique de confidentialité" updated="22 septembre 2026">
       <h2>Qui est responsable</h2>
       <p>
-        Le site sempr.app est édité par {site.owner}, {site.postalAddress}. Pour toute question sur tes données,
+        Le site trysemper.app est édité par {site.owner}, {site.postalAddress}. Pour toute question sur tes données,
         écris à <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
       </p>
 

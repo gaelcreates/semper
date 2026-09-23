@@ -1,6 +1,6 @@
 // Informations du site. À compléter avant la mise en ligne : les champs marqués « à compléter ».
 export const site = {
-  url: "https://sempr.app",
+  url: "https://trysemper.app",
   title: "Semper, le calendrier éditorial des créateurs de contenu",
   description:
     "Tes idées, tes vidéos et ton rythme au même endroit. Une série qui compte chaque semaine tenue. Gratuit, sans rien à configurer.",

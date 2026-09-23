@@ -21,7 +21,7 @@ export default function AppView() {
   return (
     <div className="app-shell">
       <div className="app" data-tilt aria-label="Aperçu de Semper">
-        <div className="app-chrome"><span className="dots"><i /><i /><i /></span><div className="app-url"><Mark /> sempr.app/semaine-39</div></div>
+        <div className="app-chrome"><span className="dots"><i /><i /><i /></span><div className="app-url"><Mark /> trysemper.app/semaine-39</div></div>
         <div className="app-main">
           <aside className="app-side">
             <Logo />
