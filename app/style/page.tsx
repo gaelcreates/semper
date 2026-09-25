@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Footer, TopBar } from "../Frame";
 import Mark from "../Mark";
-import MarkDots from "../MarkDots";
+import Orbit from "../Orbit";
+import Logo from "../Logo";
 import DotIcon from "../DotIcon";
 
 export const metadata: Metadata = { title: "Système · Semper", robots: { index: false, follow: false } };
@@ -93,8 +94,8 @@ export default function Page() {
 
           <section>
             <h2>Le signe</h2>
-            <p className="sg-rule">Le cercle ouvert et son point. En trait sur le papier (logo, barre, boutons). En points sur la matrice (chargement, dernier appel) : les points s&apos;allument à la suite.</p>
-            <div className="sg-marks"><Mark /><MarkDots /><span style={{ color: "#ffc508" }}><MarkDots spin /></span></div>
+            <p className="sg-rule">Un anneau vu en perspective, ouvert en haut, épais devant. Le nom en minuscules, Suisse Intl Black. Le symbole a la hauteur des lettres et repose sur la ligne de base. En mouvement : il se dessine en un tour (chargement), ou tourne en orbite avec une traînée (attente).</p>
+            <div className="sg-marks"><Mark full /><Logo /><Orbit size={56} /><span style={{ color: "#ffc508" }}><Orbit size={56} lap={6} trail={220} /></span></div>
           </section>
 
           <section>

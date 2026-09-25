@@ -3,6 +3,7 @@
 import { useActionState, useId } from "react";
 import { login, type LoginState } from "./actions";
 import Mark from "./Mark";
+import Orbit from "./Orbit";
 
 // Formulaire de connexion : une adresse, un lien reçu par e-mail. Pas de mot de passe.
 export default function LoginForm() {
@@ -23,7 +24,7 @@ export default function LoginForm() {
       <label className="sr" htmlFor={id}>Adresse e-mail</label>
       <input id={id} name="email" type="email" inputMode="email" autoComplete="email" placeholder="ton@email.com" required disabled={pending} />
       <button className="btn" type="submit" disabled={pending}>
-        {pending ? <Mark spin className="mark-sm" /> : null}
+        {pending ? <Orbit size={16} /> : null}
         {pending ? "Un instant" : "Recevoir mon lien"}
       </button>
       {state && !state.ok && <p className="form-msg" role="alert">{state.message}</p>}

@@ -3,6 +3,7 @@
 import { useActionState, useId } from "react";
 import { join, type JoinState } from "./actions";
 import Mark from "./Mark";
+import Orbit from "./Orbit";
 
 export default function JoinForm({ label = "Rejoindre la liste", light = false }: { label?: string; light?: boolean }) {
   const [state, action, pending] = useActionState<JoinState, FormData>(join, null);
@@ -31,7 +32,7 @@ export default function JoinForm({ label = "Rejoindre la liste", light = false }
         disabled={pending}
       />
       <button className="btn" type="submit" disabled={pending}>
-        {pending ? <Mark spin className="mark-sm" /> : null}
+        {pending ? <Orbit size={16} /> : null}
         {pending ? "Un instant" : label}
       </button>
       {state && !state.ok && (

@@ -5,7 +5,7 @@ import Loader from "./Loader";
 import Mark from "./Mark";
 import Curve from "./Curve";
 import Stand from "./Stand";
-import Tracker from "./Tracker";
+import Orbit from "./Orbit";
 import { site } from "./site";
 
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
@@ -276,7 +276,7 @@ export default function Page() {
         {/* ---------- 06 · Dernier appel */}
         <section className="s final" id="rejoindre-2">
           <div className="wrap center">
-            <Tracker />
+            <span className="final-mark"><Orbit size={96} lap={6} trail={220} /></span>
             <h2 data-reveal style={{ ["--i" as string]: 1 }}>Ta prochaine série <span className="w">commence ici.</span></h2>
             <p className="story" data-reveal style={{ ["--i" as string]: 2 }}>
               Ouverture bientôt. Les premiers inscrits entrent en premier.
