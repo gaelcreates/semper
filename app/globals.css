@@ -112,7 +112,7 @@ h3 { font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; }
 .logo { display: inline-flex; align-items: baseline; gap: 0.16em; line-height: 1; font-size: 22px; color: var(--ink); }
 .logo-name { font-family: var(--font-intl), sans-serif; font-weight: 900; letter-spacing: -0.035em; line-height: 1; }
 .orbit { display: inline-block; flex: none; line-height: 0; }
-.final-mark { display: inline-block; margin-bottom: 26px; color: var(--gold); }
+.final-mark { display: inline-block; margin-bottom: 26px; color: var(--ink); }
 .tracker { display: block; }
 @keyframes turn { to { transform: rotate(360deg); } }
 @keyframes turn-once { 0% { transform: rotate(0); } 14% { transform: rotate(360deg); } 100% { transform: rotate(360deg); } }
