@@ -10,11 +10,14 @@ export default function Orbit({ size = 48, lap = 1.2, trail = 300, className = "
 
   useEffect(() => {
     const host = ref.current; if (!host) return;
-    const color = colorOf(host);
+    let color = colorOf(host);
+    // la couleur suit le thème : si l'utilisateur bascule jour/nuit, le canevas se repeint dans la nouvelle encre
+    const mo = new MutationObserver(() => { color = colorOf(host); rgb = rgbOf(color); });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     const { cv, ctx, dpr } = makeCanvas(size, size);
     cv.setAttribute("role", "progressbar"); cv.setAttribute("aria-label", "Chargement");
     host.replaceChildren(cv);
-    const logo = new Path2D(LOGO_PATH), rgb = rgbOf(color), k = (size * dpr) / 100;
+    const logo = new Path2D(LOGO_PATH), k = (size * dpr) / 100; let rgb = rgbOf(color);
     let raf = 0; const t0 = performance.now();
     const paint = (now: number) => {
       const t = (now - t0) / 1000;
@@ -33,7 +36,7 @@ export default function Orbit({ size = 48, lap = 1.2, trail = 300, className = "
     };
     if (reduced()) { ctx.setTransform(k, 0, 0, k, 0, 0); ctx.fillStyle = color; ctx.fill(logo); }
     else raf = requestAnimationFrame(paint);
-    return () => { cancelAnimationFrame(raf); };
+    return () => { cancelAnimationFrame(raf); mo.disconnect(); };
   }, [size, lap, trail]);
 
   return <span ref={ref} className={`orbit${className ? ` ${className}` : ""}`} style={{ width: size, height: size }} aria-hidden="true" />;

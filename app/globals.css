@@ -107,7 +107,7 @@ h3 { font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; }
 .head .story { margin-inline: auto; }
 
 /* ---------- Le signe */
-.mark { width: auto; height: 0.558em; flex: none; color: currentColor; vertical-align: baseline; }
+.mark { width: auto; height: 0.6em; flex: none; color: currentColor; vertical-align: baseline; overflow: visible; }
 .mark.full { height: 1em; }
 .logo { display: inline-flex; align-items: baseline; gap: 0.16em; line-height: 1; font-size: 22px; color: var(--ink); }
 .logo-name { font-family: var(--font-intl), sans-serif; font-weight: 900; letter-spacing: -0.035em; line-height: 1; }
