@@ -6,9 +6,10 @@ import { Stepper } from "../(app)/ui";
 import { cleanHandle } from "../(app)/lib";
 import type { Value } from "../(app)/store";
 import { refreshInstagram, syncSignup } from "../(app)/actions";
-import { sb, sbReady } from "../supabase";
+import { sbReady } from "../supabase";
 import Code from "./Code";
-import { authError, suggest, validEmail } from "./auth";
+import { sendCode } from "./send";
+import { sendError, suggest, validEmail } from "./auth";
 
 // Le premier passage : une question par écran. Les réponses qualifient le profil dans l'admin.
 // Un choix unique passe tout seul à la suite ; l'adresse e-mail vient en dernier, puis le code reçu.
@@ -51,12 +52,9 @@ export default function Welcome() {
 
   // Demande le code ; les réponses partent avec et remplissent le profil si le compte est nouveau.
   async function request(all = a) {
-    const { firstName, handle, rythme, email: _e, ...answers } = all;
-    const { error } = await sb().auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true, data: { first_name: String(firstName).trim(), handle: cleanHandle(String(handle)), rythme: Number(rythme), answers } },
-    });
-    return error;
+    const { firstName, handle, rythme: _r, email: _e, ...answers } = all;
+    const r = await sendCode(email, { first_name: String(firstName).trim(), handle: cleanHandle(String(handle)), answers });
+    return r.ok ? "" : sendError(r.code);
   }
 
   async function finish(all: Record<string, Value | number>) {
@@ -64,7 +62,7 @@ export default function Welcome() {
     setBusy(true); setErr("");
     const error = await request(all);
     setBusy(false);
-    if (error) return setErr(authError(error));
+    if (error) return setErr(error);
     setSent(true);
   }
 

@@ -53,6 +53,9 @@ create table public.ig_snapshots (
   primary key (handle, day)
 );
 
+-- Envois de codes de connexion : un par minute et par adresse, contre les abus.
+create table public.code_sends (email text primary key, at timestamptz not null default now());
+
 -- Qui est admin : rempli à la main, jamais depuis l'app.
 create table public.admins (user_id uuid primary key references auth.users on delete cascade);
 
@@ -97,6 +100,7 @@ alter table public.contents enable row level security;
 alter table public.leads enable row level security;
 alter table public.ig_snapshots enable row level security;
 alter table public.admins enable row level security;
+alter table public.code_sends enable row level security;
 
 create policy "profil : le sien" on public.profiles for select using (id = auth.uid() or public.is_admin());
 create policy "profil : modifier le sien" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid());
@@ -109,4 +113,9 @@ create policy "contenus : supprimer" on public.contents for delete using (user_i
 create policy "prospection : admin" on public.leads for all using (public.is_admin()) with check (public.is_admin());
 
 create policy "instagram : le sien" on public.ig_snapshots for select
-  using (public.is_admin() or handle = (select p.handle from public.profiles p where p.id = auth.uid()));
+  using (public.is_admin() or handle = (select lower(p.handle) from public.profiles p where p.id = auth.uid()));
+
+-- Fonctions internes : le déclencheur ne s'appelle pas depuis l'API, is_admin seulement une fois connecté.
+revoke execute on function public.on_signup() from public, anon, authenticated;
+revoke execute on function public.is_admin() from public, anon;
+grant execute on function public.is_admin() to authenticated;

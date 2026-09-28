@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import Logo from "../Logo";
 import Code from "./Code";
-import { sb, sbReady } from "../supabase";
-import { authError, suggest, validEmail } from "./auth";
+import { sbReady } from "../supabase";
+import { sendCode } from "./send";
+import { sendError, suggest, validEmail } from "./auth";
 
 // Connexion : une adresse, puis le code reçu par e-mail. Pas de mot de passe.
 export default function Login() {
@@ -16,7 +17,7 @@ export default function Login() {
   const m = email.trim().toLowerCase();
   const fix = suggest(m);
 
-  const request = async () => (await sb().auth.signInWithOtp({ email: m, options: { shouldCreateUser: false } })).error;
+  const request = async () => { const r = await sendCode(m); return r.ok ? "" : sendError(r.code); };
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,7 +26,7 @@ export default function Login() {
     setBusy(true); setErr("");
     const error = await request();
     setBusy(false);
-    if (error) return setErr(authError(error));
+    if (error) return setErr(error);
     setSent(true);
   }
 

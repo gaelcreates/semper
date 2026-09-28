@@ -8,7 +8,7 @@ import { CODE_LEN, authError } from "./auth";
 // Pensé pour ceux qui se perdent : où chercher l'e-mail, quel code prendre, renvoyer, changer d'adresse.
 export default function Code({ email, resend, onBack, onDone }: {
   email: string;
-  resend: () => Promise<{ status?: number; code?: string; message?: string } | null>;
+  resend: () => Promise<string>; // message d'erreur, vide si le code est parti
   onBack: () => void;
   onDone: (token: string) => Promise<void> | void;
 }) {
@@ -35,7 +35,7 @@ export default function Code({ email, resend, onBack, onDone }: {
   async function send() {
     setErr(""); setAgain(false);
     const e = await resend();
-    if (e) return setErr(authError(e));
+    if (e) return setErr(e);
     setWait(60); setCode(""); setAgain(true);
   }
 

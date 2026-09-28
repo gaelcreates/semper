@@ -36,3 +36,10 @@ export function authError(e: { status?: number; code?: string; message?: string 
   if (e.code === "otp_disabled" || /signups not allowed/i.test(e.message ?? "")) return "Aucun compte avec cette adresse. Vérifie l'orthographe, ou crée ton espace.";
   return "Ça n'a pas marché. Vérifie ta connexion internet, puis réessaie.";
 }
+
+// Réponse de l'envoi du code (send.ts) en phrase claire.
+export function sendError(code: "wait" | "no_account" | "error") {
+  if (code === "wait") return "Un code vient de partir. Attends une minute avant d'en demander un autre.";
+  if (code === "no_account") return "Aucun compte avec cette adresse. Vérifie l'orthographe, ou crée ton espace.";
+  return "Ça n'a pas marché. Vérifie ta connexion internet, puis réessaie.";
+}
