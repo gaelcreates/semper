@@ -8,12 +8,14 @@ import DotIcon from "../DotIcon";
 import ThemeToggle from "../ThemeToggle";
 import Sheet from "./Sheet";
 import Moon from "./Moon";
+import Orbit from "../Orbit";
 import { constance, titleOf } from "./stats";
 import { announce, createContent, load, openSheet, useData, useNote, useOpen } from "./store";
 
 const nav = [
   { href: "/calendrier", label: "Calendrier", icon: "cal" },
   { href: "/constance", label: "Constance", icon: "lune" },
+  { href: "/instagram", label: "Instagram", icon: "insta" },
   { href: "/profil", label: "Profil", icon: "profil" },
 ] as const;
 
@@ -72,7 +74,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </span>
       </header>
 
-      <main className="ws-main">{d ? children : null}</main>
+      <main className="ws-main">{d ? children : <span className="ws-wait"><Orbit size={28} /></span>}</main>
 
       <nav className="ws-tabs">
         {nav.map((n) => <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "on" : ""}><DotIcon name={n.icon} /><span>{n.label}</span></Link>)}

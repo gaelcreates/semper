@@ -41,6 +41,7 @@ export type Content = {
 export type Profile = {
   firstName: string; handle: string; email: string; rythme: number; durations: Record<StepKey, number>;
   answers: Record<string, Value>; // réponses du premier passage (qualification)
+  lockUntil: string | null; // rythme bloqué jusqu'à cette date (AAAA-MM-JJ), choisi par la personne
   createdAt: string;
 };
 
@@ -116,7 +117,7 @@ export async function load(): Promise<"ok" | "none"> {
   const r = p.data;
   data = {
     v: 1,
-    profile: { firstName: r.first_name, handle: r.handle, email: r.email, rythme: r.rythme, durations: r.durations, answers: r.answers, createdAt: r.created_at },
+    profile: { firstName: r.first_name, handle: r.handle, email: r.email, rythme: r.rythme, durations: r.durations, answers: r.answers, lockUntil: r.rythme_locked_until, createdAt: r.created_at },
     fields: r.fields ?? FIELDS(),
     structures: r.structures ?? STRUCTURES(),
     contents: (c.data ?? []).map(fromRow),
@@ -159,6 +160,7 @@ if (typeof window !== "undefined") {
 
 // ---------- actions
 export function setProfile(p: Partial<Profile>) {
+  if (p.rythme !== undefined && data && locked(data.profile)) return;
   update((d) => ({ ...d, profile: { ...d.profile, ...p } }));
   const cols: Row = {};
   if (p.firstName !== undefined) cols.first_name = p.firstName;
@@ -166,8 +168,12 @@ export function setProfile(p: Partial<Profile>) {
   if (p.rythme !== undefined) cols.rythme = p.rythme;
   if (p.durations !== undefined) cols.durations = p.durations;
   if (p.answers !== undefined) cols.answers = p.answers;
+  if (p.lockUntil !== undefined) cols.rythme_locked_until = p.lockUntil;
   if (Object.keys(cols).length) save(sb().from("profiles").update(cols).eq("id", me));
 }
+// Le rythme est-il bloqué aujourd'hui ? La base refuse aussi tout changement pendant le blocage.
+export const locked = (p: Profile) => !!p.lockUntil && p.lockUntil >= new Date().toISOString().slice(0, 10);
+
 export function setFields(fields: Field[]) {
   update((d) => ({ ...d, fields }));
   save(sb().from("profiles").update({ fields }).eq("id", me));

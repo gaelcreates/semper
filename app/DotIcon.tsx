@@ -17,17 +17,34 @@ const glyphs: Record<string, string[]> = {
   ajout:    ["0001000", "0001000", "0001000", "1111111", "0001000", "0001000", "0001000"],
   agrandir: ["1100011", "1000001", "0000000", "0000000", "0000000", "1000001", "1100011"],
   reduire:  ["0100010", "1100011", "0000000", "0000000", "0000000", "1100011", "0100010"],
+  insta:    ["0111110", "1000011", "1011101", "1010101", "1011101", "1000001", "0111110"],
+  cadenas:  ["0011100", "0100010", "0100010", "1111111", "1110111", "1110111", "1111111"],
 };
+
+// L'ordre dans lequel les points se rallument dit ce que fait l'icône :
+// les jours qui passent, la lune qui se remplit, l'objectif qui s'ouvre, le plus qui grandit.
+type Order = "lignes" | "colonnes" | "centre" | "tour";
+const ORDER: Record<string, Order> = { cal: "lignes", lune: "colonnes", profil: "lignes", ajout: "centre", insta: "tour", cadenas: "lignes", agrandir: "centre", reduire: "centre" };
+function rank(mode: Order, x: number, y: number, n: number) {
+  const c = (n - 1) / 2;
+  if (mode === "colonnes") return x * n + y;
+  if (mode === "centre") return Math.max(Math.abs(x - c), Math.abs(y - c)) * n + Math.abs(x - c) + Math.abs(y - c);
+  if (mode === "tour") return ((Math.atan2(y - c, x - c) + Math.PI * 2.5) % (Math.PI * 2)) * 10;
+  return y * n + x;
+}
 
 export default function DotIcon({ name, className = "" }: { name: keyof typeof glyphs; className?: string }) {
   const rows = glyphs[name] ?? glyphs.point;
   const n = rows.length;
-  let i = 0;
+  const matrix = n > 5; // les icônes de l'espace montent leur grille éteinte, comme un afficheur
+  const mode = ORDER[name] ?? "lignes";
+  const lit = rows.flatMap((r, y) => r.split("").map((c, x) => ({ x, y, on: c === "1" }))).filter((d) => d.on);
+  const order = new Map([...lit].sort((a, b) => rank(mode, a.x, a.y, n) - rank(mode, b.x, b.y, n)).map((d, i) => [`${d.x}-${d.y}`, i]));
   return (
-    <svg className={`di${className ? ` ${className}` : ""}`} viewBox={`0 0 ${n} ${n}`} aria-hidden="true">
+    <svg className={`di${matrix ? " mx" : ""}${className ? ` ${className}` : ""}`} viewBox={`0 0 ${n} ${n}`} aria-hidden="true">
       {rows.flatMap((r, y) => r.split("").map((c, x) => c === "1"
-        ? <circle key={`${x}${y}`} cx={x + 0.5} cy={y + 0.5} r={n > 5 ? 0.36 : 0.34} fill="currentColor" style={{ ["--i" as string]: i++ }} />
-        : null))}
+        ? <circle key={`${x}${y}`} className="on" cx={x + 0.5} cy={y + 0.5} r={matrix ? 0.38 : 0.34} fill="currentColor" style={{ ["--i" as string]: order.get(`${x}-${y}`) }} />
+        : matrix ? <circle key={`${x}${y}`} className="off" cx={x + 0.5} cy={y + 0.5} r="0.16" fill="currentColor" /> : null))}
     </svg>
   );
 }

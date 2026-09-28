@@ -4,14 +4,14 @@ import { useEffect, useRef, useState } from "react";
 
 // Petites pièces partagées : le compteur à boutons et le menu de filtre.
 
-export function Stepper({ value, onChange, min = 0, max = 999, step = 1, format = String, label }: {
-  value: number; onChange: (n: number) => void; min?: number; max?: number; step?: number; format?: (n: number) => string; label: string;
+export function Stepper({ value, onChange, min = 0, max = 999, step = 1, format = String, label, disabled = false }: {
+  value: number; onChange: (n: number) => void; min?: number; max?: number; step?: number; format?: (n: number) => string; label: string; disabled?: boolean;
 }) {
   return (
-    <span className="stepper" role="group" aria-label={label}>
-      <button type="button" onClick={() => onChange(Math.max(min, value - step))} disabled={value <= min} aria-label="Moins">−</button>
+    <span className={`stepper${disabled ? " off" : ""}`} role="group" aria-label={label}>
+      <button type="button" onClick={() => onChange(Math.max(min, value - step))} disabled={disabled || value <= min} aria-label="Moins">−</button>
       <b className="disp">{format(value)}</b>
-      <button type="button" onClick={() => onChange(Math.min(max, value + step))} disabled={value >= max} aria-label="Plus">+</button>
+      <button type="button" onClick={() => onChange(Math.min(max, value + step))} disabled={disabled || value >= max} aria-label="Plus">+</button>
     </span>
   );
 }

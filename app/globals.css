@@ -741,3 +741,12 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 @media (max-width: 860px) { .curve { display: none; } }
 /* Téléphone : le formulaire s'empile, le cadre passe en coins de 22 px (la règle papier 999 px plus haut l'écrasait). */
 @media (max-width: 560px) { .form { border-radius: 22px; padding: 8px; gap: 6px; } .form input[type="email"] { min-height: 48px; padding: 0 16px; } .form .btn { min-height: 50px; } }
+
+/* Icônes de l'espace : une grille de LED. Éteints, les points restent visibles à peine ; au survol, l'icône s'éteint
+   et se rallume point par point, dans l'ordre qui dit ce qu'elle fait. Allumage net, sans fondu. */
+.di circle { transform-box: fill-box; transform-origin: center; }
+.di.mx .off { opacity: 0.14; }
+:is(.ws-nav a, .ws-new, .ws-tabs a, .ws-fab, .x.grow, .lock, .sg-icons div):hover .di.mx .on,
+:is(.ws-nav a, .ws-tabs a).on .di.mx .on { animation: led 70ms steps(1, end) both; animation-delay: calc(var(--i) * 34ms); }
+@keyframes led { from { opacity: 0.14; transform: scale(0.45); } to { opacity: 1; transform: none; } }
+.sg-icons.big .di { width: 44px; height: 44px; }

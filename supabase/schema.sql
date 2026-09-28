@@ -12,6 +12,7 @@ create table public.profiles (
   answers jsonb not null default '{}',
   fields jsonb,
   structures jsonb,
+  rythme_locked_until date,
   created_at timestamptz not null default now(),
   seen_at timestamptz not null default now()
 );
@@ -47,6 +48,8 @@ create table public.ig_snapshots (
   media int,
   avg_likes numeric,
   avg_comments numeric,
+  profile jsonb,
+  posts jsonb,
   primary key (handle, day)
 );
 
@@ -74,6 +77,19 @@ begin
   return new;
 end $$;
 create trigger on_signup after insert on auth.users for each row execute function public.on_signup();
+
+-- Rythme bloqué : tant que la date n'est pas passée, le rythme ne bouge pas et le blocage ne raccourcit pas.
+create function public.keep_lock() returns trigger
+language plpgsql set search_path = ''
+as $$
+begin
+  if old.rythme_locked_until is not null and old.rythme_locked_until >= current_date then
+    new.rythme := old.rythme;
+    new.rythme_locked_until := greatest(old.rythme_locked_until, coalesce(new.rythme_locked_until, old.rythme_locked_until));
+  end if;
+  return new;
+end $$;
+create trigger keep_lock before update on public.profiles for each row execute function public.keep_lock();
 
 -- Règles d'accès
 alter table public.profiles enable row level security;

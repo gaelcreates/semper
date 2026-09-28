@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Stepper } from "../ui";
+import Rythme from "../Rythme";
 import { cleanHandle, duration } from "../lib";
 import { FIELD_TYPES, STEPS, setFields, setProfile, setStructures, signOut, structure, uid, useData, type Field, type FieldType, type Structure } from "../store";
-import { refreshInstagram } from "../actions";
-import { sb } from "../../supabase";
+
 
 // Profil : le compte Instagram, la façon de travailler (durées, rythme) et la fiche de contenu.
 export default function Profil() {
@@ -28,8 +28,6 @@ export default function Profil() {
         </span>
       </section>
 
-      <Instagram handle={p.handle} />
-
       <section className="box pf">
         <h2>Temps par étape</h2>
         {STEPS.map(({ key, label }) => (
@@ -45,7 +43,7 @@ export default function Profil() {
         <h2>Rythme</h2>
         <div className="pf-row">
           <span>Vidéos par semaine</span>
-          <Stepper label="Vidéos par semaine" value={p.rythme} min={1} max={14} onChange={(rythme) => setProfile({ rythme })} />
+          <Rythme />
         </div>
       </section>
 
@@ -159,53 +157,5 @@ function StructureEditor({ list }: { list: Structure[] }) {
         <button type="button" onClick={() => setStructures([...list, structure("", ["Hook"])])}>+ Nouvelle structure</button>
       </div>
     </>
-  );
-}
-
-type Snap = { day: string; followers: number | null; media: number | null; avg_likes: number | null };
-const num = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-const signed = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${num(Math.abs(n))}`;
-
-// Les chiffres Instagram : un relevé par jour (cron), et un relevé immédiat s'il manque celui du jour.
-function Instagram({ handle }: { handle: string }) {
-  const [rows, setRows] = useState<Snap[] | null>(null);
-  useEffect(() => {
-    let off = false;
-    (async () => {
-      if (!handle) return setRows([]);
-      const q = () => sb().from("ig_snapshots").select("day, followers, media, avg_likes").eq("handle", handle.toLowerCase()).order("day", { ascending: false }).limit(31);
-      let { data } = await q();
-      if (!data?.length || data[0].day !== new Date().toISOString().slice(0, 10)) {
-        const { data: { session } } = await sb().auth.getSession();
-        if (session && (await refreshInstagram(session.access_token))) ({ data } = await q());
-      }
-      if (!off) setRows(data ?? []);
-    })();
-    return () => { off = true; };
-  }, [handle]);
-
-  if (rows === null) return null;
-  const last = rows[0];
-  const ago = (days: number) => {
-    const limit = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
-    const r = rows.find((x) => x.day <= limit);
-    return r && last?.followers != null && r.followers != null ? last.followers - r.followers : null;
-  };
-  const w = ago(7), m = ago(30);
-
-  return (
-    <section className="box pf">
-      <h2>Instagram</h2>
-      {last?.followers != null ? (
-        <div className="ig">
-          <div><span className="lbl">Abonnés</span><b className="disp">{num(last.followers)}</b></div>
-          <div><span className="lbl">7 jours</span><b className="disp">{w == null ? "·" : signed(w)}</b></div>
-          <div><span className="lbl">30 jours</span><b className="disp">{m == null ? "·" : signed(m)}</b></div>
-          <div><span className="lbl">Likes moyens</span><b className="disp">{num(last.avg_likes ?? 0)}</b></div>
-        </div>
-      ) : (
-        <p className="muted">Chiffres disponibles pour les comptes pro et créateur.</p>
-      )}
-    </section>
   );
 }

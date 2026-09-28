@@ -90,6 +90,10 @@ export default function Page() {
             <div className="sg-icons">
               {(["semaine", "idee", "serie", "script", "reglages", "plus", "check", "fleche"] as const).map((n) => <div key={n}><DotIcon name={n} /><span>{n}</span></div>)}
             </div>
+            <p className="sg-rule">Dans l&apos;espace, sept points sur sept, grille éteinte visible. Au survol, l&apos;icône se rallume point par point, dans l&apos;ordre de ce qu&apos;elle fait.</p>
+            <div className="sg-icons big">
+              {(["cal", "lune", "insta", "profil", "ajout", "cadenas"] as const).map((n) => <div key={n}><DotIcon name={n} /><span>{n}</span></div>)}
+            </div>
           </section>
 
           <section>

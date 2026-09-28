@@ -1,10 +1,10 @@
 "use client";
 
 import Moon from "../Moon";
-import { Stepper } from "../ui";
+import Rythme from "../Rythme";
 import { TITLES, constance, titleOf } from "../stats";
 import { MONTHS_SHORT, addDays, dayKey, startOfWeek } from "../lib";
-import { setProfile, useData } from "../store";
+import { useData } from "../store";
 
 const WEEKS = 52;
 const plural = (n: number, w: string) => `${w}${n > 1 ? "s" : ""}`;
@@ -60,7 +60,7 @@ export default function Constance() {
         <div className="box stat">
           <span className="lbl">Cette semaine</span>
           <b className="disp">{s.thisWeek}<i>/{s.rythme}</i></b>
-          <Stepper label="Rythme visé par semaine" value={d.profile.rythme} min={1} max={14} format={(n) => `${n} / sem.`} onChange={(rythme) => setProfile({ rythme })} />
+          <Rythme compact />
         </div>
         <div className="box stat">
           <span className="lbl">Publiées</span>
