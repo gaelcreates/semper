@@ -9,7 +9,6 @@ import Orbit from "./Orbit";
 import { site } from "./site";
 
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
-const truths = ["Une fiche par vidéo", "Trois vues, une seule vérité", "Ta série compte les semaines", "Zéro configuration", "Sauvegarde immédiate", "Gratuit pour le créateur seul", "Sur ton téléphone"];
 
 const faq = [
   { q: "C'est vraiment gratuit ?", a: "Oui. Pour un créateur seul, sans limite de fiches et sans carte bancaire. Les espaces d'équipe arriveront plus tard dans une offre payante. Le créateur seul reste gratuit." },
@@ -105,18 +104,6 @@ export default function Page() {
           </div>
         </section>
 
-        {/* ---------- Ruban des statuts */}
-        <div className="band" aria-hidden="true">
-          <div className="band-track">
-            {[0, 1, 2, 3].map((k) => (
-              <div className="band-run" key={k}>
-                {truths.map((t) => (
-                  <span key={t}><Mark /> {t}</span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* ---------- 02 · L'outil */}
         <section className="s" id="produit">
