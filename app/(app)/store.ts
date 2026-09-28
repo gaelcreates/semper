@@ -2,9 +2,10 @@
 
 import { useSyncExternalStore } from "react";
 import { addMinutes, diffMinutes } from "./lib";
+import { sb } from "../supabase";
 
-// Les données de l'espace. Pour l'instant dans le navigateur (localStorage),
-// remplacées par Supabase au branchement : seules les fonctions de ce fichier changent.
+// Les données de l'espace, chargées depuis Supabase à la connexion et gardées en mémoire.
+// L'interface lit et modifie la copie en mémoire ; chaque action l'écrit aussi dans Supabase.
 
 export type StepKey = "ecriture" | "tournage" | "montage";
 export const STEPS: { key: StepKey; label: string }[] = [
@@ -40,7 +41,7 @@ export type Content = {
 export type Profile = {
   firstName: string; handle: string; email: string; rythme: number; durations: Record<StepKey, number>;
   answers: Record<string, Value>; // réponses du premier passage (qualification)
-  onboarded: boolean; createdAt: string;
+  createdAt: string;
 };
 
 export type LeadStatus = "verifier" | "qualifie" | "non" | "contacte" | "discussion";
@@ -51,9 +52,8 @@ export const LEAD_STATUS: { key: LeadStatus; label: string }[] = [
   { key: "discussion", label: "En discussion" },
   { key: "non", label: "Pas pour nous" },
 ];
-export type Lead = { status: LeadStatus; note: string };
 
-export type Data = { v: 1; profile: Profile; fields: Field[]; structures: Structure[]; contents: Content[]; lead: Lead };
+export type Data = { v: 1; profile: Profile; fields: Field[]; structures: Structure[]; contents: Content[] };
 
 export type Status = "idee" | "ecrire" | "tourner" | "monter" | "pret" | "publie";
 export const STATUS: { key: Status; label: string }[] = [
@@ -65,105 +65,139 @@ export const STATUS: { key: Status; label: string }[] = [
   { key: "publie", label: "Publié" },
 ];
 
-export const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
-const now = () => new Date().toISOString();
+export const uid = () => crypto.randomUUID();
 
-function fresh(): Data {
-  return {
-    v: 1,
-    profile: { firstName: "", handle: "", email: "", rythme: 2, durations: { ecriture: 30, tournage: 20, montage: 45 }, answers: {}, onboarded: false, createdAt: now() },
-    fields: [
-      { id: uid(), label: "Format", type: "choix", options: ["Face caméra", "Voix off", "Tutoriel", "Carrousel"] },
-      { id: uid(), label: "Plateforme", type: "multi", options: ["Instagram", "TikTok", "YouTube"] },
-    ],
-    structures: [
-      structure("Problème, solution", ["Hook", "Problème", "Solution", "Appel à l'action"]),
-      structure("Histoire", ["Hook", "Contexte", "Tournant", "Leçon"]),
-      structure("Liste", ["Hook", "Point 1", "Point 2", "Point 3", "Conclusion"]),
-    ],
-    contents: [],
-    lead: { status: "verifier", note: "" },
-  };
-}
+const FIELDS = (): Field[] => [
+  { id: uid(), label: "Format", type: "choix", options: ["Face caméra", "Voix off", "Tutoriel", "Carrousel"] },
+  { id: uid(), label: "Plateforme", type: "multi", options: ["Instagram", "TikTok", "YouTube"] },
+];
+const STRUCTURES = (): Structure[] => [
+  structure("Problème, solution", ["Hook", "Problème", "Solution", "Appel à l'action"]),
+  structure("Histoire", ["Hook", "Contexte", "Tournant", "Leçon"]),
+  structure("Liste", ["Hook", "Point 1", "Point 2", "Point 3", "Conclusion"]),
+];
 
 export function structure(name: string, parts: string[]): Structure {
   return { id: uid(), name, parts: parts.map((label) => ({ id: uid(), label })) };
 }
 
-// ---------- le magasin
-const KEY = "semper:v1";
+// ---------- le magasin : une copie en mémoire, chaque changement part aussitôt vers Supabase
+type Row = Record<string, unknown>;
 let data: Data | null = null;
+let me: string | null = null;
 const subs = new Set<() => void>();
-
-function load(): Data {
-  const base = fresh();
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) {
-      const d = JSON.parse(raw) as Data;
-      return { ...base, ...d, profile: { ...base.profile, ...d.profile } };
-    }
-  } catch {}
-  return base;
-}
-function snapshot() {
-  if (!data) data = load();
-  return data;
-}
-function onStorage(e: StorageEvent) {
-  if (e.key !== KEY) return;
-  data = load();
-  subs.forEach((f) => f());
-}
-function subscribe(fn: () => void) {
-  subs.add(fn);
-  if (subs.size === 1) window.addEventListener("storage", onStorage);
-  return () => {
-    subs.delete(fn);
-    if (!subs.size) window.removeEventListener("storage", onStorage);
-  };
-}
+const emit = () => subs.forEach((f) => f());
 
 export function useData(): Data | null {
-  return useSyncExternalStore(subscribe, snapshot, () => null);
+  return useSyncExternalStore((f) => { subs.add(f); return () => subs.delete(f); }, () => data, () => null);
+}
+
+const fromRow = (r: Row): Content => ({
+  id: r.id as string, title: r.title as string, publishAt: r.publish_at as string | null, publishedAt: r.published_at as string | null,
+  steps: r.steps as Content["steps"], values: (r.field_values ?? {}) as Content["values"], script: (r.script ?? undefined) as Content["script"],
+  createdAt: r.created_at as string,
+});
+const toRow = (c: Content) => ({
+  id: c.id, user_id: me, title: c.title, publish_at: c.publishAt, published_at: c.publishedAt,
+  steps: c.steps, field_values: c.values, script: c.script ?? null, updated_at: new Date().toISOString(),
+});
+
+// Charge l'espace de la personne connectée. « none » : pas de session, direction la connexion.
+export async function load(): Promise<"ok" | "none"> {
+  const s = sb();
+  const { data: { session } } = await s.auth.getSession();
+  if (!session) return "none";
+  me = session.user.id;
+  const [p, c] = await Promise.all([
+    s.from("profiles").select("*").eq("id", me).single(),
+    s.from("contents").select("*").eq("user_id", me),
+  ]);
+  if (!p.data) return "none";
+  const r = p.data;
+  data = {
+    v: 1,
+    profile: { firstName: r.first_name, handle: r.handle, email: r.email, rythme: r.rythme, durations: r.durations, answers: r.answers, createdAt: r.created_at },
+    fields: r.fields ?? FIELDS(),
+    structures: r.structures ?? STRUCTURES(),
+    contents: (c.data ?? []).map(fromRow),
+  };
+  emit();
+  save(s.from("profiles").update({ seen_at: new Date().toISOString(), fields: data.fields, structures: data.structures }).eq("id", me));
+  return "ok";
+}
+
+export async function signOut() {
+  await sb().auth.signOut();
+  data = null;
+  location.href = "/connexion";
+}
+
+// Une écriture qui échoue est signalée : rien ne se perd en silence.
+function save(q: PromiseLike<{ error: unknown }>) {
+  q.then(({ error }) => { if (error) { console.error(error); announce("Pas enregistré. Vérifie ta connexion."); } });
 }
 
 function update(fn: (d: Data) => Data) {
-  data = fn(snapshot());
-  try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {}
-  subs.forEach((f) => f());
+  if (!data) return;
+  data = fn(data);
+  emit();
+}
+
+// La frappe dans une fiche est regroupée : une écriture par demi-seconde et par contenu.
+const pending = new Map<string, ReturnType<typeof setTimeout>>();
+function push(id: string) {
+  clearTimeout(pending.get(id));
+  pending.set(id, setTimeout(() => {
+    pending.delete(id);
+    const c = data?.contents.find((x) => x.id === id);
+    if (c) save(sb().from("contents").upsert(toRow(c)));
+  }, 500));
+}
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", () => pending.forEach((t, id) => { clearTimeout(t); const c = data?.contents.find((x) => x.id === id); if (c) sb().from("contents").upsert(toRow(c)).then(); }));
 }
 
 // ---------- actions
 export function setProfile(p: Partial<Profile>) {
   update((d) => ({ ...d, profile: { ...d.profile, ...p } }));
+  const cols: Row = {};
+  if (p.firstName !== undefined) cols.first_name = p.firstName;
+  if (p.handle !== undefined) cols.handle = p.handle;
+  if (p.rythme !== undefined) cols.rythme = p.rythme;
+  if (p.durations !== undefined) cols.durations = p.durations;
+  if (p.answers !== undefined) cols.answers = p.answers;
+  if (Object.keys(cols).length) save(sb().from("profiles").update(cols).eq("id", me));
 }
 export function setFields(fields: Field[]) {
   update((d) => ({ ...d, fields }));
+  save(sb().from("profiles").update({ fields }).eq("id", me));
 }
 export function setStructures(structures: Structure[]) {
   update((d) => ({ ...d, structures }));
-}
-export function setLead(l: Partial<Lead>) {
-  update((d) => ({ ...d, lead: { ...d.lead, ...l } }));
+  save(sb().from("profiles").update({ structures }).eq("id", me));
 }
 
 export function createContent(publishAt: string | null = null): string {
   const id = uid();
   update((d) => {
     const c: Content = {
-      id, title: "", publishAt: null, publishedAt: null, values: {}, createdAt: now(),
+      id, title: "", publishAt: null, publishedAt: null, values: {}, createdAt: new Date().toISOString(),
       steps: { ecriture: { at: null, done: false }, tournage: { at: null, done: false }, montage: { at: null, done: false } },
     };
     return { ...d, contents: [...d.contents, publishAt ? movePublish(c, publishAt, d.profile.durations) : c] };
   });
+  push(id);
   return id;
 }
 export function patchContent(id: string, fn: (c: Content, d: Data) => Content) {
   update((d) => ({ ...d, contents: d.contents.map((c) => (c.id === id ? fn(c, d) : c)) }));
+  push(id);
 }
 export function deleteContent(id: string) {
+  clearTimeout(pending.get(id));
+  pending.delete(id);
   update((d) => ({ ...d, contents: d.contents.filter((c) => c.id !== id) }));
+  save(sb().from("contents").delete().eq("id", id));
 }
 
 // ---------- règles

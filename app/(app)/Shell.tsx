@@ -2,15 +2,14 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Logo from "../Logo";
 import DotIcon from "../DotIcon";
 import ThemeToggle from "../ThemeToggle";
 import Sheet from "./Sheet";
-import Welcome from "./Welcome";
 import Moon from "./Moon";
 import { constance, titleOf } from "./stats";
-import { announce, createContent, openSheet, useData, useNote, useOpen } from "./store";
+import { announce, createContent, load, openSheet, useData, useNote, useOpen } from "./store";
 
 const nav = [
   { href: "/calendrier", label: "Calendrier", icon: "cal" },
@@ -21,11 +20,15 @@ const nav = [
 export const newContent = () => openSheet(createContent());
 
 // La coque de l'espace : barre latérale (bureau), barre du haut et onglets du bas (téléphone),
-// la fiche ouverte et l'accueil au premier passage.
+// la fiche ouverte et les annonces.
 export default function Shell({ children }: { children: React.ReactNode }) {
   const d = useData();
   const open = useOpen();
   const path = usePathname();
+  const router = useRouter();
+
+  // Sans session, direction la connexion.
+  useEffect(() => { load().then((r) => r === "none" && router.replace("/connexion")); }, [router]);
 
   // « N » crée un contenu, où qu'on soit, sauf pendant la saisie.
   useEffect(() => {
@@ -78,7 +81,6 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <Note />
 
       {d && open && <Sheet id={open} />}
-      {d && !d.profile.onboarded && <Welcome />}
     </div>
   );
 }
