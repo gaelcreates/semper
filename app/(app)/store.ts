@@ -23,6 +23,9 @@ export const FIELD_TYPES: { type: FieldType; label: string }[] = [
 export type Field = { id: string; label: string; type: FieldType; options: string[] };
 export type Value = string | string[];
 
+export type Part = { id: string; label: string };
+export type Structure = { id: string; name: string; parts: Part[] };
+
 export type Content = {
   id: string;
   title: string;
@@ -30,10 +33,15 @@ export type Content = {
   publishedAt: string | null; // posé quand la personne marque la vidéo publiée
   steps: Record<StepKey, { at: string | null; done: boolean }>;
   values: Record<string, Value>;
+  script?: { structureId: string | null; parts: Record<string, string> };
   createdAt: string;
 };
 
-export type Profile = { handle: string; rythme: number; durations: Record<StepKey, number>; onboarded: boolean; createdAt: string };
+export type Profile = {
+  firstName: string; handle: string; email: string; rythme: number; durations: Record<StepKey, number>;
+  answers: Record<string, Value>; // réponses du premier passage (qualification)
+  onboarded: boolean; createdAt: string;
+};
 
 export type LeadStatus = "verifier" | "qualifie" | "non" | "contacte" | "discussion";
 export const LEAD_STATUS: { key: LeadStatus; label: string }[] = [
@@ -45,7 +53,7 @@ export const LEAD_STATUS: { key: LeadStatus; label: string }[] = [
 ];
 export type Lead = { status: LeadStatus; note: string };
 
-export type Data = { v: 1; profile: Profile; fields: Field[]; contents: Content[]; lead: Lead };
+export type Data = { v: 1; profile: Profile; fields: Field[]; structures: Structure[]; contents: Content[]; lead: Lead };
 
 export type Status = "idee" | "ecrire" | "tourner" | "monter" | "pret" | "publie";
 export const STATUS: { key: Status; label: string }[] = [
@@ -63,16 +71,23 @@ const now = () => new Date().toISOString();
 function fresh(): Data {
   return {
     v: 1,
-    profile: { handle: "", rythme: 2, durations: { ecriture: 30, tournage: 20, montage: 45 }, onboarded: false, createdAt: now() },
+    profile: { firstName: "", handle: "", email: "", rythme: 2, durations: { ecriture: 30, tournage: 20, montage: 45 }, answers: {}, onboarded: false, createdAt: now() },
     fields: [
-      { id: uid(), label: "Hook", type: "texte", options: [] },
       { id: uid(), label: "Format", type: "choix", options: ["Face caméra", "Voix off", "Tutoriel", "Carrousel"] },
       { id: uid(), label: "Plateforme", type: "multi", options: ["Instagram", "TikTok", "YouTube"] },
-      { id: uid(), label: "Script", type: "long", options: [] },
+    ],
+    structures: [
+      structure("Problème, solution", ["Hook", "Problème", "Solution", "Appel à l'action"]),
+      structure("Histoire", ["Hook", "Contexte", "Tournant", "Leçon"]),
+      structure("Liste", ["Hook", "Point 1", "Point 2", "Point 3", "Conclusion"]),
     ],
     contents: [],
     lead: { status: "verifier", note: "" },
   };
+}
+
+export function structure(name: string, parts: string[]): Structure {
+  return { id: uid(), name, parts: parts.map((label) => ({ id: uid(), label })) };
 }
 
 // ---------- le magasin
@@ -125,6 +140,9 @@ export function setProfile(p: Partial<Profile>) {
 }
 export function setFields(fields: Field[]) {
   update((d) => ({ ...d, fields }));
+}
+export function setStructures(structures: Structure[]) {
+  update((d) => ({ ...d, structures }));
 }
 export function setLead(l: Partial<Lead>) {
   update((d) => ({ ...d, lead: { ...d.lead, ...l } }));
@@ -205,4 +223,15 @@ export function useOpen() {
 export function openSheet(id: string | null) {
   openId = id;
   uiSubs.forEach((f) => f());
+}
+
+// ---------- une annonce brève (semaine tenue, nouveau titre)
+let note: { text: string; streak: number; at: number } | null = null;
+const noteSubs = new Set<() => void>();
+export function useNote() {
+  return useSyncExternalStore((f) => { noteSubs.add(f); return () => noteSubs.delete(f); }, () => note, () => null);
+}
+export function announce(text: string | null, streak = 0) {
+  note = text ? { text, streak, at: Date.now() } : null;
+  noteSubs.forEach((f) => f());
 }

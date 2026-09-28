@@ -1,32 +1,57 @@
 "use client";
 
+import Moon from "../Moon";
 import { Stepper } from "../ui";
-import { constance } from "../stats";
+import { TITLES, constance, titleOf } from "../stats";
 import { MONTHS_SHORT, addDays, dayKey, startOfWeek } from "../lib";
 import { setProfile, useData } from "../store";
 
 const WEEKS = 52;
+const plural = (n: number, w: string) => `${w}${n > 1 ? "s" : ""}`;
 
-// Constance : combien de semaines tenues, le rythme visé, les jours publiés sur un an, un conseil.
+// Constance : la lune de la série et son titre, les chiffres, un an de jours publiés, un conseil.
 export default function Constance() {
   const d = useData()!;
   const s = constance(d);
+  const t = titleOf(s.streak);
   const today = new Date();
   const cur = startOfWeek(today);
   const weeks = Array.from({ length: WEEKS }, (_, i) => addDays(cur, -7 * (WEEKS - 1 - i)));
   const tk = dayKey(today);
-  const plural = (n: number, w: string) => `${w}${n > 1 ? "s" : ""}`;
 
   return (
-    <div className="page">
+    <div className="page wide">
       <header className="page-head"><h1>Constance</h1></header>
 
-      <div className="cs-stats">
-        <div className="box stat">
-          <span className="lbl"><i className="dot" /> Série</span>
-          <b className="disp">{s.streak}</b>
-          <span className="unit">{plural(s.streak, "semaine")}</span>
+      <section className="box hero">
+        <div className="hero-top">
+          <Moon streak={s.streak} n={19} orbit className="hero-moon" />
+          <div className="hero-t">
+            <span className="lbl"><i className="dot" /> Titre</span>
+            <h2>{t.title}</h2>
+            <p><b className="disp">{s.streak}</b> {plural(s.streak, "semaine")} {plural(s.streak, "tenue")}</p>
+            {t.next && (
+              <div className="hero-next">
+                <span className="segs" aria-hidden="true">
+                  {Array.from({ length: t.next.w - t.from }, (_, i) => <i key={i} className={i < s.streak - t.from ? "on" : ""} />)}
+                </span>
+                <span className="lbl">{t.next.name} dans {t.next.w - s.streak} sem.</span>
+              </div>
+            )}
+          </div>
         </div>
+        <ol className="ladder">
+          {TITLES.map((x) => (
+            <li key={x.name} className={`${s.streak >= x.w ? "on" : ""}${x.name === t.title ? " now" : ""}`}>
+              <Moon streak={x.w} n={9} orbit={x.w >= 13} />
+              <span className="lbl">{x.name}</span>
+              <b className="disp">{x.w}</b>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <div className="cs-stats">
         <div className="box stat">
           <span className="lbl">Record</span>
           <b className="disp">{s.record}</b>

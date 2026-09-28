@@ -10,7 +10,12 @@ export default function Admin() {
   const d = useData()!;
   const [tab, setTab] = useState<LeadStatus | "all">("all");
   const s = constance(d);
-  const rows = [{ id: "local", handle: d.profile.handle, since: new Date(d.profile.createdAt), total: s.total, streak: s.streak, lead: d.lead }];
+  const ans = d.profile.answers;
+  const txt = (v: unknown) => (Array.isArray(v) ? v.join(", ") : String(v ?? ""));
+  const rows = [{
+    id: "local", name: d.profile.firstName, handle: d.profile.handle, since: new Date(d.profile.createdAt),
+    abonnes: txt(ans.abonnes), pour: txt(ans.pourquoi), source: txt(ans.source), total: s.total, streak: s.streak, lead: d.lead,
+  }];
   const shown = rows.filter((r) => tab === "all" || r.lead.status === tab);
 
   return (
@@ -27,12 +32,18 @@ export default function Admin() {
 
       <div className="ad box" role="table">
         <div className="ad-row ad-head" role="row">
-          <span className="lbl">Instagram</span><span className="lbl">Inscrit</span><span className="lbl">Publiées</span>
-          <span className="lbl">Série</span><span className="lbl">Statut</span><span className="lbl">Note</span>
+          <span className="lbl">Créateur</span><span className="lbl">Abonnés</span><span className="lbl">Crée pour</span><span className="lbl">Source</span>
+          <span className="lbl">Inscrit</span><span className="lbl">Publiées</span><span className="lbl">Série</span><span className="lbl">Statut</span><span className="lbl">Note</span>
         </div>
         {shown.map((r) => (
           <div className="ad-row" role="row" key={r.id}>
-            {r.handle ? <a href={`https://www.instagram.com/${r.handle}/`} target="_blank" rel="noreferrer">@{r.handle}</a> : <span className="muted">Sans pseudo</span>}
+            <span className="who">
+              <b>{r.name || "Sans prénom"}</b>
+              {r.handle ? <a href={`https://www.instagram.com/${r.handle}/`} target="_blank" rel="noreferrer">@{r.handle}</a> : <span className="muted">Sans pseudo</span>}
+            </span>
+            <span>{r.abonnes}</span>
+            <span className="muted clip" title={r.pour}>{r.pour}</span>
+            <span className="muted">{r.source}</span>
             <span className="muted">{r.since.toLocaleDateString("fr-CH")}</span>
             <b className="disp">{r.total}</b>
             <b className="disp">{r.streak}</b>

@@ -38,7 +38,7 @@ export default function Calendrier() {
       if (!(Array.isArray(v) ? v : v ? [v] : []).some((x) => sel.includes(x))) return false;
     }
     const t = q.trim().toLowerCase();
-    return !t || [c.title, ...Object.values(c.values).flat()].join(" ").toLowerCase().includes(t);
+    return !t || [c.title, ...Object.values(c.values).flat(), ...Object.values(c.script?.parts ?? {})].join(" ").toLowerCase().includes(t);
   };
   const list = d.contents.filter(match);
 

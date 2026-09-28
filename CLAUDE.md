@@ -37,6 +37,10 @@ Périmètre dicté par Gael : voir la mémoire `project_semper_v1`. Deux groupes
 - Données : `(app)/store.ts`, pour l'instant dans localStorage (`semper:v1`). Au branchement Supabase, seules les fonctions de ce fichier changent.
 - Règles : statut déduit des étapes (idée = sans date et rien d'écrit). Les étapes se posent à rebours de la publication avec les durées du profil. Déplacer la publication entraîne ses étapes ; une étape se déplace seule ; pas de redimensionnement. Une semaine est tenue quand les publications atteignent le rythme. Fiche fermée sans titre = supprimée.
 - Or : aujourd'hui dans le calendrier, la série en cours dans Constance. Rien d'autre.
+- Premier passage (`Welcome.tsx`) : une question par écran (prénom, Instagram, pourquoi il crée, abonnés, fréquence, attentes, rythme, source, e-mail). Réponses dans `profile.answers`, affichées dans l'admin. Pas de téléphone (décision du 28 sept).
+- Titres (`stats.ts`, `Moon.tsx`) : la lune en points croît avec la série (Nouvelle lune 0, Premier croissant 1, Premier quartier 2, Lune gibbeuse 4, Pleine lune 8), puis l'orbite (Équinoxe 13, Solstice 26, Révolution 52). Série cassée = la lune décroît. Annonce en bas d'écran quand une semaine devient tenue.
+- Fiche : bouton plein écran (retenu dans `semper:full`). Structures de script éditées dans le profil, choisies dans la fiche, une zone par partie.
+- Icônes de l'espace en 7×7 (`cal`, `lune`, `profil`, `ajout`), les points s'allument à la suite au survol.
 - Peu de texte : un libellé court, pas de phrase d'aide (demande explicite de Gael).
 
 ## Pages
