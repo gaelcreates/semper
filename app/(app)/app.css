@@ -554,3 +554,13 @@ i.chip { font-style: normal; }
   .read li { font-size: 16px; }
   .page-head { flex-wrap: wrap; }
 }
+
+/* Installer l'app */
+.ws-side .install { margin-top: auto; }
+.ws-side .install + .ws-foot { margin-top: 0; }
+.install { display: grid; gap: 10px; }
+.install-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 40px; border: 1px dashed var(--line-strong); border-radius: 999px; background: none; font-size: 13px; color: var(--ink2); cursor: pointer; transition: border-color 200ms, color 200ms; }
+.install-btn:hover { border-style: solid; border-color: var(--ink); color: var(--ink); }
+.install-btn .di { width: 12px; height: 12px; }
+.install-help { padding: 12px 14px; border-radius: 12px; background: rgba(var(--fgr), 0.05); font-size: 13px; line-height: 1.5; color: var(--ink2); }
+.pf-install { justify-self: center; width: min(320px, 100%); margin-top: 8px; }

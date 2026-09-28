@@ -9,6 +9,7 @@ import ThemeToggle from "../ThemeToggle";
 import Sheet from "./Sheet";
 import Moon from "./Moon";
 import Orbit from "../Orbit";
+import Install from "./Install";
 import { constance, titleOf } from "./stats";
 import { announce, createContent, load, openSheet, useData, useNote, useOpen } from "./store";
 
@@ -57,6 +58,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "on" : ""}><DotIcon name={n.icon} />{n.label}</Link>
           ))}
         </nav>
+        <Install />
         <div className="ws-foot">
           <Link href="/constance" className="ws-streak" aria-label={`${title}, ${streak} semaines tenues`}>
             <Moon streak={streak} n={11} />

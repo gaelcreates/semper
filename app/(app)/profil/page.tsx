@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Stepper } from "../ui";
 import Rythme from "../Rythme";
+import Install from "../Install";
 import { cleanHandle, duration } from "../lib";
 import { FIELD_TYPES, STEPS, setFields, setProfile, setStructures, signOut, structure, uid, useData, type Field, type FieldType, type Structure } from "../store";
 
@@ -57,6 +58,7 @@ export default function Profil() {
         <StructureEditor list={d.structures} />
       </section>
 
+      <Install className="pf-install" />
       <button type="button" className="link out" onClick={signOut}>Se déconnecter</button>
     </div>
   );
