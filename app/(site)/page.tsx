@@ -1,12 +1,12 @@
-import AppView from "./AppView";
-import { Footer, TopBar } from "./Frame";
-import JoinForm from "./JoinForm";
-import Loader from "./Loader";
-import Mark from "./Mark";
-import Curve from "./Curve";
-import Stand from "./Stand";
-import Orbit from "./Orbit";
-import { site } from "./site";
+import AppView from "../AppView";
+import { Footer, TopBar } from "../Frame";
+import JoinForm from "../JoinForm";
+import Loader from "../Loader";
+import Mark from "../Mark";
+import Curve from "../Curve";
+import Stand from "../Stand";
+import Orbit from "../Orbit";
+import { site } from "../site";
 
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
 

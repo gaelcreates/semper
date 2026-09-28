@@ -31,6 +31,14 @@ Symbole : un anneau vu en perspective, ouvert en haut (30° à 330°), épais de
 ## Domaine et déploiement
 Domaine `trysemper.app` (Hostinger, DNS chez Hostinger, e-mail pro sur le même domaine donc ne jamais changer les nameservers). Dépôt `gaelcreates/semper`, déployé sur Vercel (projet `semper`, adresse de secours semper-psi.vercel.app). Un push sur `main` redéploie.
 
+## L'espace, V1 (branche `v1`, 28 sept 2026, pas en ligne)
+Périmètre dicté par Gael : voir la mémoire `project_semper_v1`. Deux groupes de routes : `app/(site)` (vitrine, avec son décor dans `(site)/layout.tsx` : trame, lune, progression) et `app/(app)` (l'outil, sans décor, `app.css`, noindex, bloqué dans robots).
+- Pages : `/calendrier` (Calendrier semaine ou mois, Kanban, Liste, filtres par statut et par champs à choix), `/constance` (série, record, rythme, grille d'un an, un conseil), `/profil` (Instagram, temps par étape, rythme, éditeur de la fiche), `/admin` (inscrits, statut de prospection, note ; hors menu).
+- Données : `(app)/store.ts`, pour l'instant dans localStorage (`semper:v1`). Au branchement Supabase, seules les fonctions de ce fichier changent.
+- Règles : statut déduit des étapes (idée = sans date et rien d'écrit). Les étapes se posent à rebours de la publication avec les durées du profil. Déplacer la publication entraîne ses étapes ; une étape se déplace seule ; pas de redimensionnement. Une semaine est tenue quand les publications atteignent le rythme. Fiche fermée sans titre = supprimée.
+- Or : aujourd'hui dans le calendrier, la série en cours dans Constance. Rien d'autre.
+- Peu de texte : un libellé court, pas de phrase d'aide (demande explicite de Gael).
+
 ## Pages
 `/` accueil · `/connexion` (lien e-mail, sans mot de passe ; répond « pas encore ouvert » tant que `SUPABASE_URL` est vide) · `/confidentialite` · `/conditions` · `/mentions-legales`. Infos éditeur dans `app/site.ts` (adresse : « Vaud, Suisse » pour l'instant, à préciser avant la mise en ligne définitive).
 

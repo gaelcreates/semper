@@ -10,6 +10,7 @@ const glyphs: Record<string, string[]> = {
   check:    ["00000", "00001", "00010", "10100", "01000"],
   fleche:   ["00100", "01110", "10101", "00100", "00100"],
   point:    ["00000", "00000", "00100", "00000", "00000"],
+  loupe:    ["01100", "10010", "10010", "01110", "00001"],
 };
 
 export default function DotIcon({ name, className = "" }: { name: keyof typeof glyphs; className?: string }) {

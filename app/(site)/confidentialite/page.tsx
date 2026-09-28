@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Legal from "../Legal";
-import { site } from "../site";
+import Legal from "../../Legal";
+import { site } from "../../site";
 
 export const metadata: Metadata = { title: "Politique de confidentialité · Semper" };
 

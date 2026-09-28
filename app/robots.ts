@@ -5,7 +5,7 @@ import { site } from "./site";
 // Seules la connexion et l'API sont exclues : rien à y lire.
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/connexion", "/api/"] }],
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/connexion", "/api/", "/calendrier", "/constance", "/profil", "/admin"] }],
     sitemap: `${site.url}/sitemap.xml`,
     host: site.url,
   };

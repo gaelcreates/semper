@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Footer, TopBar } from "../Frame";
-import Mark from "../Mark";
-import Orbit from "../Orbit";
-import Logo from "../Logo";
-import DotIcon from "../DotIcon";
+import { Footer, TopBar } from "../../Frame";
+import Mark from "../../Mark";
+import Orbit from "../../Orbit";
+import Logo from "../../Logo";
+import DotIcon from "../../DotIcon";
 
 export const metadata: Metadata = { title: "Système · Semper", robots: { index: false, follow: false } };
 

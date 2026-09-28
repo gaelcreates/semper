@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Footer, TopBar } from "../Frame";
-import LoginForm from "../LoginForm";
-import Mark from "../Mark";
+import { Footer, TopBar } from "../../Frame";
+import LoginForm from "../../LoginForm";
+import Mark from "../../Mark";
 
 export const metadata: Metadata = { title: "Connexion · Semper", robots: { index: false, follow: false } };
 
