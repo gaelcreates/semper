@@ -55,7 +55,7 @@ export default function Code({ email, resend, onBack, onDone }: {
       {again && !err && <p className="onb-ok" role="status">Nouveau code envoyé. Seul le dernier marche.</p>}
       <ul className="onb-help">
         <li>Pas reçu ? Regarde dans les spams et l&apos;onglet Promotions.</li>
-        <li>L&apos;e-mail vient de Semper, objet « Ton code Semper ».</li>
+        <li>L&apos;e-mail vient de Semper, le code est écrit dans l&apos;objet.</li>
         <li>Garde cette page ouverte : le code se tape ici.</li>
       </ul>
       <div className="onb-nav">

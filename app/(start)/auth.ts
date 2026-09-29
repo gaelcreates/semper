@@ -1,6 +1,6 @@
 // Ce qui évite de perdre les gens à l'entrée : fautes de frappe dans l'adresse, messages d'erreur clairs.
 
-export const CODE_LEN = 6;
+export const CODE_LEN = 8; // longueur réglée dans Supabase (Authentication > Email > OTP length)
 export const validEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.trim());
 
 const DOMAINS = [

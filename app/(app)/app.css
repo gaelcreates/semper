@@ -392,7 +392,7 @@ i.chip { font-style: normal; }
 .ad-tabs { max-width: 100%; overflow-x: auto; }
 .ad-tabs b { margin-left: 6px; font-size: 12px; }
 .ad { padding: 0; overflow-x: auto; }
-.ad-row { display: grid; grid-template-columns: minmax(150px, 1.2fr) 120px minmax(150px, 1.4fr) 100px 88px 64px 56px 150px minmax(150px, 1.4fr); gap: 16px; align-items: center; min-width: 1160px; padding: 12px 20px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.ad-row { display: grid; grid-template-columns: minmax(150px, 1.2fr) 120px minmax(150px, 1.4fr) 130px 100px 88px 64px 56px 150px minmax(150px, 1.4fr); gap: 16px; align-items: center; min-width: 1300px; padding: 12px 20px; border-bottom: 1px solid var(--line); font-size: 14px; }
 .ad-row:last-child { border-bottom: 0; }
 .ad-head { padding-block: 16px; }
 .ad-row b.disp { font-size: 20px; }
@@ -564,3 +564,5 @@ i.chip { font-style: normal; }
 .install-btn .di { width: 12px; height: 12px; }
 .install-help { padding: 12px 14px; border-radius: 12px; background: rgba(var(--fgr), 0.05); font-size: 13px; line-height: 1.5; color: var(--ink2); }
 .pf-install { justify-self: center; width: min(320px, 100%); margin-top: 8px; }
+.onb-who { display: grid; gap: 16px; }
+.onb-who .fld { width: 100%; }

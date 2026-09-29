@@ -6,7 +6,7 @@ import { admin } from "../server";
 // (le code dans l'objet, aux couleurs de Semper) et on n'a rien à régler dans Supabase.
 // Supabase fabrique le code (sans l'envoyer), la page le vérifie ensuite avec verifyOtp.
 export type Sent = { ok: true } | { ok: false; code: "wait" | "no_account" | "error" };
-type Meta = { first_name: string; handle: string; answers: Record<string, unknown> };
+type Meta = { first_name: string; handle: string; rythme: number; answers: Record<string, unknown> };
 
 export async function sendCode(raw: string, meta?: Meta): Promise<Sent> {
   const email = raw.trim().toLowerCase();
@@ -53,7 +53,7 @@ function mail(otp: string) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:20px;padding:36px 32px">
 <tr><td style="font-size:20px;font-weight:900;letter-spacing:-0.5px">semper</td></tr>
 <tr><td style="padding-top:28px;font-size:15px;color:#4a4a47">Ton code pour entrer :</td></tr>
-<tr><td style="padding:10px 0 4px;font-family:'Courier New',monospace;font-size:40px;font-weight:700;letter-spacing:10px">${otp}</td></tr>
+<tr><td style="padding:10px 0 4px;font-family:'Courier New',monospace;font-size:36px;font-weight:700;letter-spacing:8px">${otp.replace(/(\d{4})(?=\d)/g, "$1 ")}</td></tr>
 <tr><td style="padding-top:18px;font-size:14px;line-height:1.6;color:#4a4a47">Tape-le sur la page Semper restée ouverte. Il marche une heure, et seul le dernier code reçu est valable.</td></tr>
 <tr><td style="padding-top:24px;border-top:1px solid #eeeeee;margin-top:24px;font-size:12px;color:#7d7d78">Tu n'as rien demandé ? Ignore ce message, personne ne peut entrer sans ce code.</td></tr>
 </table></td></tr></table></body></html>`;

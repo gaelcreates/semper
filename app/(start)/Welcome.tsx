@@ -11,21 +11,20 @@ import Code from "./Code";
 import { sendCode } from "./send";
 import { sendError, suggest, validEmail } from "./auth";
 
-// Le premier passage : une question par écran. Les réponses qualifient le profil dans l'admin.
-// Un choix unique passe tout seul à la suite ; l'adresse e-mail vient en dernier, puis le code reçu.
+// Le premier passage : qui tu es (prénom, Instagram, e-mail) sur un écran, puis une question par écran.
+// Un choix unique passe tout seul à la suite ; le code part après la dernière réponse.
 // Les réponses partent avec la demande de code et remplissent le profil à la création du compte.
-type Q = { key: string; title: string; kind: "text" | "handle" | "one" | "multi" | "rythme" | "email"; options?: string[] };
+type Q = { key: string; title: string; kind: "who" | "one" | "multi" | "rythme"; options?: string[] };
 
 export const QUESTIONS: Q[] = [
-  { key: "firstName", title: "Comment tu t'appelles ?", kind: "text" },
-  { key: "handle", title: "Ton compte Instagram", kind: "handle" },
+  { key: "who", title: "Faisons connaissance", kind: "who" },
   { key: "pourquoi", title: "Tu crées pour quoi ?", kind: "multi", options: ["Faire grandir ma marque perso", "Trouver des clients", "Vendre un produit ou une offre", "En faire mon métier", "Partager une passion"] },
   { key: "abonnes", title: "Combien d'abonnés aujourd'hui ?", kind: "one", options: ["Moins de 1 000", "1 000 à 10 000", "10 000 à 50 000", "50 000 à 100 000", "Plus de 100 000"] },
+  { key: "investi", title: "Tu as déjà investi pour progresser ?", kind: "one", options: ["Pas encore", "Du matériel", "Une formation", "Un coach ou un accompagnement"] },
   { key: "frequence", title: "Tu publies combien en ce moment ?", kind: "one", options: ["Presque jamais", "Une fois par semaine", "Deux à trois fois par semaine", "Presque tous les jours"] },
   { key: "usage", title: "Tu attends quoi de Semper ?", kind: "multi", options: ["Tenir un rythme", "M'organiser", "Ne plus manquer d'idées", "Voir ma progression"] },
   { key: "rythme", title: "Combien de vidéos par semaine tu veux tenir ?", kind: "rythme" },
   { key: "source", title: "Comment tu as connu Semper ?", kind: "one", options: ["Instagram", "TikTok", "YouTube", "Bouche à oreille", "La newsletter", "Autre"] },
-  { key: "email", title: "Ton adresse e-mail", kind: "email" },
 ];
 
 export default function Welcome() {
@@ -43,8 +42,7 @@ export default function Welcome() {
 
   const ok =
     q.kind === "multi" ? Array.isArray(v) && v.length > 0
-    : q.kind === "handle" ? !!cleanHandle(String(v ?? ""))
-    : q.kind === "email" ? validEmail(String(v ?? ""))
+    : q.kind === "who" ? !!String(a.firstName ?? "").trim() && !!cleanHandle(String(a.handle ?? "")) && validEmail(String(a.email ?? ""))
     : q.kind === "rythme" ? true
     : !!String(v ?? "").trim();
 
@@ -52,8 +50,8 @@ export default function Welcome() {
 
   // Demande le code ; les réponses partent avec et remplissent le profil si le compte est nouveau.
   async function request(all = a) {
-    const { firstName, handle, rythme: _r, email: _e, ...answers } = all;
-    const r = await sendCode(email, { first_name: String(firstName).trim(), handle: cleanHandle(String(handle)), answers });
+    const { firstName, handle, rythme, email: _e, ...answers } = all;
+    const r = await sendCode(email, { first_name: String(firstName).trim(), handle: cleanHandle(String(handle)), rythme: Number(rythme), answers });
     return r.ok ? "" : sendError(r.code);
   }
 
@@ -89,18 +87,22 @@ export default function Welcome() {
         <span className="lbl disp">{String(step + 1).padStart(2, "0")}</span>
         <h1>{q.title}</h1>
 
-        {q.kind === "text" && <input className="onb-in" value={String(v ?? "")} onChange={(e) => set(e.target.value)} placeholder="Prénom" autoComplete="given-name" />}
-        {q.kind === "email" && (
-          <>
-            <input className="onb-in" type="email" inputMode="email" value={String(v ?? "")} onChange={(e) => set(e.target.value.replace(/\s/g, ""))} placeholder="ton@email.com" autoComplete="email" autoCapitalize="none" spellCheck={false} />
-            {suggest(String(v ?? "")) && (
-              <button type="button" className="onb-fix" onClick={() => set(suggest(String(v))!)}>Tu voulais dire <b>{suggest(String(v))}</b> ?</button>
+        {q.kind === "who" && (
+          <div className="onb-who">
+            <label className="fld"><span className="lbl">Prénom</span>
+              <input className="onb-in" value={String(a.firstName ?? "")} onChange={(e) => setA({ ...a, firstName: e.target.value })} placeholder="Ton prénom" autoComplete="given-name" />
+            </label>
+            <label className="fld"><span className="lbl">Instagram</span>
+              <span className="onb-in at"><i>@</i><input value={String(a.handle ?? "")} onChange={(e) => setA({ ...a, handle: e.target.value.replace(/^@/, "") })} placeholder="pseudo" autoComplete="off" autoCapitalize="none" spellCheck={false} /></span>
+            </label>
+            <label className="fld"><span className="lbl">E-mail</span>
+              <input className="onb-in" type="email" inputMode="email" value={String(a.email ?? "")} onChange={(e) => setA({ ...a, email: e.target.value.replace(/\s/g, "") })} placeholder="ton@email.com" autoComplete="email" autoCapitalize="none" spellCheck={false} />
+            </label>
+            {suggest(String(a.email ?? "")) && (
+              <button type="button" className="onb-fix" onClick={() => setA({ ...a, email: suggest(String(a.email))! })}>Tu voulais dire <b>{suggest(String(a.email))}</b> ?</button>
             )}
-            <p className="onb-sub">On t&apos;y envoie un code pour entrer. Pas de mot de passe.</p>
-          </>
-        )}
-        {q.kind === "handle" && (
-          <span className="onb-in at"><i>@</i><input value={String(v ?? "")} onChange={(e) => set(e.target.value.replace(/^@/, ""))} placeholder="pseudo" autoComplete="off" autoCapitalize="none" spellCheck={false} /></span>
+            <p className="onb-sub">Ton code pour entrer partira à cette adresse à la fin.</p>
+          </div>
         )}
         {q.kind === "rythme" && <Stepper label={q.title} value={Number(v)} onChange={set} min={1} max={14} format={(n) => `${n} / sem.`} />}
         {(q.kind === "one" || q.kind === "multi") && (
