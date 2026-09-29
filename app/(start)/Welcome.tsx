@@ -14,14 +14,16 @@ import { sendError, suggest, validEmail } from "./auth";
 // Le premier passage : qui tu es (prénom, Instagram, e-mail) sur un écran, puis une question par écran.
 // Un choix unique passe tout seul à la suite ; le code part après la dernière réponse.
 // Les réponses partent avec la demande de code et remplissent le profil à la création du compte.
-type Q = { key: string; title: string; kind: "who" | "one" | "multi" | "rythme"; options?: string[] };
+type Q = { key: string; title: string; kind: "who" | "one" | "multi" | "rythme"; options?: string[]; alone?: string };
 
 export const QUESTIONS: Q[] = [
   { key: "who", title: "Faisons connaissance", kind: "who" },
   { key: "pourquoi", title: "Tu crées pour quoi ?", kind: "multi", options: ["Faire grandir ma marque perso", "Trouver des clients", "Vendre un produit ou une offre", "En faire mon métier", "Partager une passion"] },
+  { key: "objectif", title: "Où veux-tu en être dans 6 mois grâce à ton contenu ?", kind: "one", options: ["Trouver mes premiers clients", "Vivre de mon contenu", "Lancer une offre", "Faire grandir mon audience", "Simplement être régulier"] },
   { key: "abonnes", title: "Combien d'abonnés aujourd'hui ?", kind: "one", options: ["Moins de 1 000", "1 000 à 10 000", "10 000 à 50 000", "50 000 à 100 000", "Plus de 100 000"] },
-  { key: "investi", title: "Tu as déjà investi pour progresser ?", kind: "one", options: ["Pas encore", "Du matériel", "Une formation", "Un coach ou un accompagnement"] },
+  { key: "investi", title: "Tu as déjà investi pour progresser ?", kind: "multi", alone: "Pas encore", options: ["Pas encore", "Du matériel", "Un outil ou un abonnement", "Une formation", "Un coach ou un accompagnement"] },
   { key: "frequence", title: "Tu publies combien en ce moment ?", kind: "one", options: ["Presque jamais", "Une fois par semaine", "Deux à trois fois par semaine", "Presque tous les jours"] },
+  { key: "blocage", title: "Qu'est-ce qui te bloque le plus ?", kind: "one", options: ["Trouver des idées", "Tenir le rythme", "Le temps", "Savoir quoi dire pour vendre", "Le tournage ou le montage"] },
   { key: "usage", title: "Tu attends quoi de Semper ?", kind: "multi", options: ["Tenir un rythme", "M'organiser", "Ne plus manquer d'idées", "Voir ma progression"] },
   { key: "rythme", title: "Combien de vidéos par semaine tu veux tenir ?", kind: "rythme" },
   { key: "source", title: "Comment tu as connu Semper ?", kind: "one", options: ["Instagram", "TikTok", "YouTube", "Bouche à oreille", "La newsletter", "Autre"] },
@@ -123,7 +125,11 @@ export default function Welcome() {
                 <button type="button" key={o} className={on ? "on" : ""} aria-pressed={on}
                   onClick={() => {
                     if (q.kind === "one") { const all = { ...a, [q.key]: o }; setA(all); setTimeout(() => next(all), 180); }
-                    else { const s = Array.isArray(v) ? v : []; set(on ? s.filter((x) => x !== o) : [...s, o]); }
+                    else {
+                      // « Pas encore » exclut le reste, et inversement.
+                      const s = (Array.isArray(v) ? v : []).filter((x) => (o === q.alone ? false : x !== q.alone));
+                      set(on ? s.filter((x) => x !== o) : [...s, o]);
+                    }
                   }}>
                   <i />{o}
                 </button>

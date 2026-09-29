@@ -392,7 +392,7 @@ i.chip { font-style: normal; }
 .ad-tabs { max-width: 100%; overflow-x: auto; }
 .ad-tabs b { margin-left: 6px; font-size: 12px; }
 .ad { padding: 0; overflow-x: auto; }
-.ad-row { display: grid; grid-template-columns: minmax(150px, 1.2fr) 120px minmax(150px, 1.4fr) 130px 100px 88px 64px 56px 150px minmax(150px, 1.4fr); gap: 16px; align-items: center; min-width: 1300px; padding: 12px 20px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.ad-row { display: grid; grid-template-columns: minmax(150px, 1.2fr) 120px minmax(150px, 1.4fr) 160px 150px 130px 100px 88px 64px 56px 150px minmax(150px, 1.4fr); gap: 16px; align-items: center; min-width: 1620px; padding: 12px 20px; border-bottom: 1px solid var(--line); font-size: 14px; }
 .ad-row:last-child { border-bottom: 0; }
 .ad-head { padding-block: 16px; }
 .ad-row b.disp { font-size: 20px; }

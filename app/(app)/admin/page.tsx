@@ -7,7 +7,7 @@ import { sb } from "../../supabase";
 
 type Row = {
   id: string; name: string; handle: string; email: string; since: string; seen: string;
-  abonnes: string; followers: number | null; pour: string; investi: string; source: string;
+  abonnes: string; followers: number | null; pour: string; objectif: string; blocage: string; investi: string; source: string;
   total: number; streak: number; status: LeadStatus; note: string;
 };
 const txt = (v: unknown) => (Array.isArray(v) ? v.join(", ") : String(v ?? ""));
@@ -41,7 +41,7 @@ export default function Admin() {
         return {
           id: u.id, name: u.first_name, handle: u.handle, email: u.email, since: u.created_at, seen: u.seen_at,
           abonnes: txt(u.answers?.abonnes), followers: last.get(u.handle.toLowerCase()) ?? null,
-          pour: txt(u.answers?.pourquoi), investi: txt(u.answers?.investi), source: txt(u.answers?.source),
+          pour: txt(u.answers?.pourquoi), objectif: txt(u.answers?.objectif), blocage: txt(u.answers?.blocage), investi: txt(u.answers?.investi), source: txt(u.answers?.source),
           total: st.total, streak: st.streak, status: lead.get(u.id)?.status ?? "verifier", note: lead.get(u.id)?.note ?? "",
         };
       }));
@@ -71,7 +71,7 @@ export default function Admin() {
 
       <div className="ad box" role="table">
         <div className="ad-row ad-head" role="row">
-          <span className="lbl">Créateur</span><span className="lbl">Abonnés</span><span className="lbl">Crée pour</span><span className="lbl">Investi</span><span className="lbl">Source</span>
+          <span className="lbl">Créateur</span><span className="lbl">Abonnés</span><span className="lbl">Crée pour</span><span className="lbl">Objectif</span><span className="lbl">Bloqué par</span><span className="lbl">Investi</span><span className="lbl">Source</span>
           <span className="lbl">Inscrit</span><span className="lbl">Publiées</span><span className="lbl">Série</span><span className="lbl">Statut</span><span className="lbl">Note</span>
         </div>
         {shown.map((r) => (
@@ -82,6 +82,8 @@ export default function Admin() {
             </span>
             <span>{r.followers != null ? <b className="disp">{r.followers}</b> : r.abonnes}</span>
             <span className="muted clip" title={r.pour}>{r.pour}</span>
+            <span className="clip" title={r.objectif}>{r.objectif}</span>
+            <span className="muted clip" title={r.blocage}>{r.blocage}</span>
             <span className="muted clip" title={r.investi}>{r.investi}</span>
             <span className="muted">{r.source}</span>
             <span className="muted" title={`Vu le ${date(r.seen)}`}>{date(r.since)}</span>
