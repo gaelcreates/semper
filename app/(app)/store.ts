@@ -21,8 +21,15 @@ export const FIELD_TYPES: { type: FieldType; label: string }[] = [
   { type: "choix", label: "Choix unique" },
   { type: "multi", label: "Choix multiple" },
 ];
-export type Field = { id: string; label: string; type: FieldType; options: string[] };
+// Un champ à choix peut donner des sous-choix à chacun de ses choix : on choisit « Attirer »,
+// seuls les formats d'Attirer s'affichent. Le sous-choix est rangé sous « Choix › Sous-choix ».
+export type Field = { id: string; label: string; type: FieldType; options: string[]; sub?: Record<string, string[]> };
 export type Value = string | string[];
+export const SEP = " › ";
+export const subKey = (f: Field) => `${f.id}/sub`;
+const arr = (v: Value | undefined) => (Array.isArray(v) ? v : v ? [v] : []);
+// Tout ce qui est coché dans un champ : ses choix et ses sous-choix.
+export const picked = (c: { values: Record<string, Value> }, f: Field) => [...arr(c.values[f.id]), ...arr(c.values[subKey(f)])];
 
 export type Part = { id: string; label: string };
 export type Structure = { id: string; name: string; parts: Part[] };
@@ -128,6 +135,9 @@ export async function load(): Promise<"ok" | "none"> {
 }
 
 export async function signOut() {
+  flushProfile();
+  pending.forEach((t, id) => { clearTimeout(t); const c = data?.contents.find((x) => x.id === id); if (c) sb().from("contents").upsert(toRow(c)).then(); });
+  await new Promise((r) => setTimeout(r, 300));
   await sb().auth.signOut();
   data = null;
   location.href = "/connexion";
@@ -154,8 +164,26 @@ function push(id: string) {
     if (c) save(sb().from("contents").upsert(toRow(c)));
   }, 500));
 }
+// Pareil pour le profil : les changements rapprochés partent en une seule écriture, dans l'ordre.
+let profileCols: Row = {};
+let profileTimer: ReturnType<typeof setTimeout> | undefined;
+function pushProfile(cols: Row) {
+  profileCols = { ...profileCols, ...cols };
+  clearTimeout(profileTimer);
+  profileTimer = setTimeout(flushProfile, 400);
+}
+function flushProfile() {
+  clearTimeout(profileTimer);
+  if (!Object.keys(profileCols).length) return;
+  const cols = profileCols;
+  profileCols = {};
+  save(sb().from("profiles").update(cols).eq("id", me));
+}
 if (typeof window !== "undefined") {
-  window.addEventListener("pagehide", () => pending.forEach((t, id) => { clearTimeout(t); const c = data?.contents.find((x) => x.id === id); if (c) sb().from("contents").upsert(toRow(c)).then(); }));
+  window.addEventListener("pagehide", () => {
+    flushProfile();
+    pending.forEach((t, id) => { clearTimeout(t); const c = data?.contents.find((x) => x.id === id); if (c) sb().from("contents").upsert(toRow(c)).then(); });
+  });
 }
 
 // ---------- actions
@@ -169,18 +197,18 @@ export function setProfile(p: Partial<Profile>) {
   if (p.durations !== undefined) cols.durations = p.durations;
   if (p.answers !== undefined) cols.answers = p.answers;
   if (p.lockUntil !== undefined) cols.rythme_locked_until = p.lockUntil;
-  if (Object.keys(cols).length) save(sb().from("profiles").update(cols).eq("id", me));
+  if (Object.keys(cols).length) pushProfile(cols);
 }
 // Le rythme est-il bloqué aujourd'hui ? La base refuse aussi tout changement pendant le blocage.
 export const locked = (p: Profile) => !!p.lockUntil && p.lockUntil >= new Date().toISOString().slice(0, 10);
 
 export function setFields(fields: Field[]) {
   update((d) => ({ ...d, fields }));
-  save(sb().from("profiles").update({ fields }).eq("id", me));
+  pushProfile({ fields });
 }
 export function setStructures(structures: Structure[]) {
   update((d) => ({ ...d, structures }));
-  save(sb().from("profiles").update({ structures }).eq("id", me));
+  pushProfile({ structures });
 }
 
 export function createContent(publishAt: string | null = null): string {

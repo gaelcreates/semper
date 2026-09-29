@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { short } from "./lib";
-import { STATUS, openSheet, patchContent, statusOf, withStatus, type Content, type Field, type Status } from "./store";
+import { SEP, STATUS, openSheet, patchContent, picked, statusOf, withStatus, type Content, type Field, type Status } from "./store";
 
 const byDate = (a: Content, b: Content) => (a.publishAt ?? "9999").localeCompare(b.publishAt ?? "9999");
+// Ce qui s'affiche d'un champ : le sous-choix quand il y en a un (plus précis), sinon le choix.
 const values = (c: Content, fields: Field[]) =>
-  fields.flatMap((f) => { const v = c.values[f.id]; return Array.isArray(v) ? v : v ? [v] : []; });
+  fields.flatMap((f) => {
+    const all = picked(c, f);
+    const subs = all.filter((x) => x.includes(SEP));
+    return all.filter((x) => !x.includes(SEP) && !subs.some((s) => s.startsWith(x + SEP))).concat(subs.map((s) => s.split(SEP)[1]));
+  });
 
 // Le kanban : une colonne par statut. Glisser une carte change son statut.
 export function Kanban({ contents, fields }: { contents: Content[]; fields: Field[] }) {

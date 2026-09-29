@@ -7,7 +7,7 @@ import Month from "../Month";
 import { Kanban, List } from "../Board";
 import { FilterPill, useNarrow } from "../ui";
 import { DAYS, MONTHS, MONTHS_SHORT, addDays, dayKey, isoWeek, startOfWeek } from "../lib";
-import { STATUS, statusOf, useData, type Content } from "../store";
+import { SEP, STATUS, picked, statusOf, useData, type Content } from "../store";
 
 type View = "calendrier" | "kanban" | "liste";
 type Span = "semaine" | "mois";
@@ -32,10 +32,9 @@ export default function Calendrier() {
   const choice = d.fields.filter((f) => f.type === "choix" || f.type === "multi");
   const match = (c: Content) => {
     if (statuses.length && !statuses.includes(statusOf(c))) return false;
-    for (const [fid, sel] of Object.entries(picks)) {
-      if (!sel.length) continue;
-      const v = c.values[fid];
-      if (!(Array.isArray(v) ? v : v ? [v] : []).some((x) => sel.includes(x))) return false;
+    for (const f of choice) {
+      const sel = picks[f.id] ?? [];
+      if (sel.length && !picked(c, f).some((x) => sel.includes(x))) return false;
     }
     const t = q.trim().toLowerCase();
     return !t || [c.title, ...Object.values(c.values).flat(), ...Object.values(c.script?.parts ?? {})].join(" ").toLowerCase().includes(t);
@@ -84,7 +83,7 @@ export default function Calendrier() {
         <label className="search"><DotIcon name="loupe" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher" aria-label="Rechercher" /></label>
         <FilterPill label="Statut" options={STATUS} selected={statuses} onChange={setStatuses} />
         {choice.map((f) => (
-          <FilterPill key={f.id} label={f.label} options={f.options.map((o) => ({ key: o, label: o }))}
+          <FilterPill key={f.id} label={f.label} options={f.options.flatMap((o) => [{ key: o, label: o }, ...(f.sub?.[o] ?? []).map((so) => ({ key: o + SEP + so, label: so, sub: true }))])}
             selected={picks[f.id] ?? []} onChange={(s) => setPicks({ ...picks, [f.id]: s })} />
         ))}
         {active > 0 && <button type="button" className="link fclear" onClick={() => { setQ(""); setStatuses([]); setPicks({}); }}>Tout effacer</button>}

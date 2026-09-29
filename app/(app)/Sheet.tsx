@@ -6,7 +6,7 @@ import DotIcon from "../DotIcon";
 import { duration } from "./lib";
 import { constance, titleOf } from "./stats";
 import {
-  STATUS, STEPS, announce, deleteContent, movePublish, openSheet, patchContent, statusOf, useData, withStatus,
+  SEP, STATUS, STEPS, announce, deleteContent, movePublish, openSheet, patchContent, statusOf, subKey, useData, withStatus,
   type Content, type Field, type Structure, type Value,
 } from "./store";
 
@@ -105,7 +105,7 @@ export default function Sheet({ id }: { id: string }) {
           {d.fields.map((f) => (
             <section className="sheet-sec" key={f.id}>
               <span className="lbl">{f.label}</span>
-              <FieldInput f={f} v={c.values[f.id]} onChange={(v) => set((c) => ({ ...c, values: { ...c.values, [f.id]: v } }))} />
+              <FieldInput f={f} values={c.values} onChange={(patch) => set((c) => ({ ...c, values: { ...c.values, ...patch } }))} />
             </section>
           ))}
           <Script c={c} structures={d.structures} set={set} />
@@ -159,19 +159,44 @@ function fit(t: HTMLTextAreaElement | null) {
   t.style.height = `${t.scrollHeight}px`;
 }
 
-function FieldInput({ f, v, onChange }: { f: Field; v: Value | undefined; onChange: (v: Value) => void }) {
-  if (f.type === "texte") return <input className="inp" value={(v as string) ?? ""} onChange={(e) => onChange(e.target.value)} />;
-  if (f.type === "long") return <textarea className="inp long" rows={4} value={(v as string) ?? ""} onChange={(e) => onChange(e.target.value)} />;
+function FieldInput({ f, values, onChange }: { f: Field; values: Record<string, Value>; onChange: (patch: Record<string, Value>) => void }) {
+  const v = values[f.id];
+  if (f.type === "texte") return <input className="inp" value={(v as string) ?? ""} onChange={(e) => onChange({ [f.id]: e.target.value })} />;
+  if (f.type === "long") return <textarea className="inp long" rows={4} value={(v as string) ?? ""} onChange={(e) => onChange({ [f.id]: e.target.value })} />;
+  const one = f.type === "choix";
   const sel = Array.isArray(v) ? v : v ? [v] : [];
-  const pick = (o: string) =>
-    f.type === "choix"
-      ? onChange(sel[0] === o ? "" : o)
-      : onChange(sel.includes(o) ? sel.filter((x) => x !== o) : [...sel, o]);
+  const sk = subKey(f);
+  const subs = Array.isArray(values[sk]) ? (values[sk] as string[]) : values[sk] ? [values[sk] as string] : [];
+  // Changer de choix retire les sous-choix qui ne lui appartiennent plus.
+  const keep = (opts: string[]) => subs.filter((x) => opts.some((o) => x.startsWith(o + SEP)));
+  const pick = (o: string) => {
+    const next = one ? (sel[0] === o ? [] : [o]) : sel.includes(o) ? sel.filter((x) => x !== o) : [...sel, o];
+    const k = keep(next);
+    onChange({ [f.id]: one ? next[0] ?? "" : next, [sk]: one ? k[0] ?? "" : k });
+  };
+  const pickSub = (key: string) =>
+    onChange({ [sk]: one ? (subs[0] === key ? "" : key) : subs.includes(key) ? subs.filter((x) => x !== key) : [...subs, key] });
+
   return (
-    <div className="opts">
-      {f.options.map((o) => (
-        <button type="button" key={o} className={sel.includes(o) ? "on" : ""} aria-pressed={sel.includes(o)} onClick={() => pick(o)}>{o}</button>
+    <>
+      <div className="opts">
+        {f.options.map((o) => (
+          <button type="button" key={o} className={sel.includes(o) ? "on" : ""} aria-pressed={sel.includes(o)} onClick={() => pick(o)}>
+            {o}{f.sub?.[o]?.length ? <i className="has-sub" aria-hidden="true" /> : null}
+          </button>
+        ))}
+      </div>
+      {sel.filter((o) => f.sub?.[o]?.length).map((o) => (
+        <div className="subopts" key={o}>
+          <span className="lbl">{o}</span>
+          <div className="opts">
+            {f.sub![o].map((so) => {
+              const key = o + SEP + so;
+              return <button type="button" key={key} className={subs.includes(key) ? "on" : ""} aria-pressed={subs.includes(key)} onClick={() => pickSub(key)}>{so}</button>;
+            })}
+          </div>
+        </div>
       ))}
-    </div>
+    </>
   );
 }

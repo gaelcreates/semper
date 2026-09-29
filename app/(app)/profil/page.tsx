@@ -87,21 +87,7 @@ function FieldEditor({ fields }: { fields: Field[] }) {
                 onClick={() => (arm === f.id ? setFields(fields.filter((x) => x.id !== f.id)) : setArm(f.id))}
                 aria-label="Supprimer le champ">{arm === f.id ? "Supprimer" : "×"}</button>
             </span>
-            {(f.type === "choix" || f.type === "multi") && (
-              <div className="fe-opts">
-                {f.options.map((o) => (
-                  <span key={o} className="opt">{o}<button type="button" onClick={() => put(f.id, { options: f.options.filter((x) => x !== o) })} aria-label={`Retirer ${o}`}>×</button></span>
-                ))}
-                <input className="opt-new" placeholder="Ajouter un choix" aria-label="Ajouter un choix"
-                  onKeyDown={(e) => {
-                    const v = e.currentTarget.value.trim();
-                    if (e.key !== "Enter" || !v) return;
-                    e.preventDefault();
-                    if (!f.options.includes(v)) put(f.id, { options: [...f.options, v] });
-                    e.currentTarget.value = "";
-                  }} />
-              </div>
-            )}
+            {(f.type === "choix" || f.type === "multi") && <Options f={f} put={(p) => put(f.id, p)} hint={f.id === fields.find((x) => x.type === "choix" || x.type === "multi")?.id} />}
           </li>
         ))}
       </ul>
@@ -159,5 +145,50 @@ function StructureEditor({ list }: { list: Structure[] }) {
         <button type="button" onClick={() => setStructures([...list, structure("", ["Hook"])])}>+ Nouvelle structure</button>
       </div>
     </>
+  );
+}
+
+// Les choix d'un champ. Toucher un choix ouvre ses sous-choix : ce qui ne s'affichera
+// dans la fiche que si ce choix-là est coché.
+function Options({ f, put, hint }: { f: Field; put: (p: Partial<Field>) => void; hint: boolean }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const sub = f.sub ?? {};
+  const add = (e: React.KeyboardEvent<HTMLInputElement>, fn: (v: string) => void) => {
+    const v = e.currentTarget.value.trim();
+    if (e.key !== "Enter" || !v) return;
+    e.preventDefault();
+    fn(v);
+    e.currentTarget.value = "";
+  };
+  const removeOpt = (o: string) => { const { [o]: _, ...rest } = sub; put({ options: f.options.filter((x) => x !== o), sub: rest }); if (open === o) setOpen(null); };
+
+  return (
+    <div className="fe-opts">
+      {f.options.map((o) => (
+        <span key={o} className={`opt${open === o ? " open" : ""}`}>
+          <button type="button" className="opt-l" onClick={() => setOpen(open === o ? null : o)} aria-expanded={open === o}>
+            {o}{sub[o]?.length ? <b className="disp">{sub[o].length}</b> : null}
+          </button>
+          <button type="button" onClick={() => removeOpt(o)} aria-label={`Retirer ${o}`}>×</button>
+        </span>
+      ))}
+      <input className="opt-new" placeholder="Ajouter un choix" aria-label="Ajouter un choix"
+        onKeyDown={(e) => add(e, (v) => { if (!f.options.includes(v)) put({ options: [...f.options, v] }); })} />
+      {open && f.options.includes(open) && (
+        <div className="fe-sub">
+          <span className="lbl">Si « {open} » est choisi</span>
+          <div className="fe-sub-l">
+            {(sub[open] ?? []).map((so) => (
+              <span key={so} className="opt">{so}
+                <button type="button" onClick={() => put({ sub: { ...sub, [open]: sub[open].filter((x) => x !== so) } })} aria-label={`Retirer ${so}`}>×</button>
+              </span>
+            ))}
+            <input className="opt-new" placeholder="Ajouter un sous-choix" aria-label="Ajouter un sous-choix" autoFocus
+              onKeyDown={(e) => add(e, (v) => { if (!(sub[open] ?? []).includes(v)) put({ sub: { ...sub, [open]: [...(sub[open] ?? []), v] } }); })} />
+          </div>
+        </div>
+      )}
+      {hint && !open && f.options.length > 0 && <span className="fe-hint">Touche un choix pour lui donner des sous-choix.</span>}
+    </div>
   );
 }

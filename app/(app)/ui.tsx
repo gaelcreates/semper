@@ -17,7 +17,7 @@ export function Stepper({ value, onChange, min = 0, max = 999, step = 1, format 
 }
 
 export function FilterPill({ label, options, selected, onChange }: {
-  label: string; options: { key: string; label: string }[]; selected: string[]; onChange: (s: string[]) => void;
+  label: string; options: { key: string; label: string; sub?: boolean }[]; selected: string[]; onChange: (s: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -36,7 +36,7 @@ export function FilterPill({ label, options, selected, onChange }: {
       {open && (
         <div className="fpop" role="menu">
           {options.map((o) => (
-            <label key={o.key}><input type="checkbox" checked={selected.includes(o.key)} onChange={() => toggle(o.key)} /><span>{o.label}</span></label>
+            <label key={o.key} className={o.sub ? "sub" : ""}><input type="checkbox" checked={selected.includes(o.key)} onChange={() => toggle(o.key)} /><span>{o.label}</span></label>
           ))}
           {selected.length > 0 && <button type="button" className="fclear" onClick={() => onChange([])}>Effacer</button>}
         </div>

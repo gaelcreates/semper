@@ -584,3 +584,18 @@ i.chip { font-style: normal; }
 .week-dots i.on { background: var(--gold); }
 .week-dots .lbl { margin-top: 4px; font-size: 11px; }
 .big-digits circle { transform-box: fill-box; transform-origin: center; }
+
+/* Sous-choix */
+.opts button .has-sub { display: inline-block; width: 4px; height: 4px; margin-left: 7px; border-radius: 50%; background: currentColor; opacity: 0.5; vertical-align: middle; }
+.subopts { display: grid; gap: 8px; margin-top: 2px; padding: 10px 0 2px 14px; border-left: 2px solid var(--ink); animation: sub-in 260ms var(--ease); }
+.subopts .lbl { font-size: 11px; }
+@keyframes sub-in { from { opacity: 0; transform: translateY(-4px); } }
+.opt .opt-l { display: inline-flex; align-items: center; gap: 6px; width: auto; height: auto; padding: 0; border: 0; border-radius: 0; background: none; font-size: 13px; cursor: pointer; }
+.opt .opt-l b { font-size: 11px; color: var(--muted); }
+.opt.open { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.opt.open .opt-l b { color: inherit; opacity: 0.7; }
+.opt.open > button:last-child { background: rgba(var(--bgr), 0.15); color: inherit; }
+.fe-sub { flex-basis: 100%; display: grid; gap: 8px; margin-top: 4px; padding: 12px 14px; border-left: 2px solid var(--ink); border-radius: 0 12px 12px 0; background: var(--card); animation: sub-in 260ms var(--ease); }
+.fe-sub-l { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.fe-hint { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+.fpop label.sub { padding-left: 30px; font-size: 13px; color: var(--ink2); }
