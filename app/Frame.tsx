@@ -23,7 +23,7 @@ export function TopBar({ cta = true }: { cta?: boolean }) {
           {cta ? (
             <>
               <Link href="/connexion" className="link nav-login">Se connecter</Link>
-              <a href="#rejoindre" className="btn btn-sm"><span className="full">Rejoindre la liste</span><span className="short">Rejoindre</span></a>
+              <a href="#rejoindre" className="btn btn-sm"><span className="full">Rejoindre la whitelist</span><span className="short">Rejoindre</span></a>
             </>
           ) : (
             <Link href="/" className="link">Retour</Link>

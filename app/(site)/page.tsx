@@ -61,10 +61,11 @@ export default function Page() {
             <p className="lead fade d1">
               Tu sais quoi filmer. Ce qui te fait décrocher, c&apos;est de tenir le rythme semaine après semaine.
               Semper suit chaque vidéo de l&apos;idée à la publication, et compte chaque semaine tenue.
+              Et c&apos;est entièrement gratuit.
             </p>
             <div className="hero-form fade d2" id="rejoindre">
               <JoinForm />
-              <p className="fine">Gratuit · Sans carte bancaire · Tu seras prévenu à l&apos;ouverture</p>
+              <p className="fine">Sans carte bancaire · Tu seras prévenu à l&apos;ouverture</p>
             </div>
           </div>
 

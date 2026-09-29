@@ -1,48 +1,41 @@
-import Mark from "./Mark";
+// L'aperçu de la vue semaine, fidèle à l'outil : une colonne par jour, les heures, et pour chaque vidéo
+// ses blocs écriture, tournage, montage (points : un, deux, trois) puis la publication en noir.
+// Un bloc de tournage glisse d'un jour à l'autre en boucle, comme quand on le déplace.
+const START = 10, END = 20, PX = 40 / 60;
+type B = { d: number; k: "ecriture" | "tournage" | "montage" | "pub"; at: string; dur: number; t?: string; done?: boolean; drag?: boolean };
+const BLOCKS: B[] = [
+  { d: 0, k: "ecriture", at: "16:25", dur: 30, done: true }, { d: 0, k: "tournage", at: "16:55", dur: 20, done: true },
+  { d: 0, k: "montage", at: "17:15", dur: 45, done: true }, { d: 0, k: "pub", at: "18:00", dur: 30, t: "Ma semaine de fondateur", done: true },
+  { d: 1, k: "ecriture", at: "10:00", dur: 30, done: true }, { d: 1, k: "tournage", at: "11:00", dur: 20, done: true },
+  { d: 1, k: "montage", at: "17:15", dur: 45 }, { d: 1, k: "pub", at: "18:00", dur: 30, t: "Pourquoi tu t'arrêtes" },
+  { d: 3, k: "ecriture", at: "10:00", dur: 30, done: true }, { d: 3, k: "tournage", at: "14:00", dur: 20, drag: true },
+  { d: 3, k: "montage", at: "11:15", dur: 45 }, { d: 3, k: "pub", at: "12:00", dur: 30, t: "3 erreurs de calendrier" },
+  { d: 5, k: "ecriture", at: "17:25", dur: 30 }, { d: 5, k: "tournage", at: "17:55", dur: 20 },
+  { d: 5, k: "montage", at: "18:15", dur: 45 }, { d: 5, k: "pub", at: "19:00", dur: 30, t: "Ma méthode en 3 blocs" },
+];
+const DAYS = [["LUN", 28], ["MAR", 29], ["MER", 30], ["JEU", 1], ["VEN", 2], ["SAM", 3], ["DIM", 4]] as const;
+const min = (s: string) => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
 
-// Aperçu de l'outil, en HTML et CSS : la vue semaine, des fiches par statut, la série.
-// Tout est animé en CSS pur (voir globals.css, section « Aperçu »).
 export default function AppMock() {
   return (
-    <div className="mock" aria-hidden="true">
-      <div className="mock-bar">
-        <div className="mock-brand"><Mark /> <span>Semaine 39</span></div>
-        <div className="mock-views">
-          <span>Liste</span><span>Kanban</span><span className="on">Calendrier</span>
-        </div>
-        <div className="mock-streak">
-          <i className="dot" />
-          <span>Série</span>
-          <b className="tick"><span>6</span><span>7</span></b>
-          <span>semaines</span>
-        </div>
+    <div className="mwk" aria-hidden="true">
+      <div className="mwk-head">
+        <span className="lbl">S40</span>
+        {DAYS.map(([n, d], i) => <span key={n} className={i === 1 ? "today" : ""}><small className="lbl">{n}</small><b className="disp">{d}</b></span>)}
       </div>
-
-      <div className="mock-grid">
-        <div className="mock-day"><div className="mock-dn">Lun <em>21</em></div>
-          <div className="mock-card c1"><span className="chip s-tourner">À tourner</span><p>Pourquoi tu t'arrêtes</p></div>
-        </div>
-        <div className="mock-day"><div className="mock-dn">Mar <em>22</em></div>
-          <div className="mock-block c2">Montage · 2 h</div>
-        </div>
-        <div className="mock-day"><div className="mock-dn">Mer <em>23</em></div>
-          <div className="mock-card c3">
-            <span className="chip swap"><span className="s-monter">À monter</span><span className="s-publie">Publié</span></span>
-            <p>3 erreurs de calendrier</p>
+      <div className="mwk-body" style={{ height: (END - START) * 60 * PX }}>
+        <div className="mwk-hours">{Array.from({ length: END - START }, (_, h) => <span key={h} className="disp" style={{ top: h * 60 * PX }}>{h ? START + h : ""}</span>)}</div>
+        {DAYS.map(([n], i) => (
+          <div key={n} className="mwk-col">
+            {i === 1 && <i className="mwk-now" style={{ top: (15 * 60 - START * 60) * PX }} />}
+            {BLOCKS.filter((b) => b.d === i).map((b) => (
+              <span key={b.k + b.at} className={`mwk-b k-${b.k}${b.done ? " done" : ""}${b.drag ? " drag" : ""}`}
+                style={{ top: (min(b.at) - START * 60) * PX, height: Math.max(b.dur * PX, 13) - 2 }}>
+                {b.k === "pub" && <><b className="disp">{b.at}</b><em>{b.t}</em></>}
+              </span>
+            ))}
           </div>
-        </div>
-        <div className="mock-day"><div className="mock-dn">Jeu <em>24</em></div>
-          <div className="mock-card c4"><span className="chip s-ecrire">À écrire</span><p>Le stock, pas la motivation</p></div>
-        </div>
-        <div className="mock-day"><div className="mock-dn">Ven <em>25</em></div>
-          <div className="mock-card c5 done"><span className="chip s-publie">Publié</span><p>Ma semaine de fondateur</p></div>
-        </div>
-        <div className="mock-day"><div className="mock-dn">Sam <em>26</em></div>
-          <div className="mock-card c6"><span className="chip s-idee">Idée</span><p>Le piège du volume</p></div>
-        </div>
-        <div className="mock-day today"><div className="mock-dn">Dim <em>27</em></div>
-          <div className="mock-add c7"><span>+</span> Créer</div>
-        </div>
+        ))}
       </div>
     </div>
   );

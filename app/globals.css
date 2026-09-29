@@ -750,3 +750,106 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 :is(.ws-nav a, .ws-tabs a).on .di.mx .on { animation: led 70ms linear both; animation-delay: calc(var(--i) * 34ms); }
 @keyframes led { 0%, 49% { opacity: 0.14; transform: scale(0.45); } 50%, 100% { opacity: 1; transform: none; } }
 .sg-icons.big .di { width: 44px; height: 44px; }
+
+/* ============================================================
+   Aperçu de l'outil (V1, 29 sept) : fidèle à l'espace réel.
+   ============================================================ */
+.app-side { grid-template-rows: auto auto auto 1fr; }
+.app-new { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 34px; border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 700; }
+.app-new .di { width: 10px; height: 10px; }
+.app-side li { border-radius: var(--disp-r); }
+.app-side li .di { width: 13px; height: 13px; opacity: 0.55; }
+.app-side li.on { background: rgba(var(--fgr), 0.07); color: var(--ink); }
+.app-side li.on .di { opacity: 1; color: var(--ink); }
+.app-moon { align-self: end; display: flex; align-items: center; gap: 10px; padding: 0 8px; }
+.app-moon .moon { width: 28px; height: 28px; flex: none; }
+.app-moon span { display: grid; gap: 4px; }
+.app-moon b { font-size: 12px; }
+.app-moon small { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+.app .moon circle, .float .moon circle { fill: rgba(var(--fgr), 0.13); }
+.app .moon circle.on { fill: var(--ink); }
+.app-filters { display: flex; gap: 6px; padding: 0 20px 12px; }
+.app-filters span { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 11px; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; color: var(--ink2); background: var(--card); }
+.app-filters .f-search { min-width: 150px; color: var(--muted); }
+.app-filters .di { width: 9px; height: 9px; }
+
+/* La semaine */
+.mwk { border-top: 1px solid var(--line); }
+.mwk-head, .mwk-body { display: grid; grid-template-columns: 40px repeat(7, minmax(0, 1fr)); }
+.mwk-head { border-bottom: 1px solid var(--line); }
+.mwk-head > .lbl { align-self: center; padding-left: 10px; font-size: 10px; color: var(--muted); }
+.mwk-head > span:not(.lbl) { display: flex; align-items: center; gap: 6px; padding: 9px 8px; border-left: 1px solid var(--line); }
+.mwk-head small { font-size: 10px; color: var(--muted); }
+.mwk-head b { font-size: 16px; padding: 2px 3px; border-radius: 3px; }
+.mwk-head .today b { background: var(--gold); color: #0e0e0e; }
+.mwk-body { position: relative; }
+.mwk-hours { position: relative; }
+.mwk-hours span { position: absolute; right: 8px; transform: translateY(-50%); font-size: 10px; color: var(--muted); }
+.mwk-col { position: relative; border-left: 1px solid var(--line); background-image: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 40px); }
+.mwk-now { position: absolute; left: 0; right: 0; height: 2px; margin-top: -1px; background: var(--gold); z-index: 3; }
+.mwk-now::before { content: ""; position: absolute; left: -3px; top: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+.mwk-b { position: absolute; left: 3px; right: 3px; z-index: 1; display: flex; align-items: center; gap: 5px; padding: 0 6px; border: 1px solid transparent; border-radius: 5px; font-size: 10px; overflow: hidden; opacity: 0; animation: card 900ms var(--ease) 2400ms forwards; }
+.mwk-b::after { content: ""; position: absolute; right: 5px; top: 50%; height: 4px; margin-top: -2px; background: radial-gradient(circle, currentColor 1.3px, transparent 1.7px) 0 0 / 5px 4px repeat-x; opacity: 0.45; }
+.mwk-b.k-ecriture { background: var(--card); border-color: var(--line-strong); }
+.mwk-b.k-ecriture::after { width: 5px; }
+.mwk-b.k-tournage { background: rgba(var(--fgr), 0.07); }
+.mwk-b.k-tournage::after { width: 10px; }
+.mwk-b.k-montage { background: rgba(var(--fgr), 0.15); }
+.mwk-b.k-montage::after { width: 15px; }
+.mwk-b.k-pub { background: var(--ink); color: var(--bg); z-index: 2; }
+.mwk-b.k-pub::after { display: none; }
+.mwk-b.k-pub b { flex: none; font-size: 10px; }
+.mwk-b.k-pub em { font-style: normal; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mwk-b.done { opacity: 0; animation-name: card-done; }
+@keyframes card-done { from { opacity: 0; transform: translateY(6px); } to { opacity: 0.42; transform: none; } }
+/* Le bloc qu'on déplace : il part du jeudi, glisse au mercredi, revient. */
+.mwk-b.drag { z-index: 4; animation: card 900ms var(--ease) 2400ms forwards, drag 7s var(--ease) 3.6s infinite; }
+@keyframes drag {
+  0%, 18% { transform: none; box-shadow: none; }
+  26% { transform: translate(0, -3px); box-shadow: 0 12px 24px -10px rgba(var(--fgr), 0.5); }
+  46%, 62% { transform: translate(calc(-100% - 7px), -60px); box-shadow: 0 12px 24px -10px rgba(var(--fgr), 0.5); }
+  70%, 100% { transform: translate(calc(-100% - 7px), -60px); box-shadow: none; }
+}
+
+/* Kanban, liste, Constance */
+.app .kanban { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--line); }
+.app .kcol { padding: 8px; border-radius: 14px; background: rgba(var(--fgr), 0.035); min-height: 300px; }
+.app .kcol h4 { padding: 2px 4px 6px; }
+.app .kcol h4 .lbl { font-size: 10px; }
+.app .kcol h4 b { font-size: 14px; font-weight: 900; color: var(--ink); }
+.app .kcard { background: var(--card); border-color: var(--line); font-size: 12px; }
+.app .kcard .tag, .float .tag { justify-self: start; padding: 2px 7px; border-radius: 999px; background: rgba(var(--fgr), 0.06); font-size: 10px; font-style: normal; font-weight: 300; color: var(--ink2); }
+.s-pret { background: none; box-shadow: inset 0 0 0 1px var(--ink); color: var(--ink); }
+.app .list .row { grid-template-columns: minmax(0, 2fr) 90px 150px minmax(0, 1fr); }
+.cst { display: grid; gap: 18px; padding: 16px 20px 20px; border-top: 1px solid var(--line); }
+.cst-hero { display: flex; align-items: center; gap: 24px; }
+.cst-hero .moon { width: 130px; height: 130px; flex: none; }
+.cst-hero > div { display: grid; gap: 8px; }
+.cst-t { font-size: 30px; font-weight: 900; letter-spacing: -0.04em; line-height: 1; }
+.cst-s { display: flex; align-items: baseline; gap: 6px; font-size: 13px; color: var(--ink2); }
+.cst-s b { font-size: 20px; color: var(--ink); }
+.cst-segs { display: flex; gap: 4px; }
+.cst-segs i { width: 8px; height: 8px; border-radius: 50%; background: rgba(var(--fgr), 0.13); }
+.cst-segs i.on { background: var(--gold); }
+.cst-hm { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 9px); gap: 3px; justify-content: start; }
+.cst-hm i { width: 9px; height: 9px; border-radius: 50%; background: rgba(var(--fgr), 0.1); transform: scale(0.55); }
+.cst-hm i.on { background: var(--ink); transform: none; }
+.cst-hm i.g { background: var(--gold); transform: none; }
+
+/* L'annonce qui déborde : la vraie, noire, avec sa lune */
+.float.f1 { gap: 10px; padding: 8px 16px 8px 8px; border-radius: 999px; background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 700; }
+.float.f1 .moon { width: 28px; height: 28px; }
+.float.f1 .moon circle { fill: rgba(var(--bgr), 0.2); }
+.float.f1 .moon circle.on { fill: var(--gold); }
+@media (max-width: 860px) { .app-filters span:nth-child(n+3) { display: none; } .app .kanban { grid-template-columns: repeat(3, minmax(0, 1fr)); } .app .kcol:nth-child(n+4) { display: none; } .cst-hero .moon { width: 90px; height: 90px; } .app .list .row { grid-template-columns: minmax(0, 1fr) auto; } .app .list .row > :nth-child(n+3) { display: none; } }
+.float.f1 { top: 190px; }
+@media (max-width: 560px) {
+  .mwk-head, .mwk-body { grid-template-columns: 26px repeat(7, minmax(0, 1fr)); }
+  .mwk-head small, .mwk-head > .lbl { display: none; }
+  .mwk-head > span:not(.lbl) { justify-content: center; padding: 8px 0; }
+  .mwk-head b { font-size: 12px; }
+  .mwk-hours span { right: 4px; font-size: 9px; }
+  .mwk-b { left: 1px; right: 1px; padding: 0 3px; }
+  .mwk-b::after, .mwk-b.k-pub em { display: none; }
+  .app-filters .f-search { min-width: 0; }
+}

@@ -5,7 +5,7 @@ import { join, type JoinState } from "./actions";
 import Mark from "./Mark";
 import Orbit from "./Orbit";
 
-export default function JoinForm({ label = "Rejoindre la liste", light = false }: { label?: string; light?: boolean }) {
+export default function JoinForm({ label = "Rejoindre la whitelist", light = false }: { label?: string; light?: boolean }) {
   const [state, action, pending] = useActionState<JoinState, FormData>(join, null);
   const id = useId();
 

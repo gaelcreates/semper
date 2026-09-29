@@ -5,80 +5,111 @@ import AppMock from "./AppMock";
 import Logo from "./Logo";
 import Mark from "./Mark";
 import DotIcon from "./DotIcon";
+import Moon from "./(app)/Moon";
 
-type Tab = "calendrier" | "kanban" | "liste" | "serie";
+// L'aperçu de l'espace Semper, fidèle à l'outil (V1) : barre latérale avec la lune et le titre,
+// les trois vues du calendrier et Constance. Des détails débordent du cadre.
+type Tab = "calendrier" | "kanban" | "liste" | "constance";
 const tabs: { id: Tab; label: string }[] = [
   { id: "calendrier", label: "Calendrier" },
   { id: "kanban", label: "Kanban" },
   { id: "liste", label: "Liste" },
-  { id: "serie", label: "Série" },
+  { id: "constance", label: "Constance" },
 ];
-const sideIcons = ["semaine", "idee", "serie", "script", "reglages"] as const;
-const side = ["Ma semaine", "Idées", "Série", "Scripts", "Réglages"];
+const nav = [
+  { icon: "cal", label: "Calendrier" },
+  { icon: "lune", label: "Constance" },
+  { icon: "orga", label: "Organisation" },
+  { icon: "profil", label: "Profil" },
+] as const;
 
-// Visualiseur de l'espace Semper : barre latérale, en-tête, chiffres de la semaine,
-// puis les onglets qui changent la vue sur les mêmes fiches. Des cartes flottent hors du cadre.
+const KANBAN: [string, string, { t: string; d: string; tag?: string }[]][] = [
+  ["Idée", "s-idee", [{ t: "Le piège du volume", d: "Sans date", tag: "Attirer" }]],
+  ["À écrire", "s-ecrire", [{ t: "Ma méthode en 3 blocs", d: "sam. 3 oct. · 19:00", tag: "Attacher" }]],
+  ["À tourner", "s-tourner", [{ t: "3 erreurs de calendrier", d: "jeu. 1 oct. · 12:00", tag: "Attirer" }]],
+  ["À monter", "s-monter", [{ t: "Pourquoi tu t'arrêtes", d: "mar. 29 sept. · 18:00", tag: "Convertir" }]],
+  ["Prêt", "s-pret", []],
+  ["Publié", "s-publie", [{ t: "Ma semaine de fondateur", d: "lun. 28 sept. · 18:00", tag: "Attacher" }]],
+];
+const LIST = [
+  ["Ma semaine de fondateur", "Publié", "s-publie", "lun. 28 sept. · 18:00", "Attacher"],
+  ["Pourquoi tu t'arrêtes", "À monter", "s-monter", "mar. 29 sept. · 18:00", "Convertir"],
+  ["3 erreurs de calendrier", "À tourner", "s-tourner", "jeu. 1 oct. · 12:00", "Attirer"],
+  ["Ma méthode en 3 blocs", "À écrire", "s-ecrire", "sam. 3 oct. · 19:00", "Attacher"],
+  ["Le piège du volume", "Idée", "s-idee", "Sans date", "Attirer"],
+];
+
 export default function AppView() {
   const [tab, setTab] = useState<Tab>("calendrier");
   return (
     <div className="app-shell">
       <div className="app" data-tilt aria-label="Aperçu de Semper">
-        <div className="app-chrome"><span className="dots"><i /><i /><i /></span><div className="app-url"><Mark /> trysemper.app/semaine-39</div></div>
+        <div className="app-chrome"><span className="dots"><i /><i /><i /></span><div className="app-url"><Mark /> trysemper.app/{tab === "constance" ? "constance" : "calendrier"}</div></div>
         <div className="app-main">
           <aside className="app-side">
             <Logo />
+            <span className="app-new"><DotIcon name="ajout" /> Nouveau contenu</span>
             <ul>
-              {side.map((s, i) => <li key={s} className={i === 0 ? "on" : ""}><DotIcon name={sideIcons[i]} /><span>{s}</span></li>)}
+              {nav.map((n, i) => (
+                <li key={n.label} className={(tab === "constance" ? i === 1 : i === 0) ? "on" : ""}><DotIcon name={n.icon} /><span>{n.label}</span></li>
+              ))}
             </ul>
-            <div className="app-lvl"><b>Niveau 2</b><span>Régulier</span></div>
+            <div className="app-moon"><Moon streak={6} n={11} /><span><b>Lune gibbeuse</b><small className="disp">6 sem.</small></span></div>
           </aside>
 
           <div className="app-content">
             <header className="app-head">
-              <div><small>Semaine 39 · 21 au 27 septembre</small><h4>Ta semaine</h4></div>
+              <div><small>{tab === "constance" ? "Série" : "Semaine 40"}</small><h4>{tab === "constance" ? "Constance" : tab === "calendrier" ? "28 sept. au 4 oct." : "Contenus"}</h4></div>
               <div className="tabs" role="tablist">
                 {tabs.map((t) => (
                   <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? "on" : ""} onClick={() => setTab(t.id)}>{t.label}</button>
                 ))}
               </div>
-              <span className="app-btn">+ Créer</span>
             </header>
-
-            <ul className="app-stats">
-              <li><small>Série</small><b>7 <span>semaines</span></b><i className="bar"><i style={{ width: "58%" }} /></i></li>
-              <li><small>Cette semaine</small><b>1 <span>/ 2 publiées</span></b><i className="bar"><i style={{ width: "50%" }} /></i></li>
-              <li><small>En cours</small><b>8 <span>fiches</span></b><em>3 idées · 2 à tourner</em></li>
-              <li><small>Prochaine</small><b>Lun 21 <span>· 19 h</span></b><em>Pourquoi tu t&apos;arrêtes</em></li>
-            </ul>
+            {tab !== "constance" && (
+              <div className="app-filters" aria-hidden="true">
+                <span className="f-search"><DotIcon name="loupe" /> Rechercher</span><span>Statut</span><span>Format</span><span>Plateforme</span>
+              </div>
+            )}
 
             <div className="app-body">
               {tab === "calendrier" && <div className="pane" key="c"><AppMock /></div>}
               {tab === "kanban" && (
                 <div className="pane kanban" key="k">
-                  <div className="kcol"><h4>Idée <span>3</span></h4><div className="kcard">Le piège du volume<small>Instagram</small></div><div className="kcard">Ce que je ferais à 0 abonné<small>TikTok</small></div><div className="kcard ghost">+ Nouvelle idée</div></div>
-                  <div className="kcol"><h4>À écrire <span>1</span></h4><div className="kcard">Le stock, pas la motivation<small>Jeu 24</small></div></div>
-                  <div className="kcol"><h4>À tourner <span>2</span></h4><div className="kcard hot">Pourquoi tu t&apos;arrêtes<small>Lun 21 · 19 h</small></div><div className="kcard">Ma méthode en 3 blocs<small>Sam 26</small></div></div>
-                  <div className="kcol"><h4>À monter <span>1</span></h4><div className="kcard">3 erreurs de calendrier<small>Mer 23</small></div></div>
-                  <div className="kcol"><h4>Publié <span>4</span></h4><div className="kcard">Ma semaine de fondateur<small>Ven 25 · 12 400 vues</small></div><div className="kcard">Semaine 38 · 2 vidéos<small>Tenue</small></div></div>
+                  {KANBAN.map(([label, cls, cards]) => (
+                    <div className="kcol" key={label}>
+                      <h4><span className="lbl">{label}</span><b className="disp">{cards.length}</b></h4>
+                      {cards.map((c) => <div className="kcard" key={c.t}>{c.t}<small>{c.d}</small>{c.tag && <i className="tag">{c.tag}</i>}</div>)}
+                    </div>
+                  ))}
                 </div>
               )}
               {tab === "liste" && (
                 <div className="pane list" key="l">
-                  <div className="row head"><span>Contenu</span><span>Statut</span><span>Date</span><span>Plateforme</span></div>
-                  <div className="row"><b>Pourquoi tu t&apos;arrêtes</b><span className="chip s-tourner">À tourner</span><span className="date">Lun 21</span><span className="plat">Instagram</span></div>
-                  <div className="row"><b>3 erreurs de calendrier</b><span className="chip s-monter">À monter</span><span className="date">Mer 23</span><span className="plat">Instagram · TikTok</span></div>
-                  <div className="row"><b>Le stock, pas la motivation</b><span className="chip s-ecrire">À écrire</span><span className="date">Jeu 24</span><span className="plat">YouTube</span></div>
-                  <div className="row"><b>Ma semaine de fondateur</b><span className="chip s-publie">Publié</span><span className="date">Ven 25</span><span className="plat">YouTube</span></div>
-                  <div className="row"><b>Le piège du volume</b><span className="chip s-idee">Idée</span><span className="date">Sam 26</span><span className="plat">Instagram</span></div>
+                  <div className="row head"><span>Titre</span><span>Statut</span><span>Publication</span><span>Objectif</span></div>
+                  {LIST.map(([t, s, cls, d, o]) => (
+                    <div className="row" key={t}><b>{t}</b><span className={`chip ${cls}`}>{s}</span><span className="date">{d}</span><span className="plat">{o}</span></div>
+                  ))}
                 </div>
               )}
-              {tab === "serie" && (
-                <div className="pane serie" key="s">
-                  <div className="serie-big"><b>7</b><span>semaines tenues d&apos;affilée</span><span className="lvl">Niveau 2 · Régulier</span></div>
-                  <div className="weeks">
-                    {Array.from({ length: 12 }).map((_, i) => <i key={i} className={i < 7 ? "on" : i === 7 ? "now" : ""} style={{ animationDelay: `${i * 70}ms` }} />)}
-                    <div className="weeks-l"><span>Semaine 32</span><span>Semaine 43</span></div>
-                    <p className="serie-goal">Ton objectif : <b>2 vidéos par semaine</b>. Cette semaine : 1 publiée, 1 à monter. Une semaine tenue compte, jamais le volume.</p>
+              {tab === "constance" && (
+                <div className="pane cst" key="s">
+                  <div className="cst-hero">
+                    <Moon streak={6} n={17} orbit />
+                    <div>
+                      <span className="lbl"><i className="dot" /> Titre</span>
+                      <b className="cst-t">Lune gibbeuse</b>
+                      <span className="cst-s"><b className="disp">6</b> semaines tenues</span>
+                      <span className="cst-segs">{[0, 1, 2, 3].map((i) => <i key={i} className={i < 2 ? "on" : ""} />)}</span>
+                      <span className="lbl">Pleine lune dans 2 sem.</span>
+                    </div>
+                  </div>
+                  <div className="cst-hm" aria-hidden="true">
+                    {Array.from({ length: 26 * 7 }, (_, k) => {
+                      const w = Math.floor(k / 7), d = k % 7;
+                      const on = w >= 13 && (d === 1 || d === 4) && w !== 19;
+                      return <i key={k} className={on ? (w >= 20 ? "g" : "on") : ""} />;
+                    })}
                   </div>
                 </div>
               )}
@@ -89,13 +120,13 @@ export default function AppView() {
 
       {/* détails qui débordent du cadre */}
       <div className="float f1" aria-hidden="true">
-        <span className="f-ico"><Mark /></span>
-        <div><b>Semaine 38 tenue</b><small>Ta série passe à 7</small></div>
+        <Moon streak={7} n={9} />
+        <span>Semaine tenue · 7 d&apos;affilée</span>
       </div>
       <div className="float f2" aria-hidden="true">
         <span className="chip s-publie">Publié</span>
         <b>Ma semaine de fondateur</b>
-        <small>YouTube · Ven 25 · 12 400 vues</small>
+        <small>Attacher · Coulisses · lun. 28 sept.</small>
       </div>
       <div className="float f3" aria-hidden="true"><i className="dot" /> Sauvegardé à l&apos;instant</div>
     </div>
