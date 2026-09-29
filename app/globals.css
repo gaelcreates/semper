@@ -747,6 +747,6 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 .di circle { transform-box: fill-box; transform-origin: center; }
 .di.mx .off { opacity: 0.14; }
 :is(.ws-nav a, .ws-new, .ws-tabs a, .ws-fab, .x.grow, .lock, .sg-icons div):hover .di.mx .on,
-:is(.ws-nav a, .ws-tabs a).on .di.mx .on { animation: led 70ms steps(1, end) both; animation-delay: calc(var(--i) * 34ms); }
-@keyframes led { from { opacity: 0.14; transform: scale(0.45); } to { opacity: 1; transform: none; } }
+:is(.ws-nav a, .ws-tabs a).on .di.mx .on { animation: led 70ms linear both; animation-delay: calc(var(--i) * 34ms); }
+@keyframes led { 0%, 49% { opacity: 0.14; transform: scale(0.45); } 50%, 100% { opacity: 1; transform: none; } }
 .sg-icons.big .di { width: 44px; height: 44px; }

@@ -272,7 +272,7 @@ i.chip { font-style: normal; }
 .moon circle.on { fill: var(--ink); }
 .ws-top-r { display: flex; align-items: center; gap: 10px; }
 .ws-top-moon .moon { width: 30px; height: 30px; }
-.ws-streak:hover .moon circle.on, .ws-top-moon:hover .moon circle.on { animation: led 40ms steps(1, end) both; animation-delay: calc(var(--i) * 3ms); }
+.ws-streak:hover .moon circle.on, .ws-top-moon:hover .moon circle.on { animation: led 40ms linear both; animation-delay: calc(var(--i) * 3ms); }
 
 /* L'annonce */
 .note { position: fixed; left: 50%; bottom: 28px; z-index: 60; display: flex; align-items: center; gap: 12px; padding: 10px 18px 10px 10px; border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 14px; font-weight: 700; box-shadow: var(--shadow); transform: translateX(-50%); animation: note-in 500ms var(--ease), note-out 400ms ease 3200ms forwards; }
@@ -575,7 +575,7 @@ i.chip { font-style: normal; }
 .onb-dial button:active:not(:disabled) { transform: scale(0.96); }
 .onb-dial button:disabled { opacity: 0.3; cursor: default; }
 .big-digits { height: clamp(120px, 22vw, 168px); width: auto; overflow: visible; }
-.big-digits .on { fill: var(--ink); animation: led 60ms steps(1, end) both; animation-delay: calc(var(--i) * 22ms); }
+.big-digits .on { fill: var(--ink); animation: led 60ms linear both; animation-delay: calc(var(--i) * 22ms); }
 .big-digits .off { fill: var(--ink); opacity: 0.1; }
 .onb-unit { font-size: 13px; }
 .week-dots { display: flex; gap: clamp(12px, 3vw, 22px); padding: 18px 22px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
