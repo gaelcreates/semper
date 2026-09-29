@@ -53,8 +53,14 @@ create table public.ig_snapshots (
   primary key (handle, day)
 );
 
--- Envois de codes de connexion : un par minute et par adresse, contre les abus.
-create table public.code_sends (email text primary key, at timestamptz not null default now());
+-- Codes de connexion faits maison (send.ts) : seulement l'empreinte du code, une heure, 5 essais.
+create table public.login_codes (
+  email text primary key,
+  hash text not null,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  attempts int not null default 0
+);
 
 -- Qui est admin : rempli à la main, jamais depuis l'app.
 create table public.admins (user_id uuid primary key references auth.users on delete cascade);
@@ -100,7 +106,7 @@ alter table public.contents enable row level security;
 alter table public.leads enable row level security;
 alter table public.ig_snapshots enable row level security;
 alter table public.admins enable row level security;
-alter table public.code_sends enable row level security;
+alter table public.login_codes enable row level security;
 
 create policy "profil : le sien" on public.profiles for select using (id = auth.uid() or public.is_admin());
 create policy "profil : modifier le sien" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid());

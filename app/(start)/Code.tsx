@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { sb } from "../supabase";
-import { CODE_LEN, authError } from "./auth";
+import { CODE_LEN, checkError } from "./auth";
+import { checkCode } from "./send";
 
 // L'écran du code, commun à l'inscription et à la connexion.
 // Pensé pour ceux qui se perdent : où chercher l'e-mail, quel code prendre, renvoyer, changer d'adresse.
@@ -27,8 +28,10 @@ export default function Code({ email, resend, onBack, onDone }: {
   async function verify(c = code) {
     if (c.length < CODE_LEN || busy) return;
     setBusy(true); setErr("");
-    const { data, error } = await sb().auth.verifyOtp({ email, token: c, type: "email" });
-    if (error || !data.session) { setBusy(false); setCode(""); return setErr(authError(error ?? { code: "otp_expired" })); }
+    const r = await checkCode(email, c);
+    if (!r.ok) { setBusy(false); setCode(""); return setErr(checkError(r.code)); }
+    const { data, error } = await sb().auth.verifyOtp({ token_hash: r.hash, type: "email" });
+    if (error || !data.session) { setBusy(false); return setErr(checkError("error")); }
     await onDone(data.session.access_token);
   }
 

@@ -566,3 +566,21 @@ i.chip { font-style: normal; }
 .pf-install { justify-self: center; width: min(320px, 100%); margin-top: 8px; }
 .onb-who { display: grid; gap: 16px; }
 .onb-who .fld { width: 100%; }
+
+/* Premier passage : le rythme en grand */
+.onb-rythme { display: grid; justify-items: center; gap: 18px; padding: 8px 0 4px; }
+.onb-dial { display: flex; align-items: center; justify-content: center; gap: clamp(20px, 5vw, 48px); width: 100%; }
+.onb-dial button { display: grid; place-items: center; width: 56px; height: 56px; flex: none; border: 1px solid var(--line-strong); border-radius: 50%; background: var(--card); font-size: 24px; cursor: pointer; transition: border-color 200ms, transform 200ms var(--ease); }
+.onb-dial button:hover:not(:disabled) { border-color: var(--ink); transform: scale(1.06); }
+.onb-dial button:active:not(:disabled) { transform: scale(0.96); }
+.onb-dial button:disabled { opacity: 0.3; cursor: default; }
+.big-digits { height: clamp(120px, 22vw, 168px); width: auto; overflow: visible; }
+.big-digits .on { fill: var(--ink); animation: led 60ms steps(1, end) both; animation-delay: calc(var(--i) * 22ms); }
+.big-digits .off { fill: var(--ink); opacity: 0.1; }
+.onb-unit { font-size: 13px; }
+.week-dots { display: flex; gap: clamp(12px, 3vw, 22px); padding: 18px 22px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+.week-dots span { display: grid; justify-items: center; gap: 6px; }
+.week-dots i { width: 12px; height: 12px; border-radius: 50%; background: rgba(var(--fgr), 0.1); transition: background 200ms var(--steps); }
+.week-dots i.on { background: var(--gold); }
+.week-dots .lbl { margin-top: 4px; font-size: 11px; }
+.big-digits circle { transform-box: fill-box; transform-origin: center; }

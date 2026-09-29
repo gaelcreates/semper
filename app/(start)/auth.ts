@@ -1,6 +1,6 @@
 // Ce qui évite de perdre les gens à l'entrée : fautes de frappe dans l'adresse, messages d'erreur clairs.
 
-export const CODE_LEN = 8; // longueur réglée dans Supabase (Authentication > Email > OTP length)
+export const CODE_LEN = 6;
 export const validEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.trim());
 
 const DOMAINS = [
@@ -29,17 +29,18 @@ export function suggest(email: string) {
   return best ? `${local}@${best}` : null;
 }
 
-export function authError(e: { status?: number; code?: string; message?: string } | null) {
-  if (!e) return "";
-  if (e.status === 429 || e.code === "over_email_send_rate_limit") return "Trop de demandes d'un coup. Attends une minute, puis réessaie.";
-  if (e.code === "otp_expired") return "Code incorrect ou expiré. Prends le code du dernier e-mail reçu, ou demande-en un nouveau.";
-  if (e.code === "otp_disabled" || /signups not allowed/i.test(e.message ?? "")) return "Aucun compte avec cette adresse. Vérifie l'orthographe, ou crée ton espace.";
-  return "Ça n'a pas marché. Vérifie ta connexion internet, puis réessaie.";
-}
 
 // Réponse de l'envoi du code (send.ts) en phrase claire.
 export function sendError(code: "wait" | "no_account" | "error") {
   if (code === "wait") return "Un code vient de partir. Attends une minute avant d'en demander un autre.";
   if (code === "no_account") return "Aucun compte avec cette adresse. Vérifie l'orthographe, ou crée ton espace.";
+  return "Ça n'a pas marché. Vérifie ta connexion internet, puis réessaie.";
+}
+
+// Réponse de la vérification du code (send.ts) en phrase claire.
+export function checkError(code: "wrong" | "expired" | "too_many" | "error") {
+  if (code === "wrong") return "Ce code ne correspond pas. Prends celui du dernier e-mail reçu.";
+  if (code === "expired") return "Ce code a expiré. Demande-en un nouveau.";
+  if (code === "too_many") return "Trop d'essais. Demande un nouveau code.";
   return "Ça n'a pas marché. Vérifie ta connexion internet, puis réessaie.";
 }

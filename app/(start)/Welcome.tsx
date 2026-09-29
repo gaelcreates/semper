@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Logo from "../Logo";
-import { Stepper } from "../(app)/ui";
 import { cleanHandle } from "../(app)/lib";
 import type { Value } from "../(app)/store";
-import { refreshInstagram, syncSignup } from "../(app)/actions";
+import { refreshInstagram } from "../(app)/actions";
 import { sbReady } from "../supabase";
 import Code from "./Code";
+import { BigDigits, WeekDots } from "./Week7";
 import { sendCode } from "./send";
 import { sendError, suggest, validEmail } from "./auth";
 
@@ -81,7 +81,7 @@ export default function Welcome() {
 
       {sent ? (
         <Code email={email} resend={() => request()} onBack={() => setSent(false)}
-          onDone={async (t) => { await Promise.all([syncSignup(t), refreshInstagram(t)]).catch(() => {}); location.replace("/calendrier"); }} />
+          onDone={async (t) => { await refreshInstagram(t).catch(() => {}); location.replace("/calendrier"); }} />
       ) : (
       <form className="onb-q" key={q.key} onSubmit={(e) => { e.preventDefault(); if (ok) next(); }}>
         <span className="lbl disp">{String(step + 1).padStart(2, "0")}</span>
@@ -104,7 +104,17 @@ export default function Welcome() {
             <p className="onb-sub">Ton code pour entrer partira à cette adresse à la fin.</p>
           </div>
         )}
-        {q.kind === "rythme" && <Stepper label={q.title} value={Number(v)} onChange={set} min={1} max={14} format={(n) => `${n} / sem.`} />}
+        {q.kind === "rythme" && (
+          <div className="onb-rythme">
+            <div className="onb-dial">
+              <button type="button" onClick={() => set(Math.max(1, Number(v) - 1))} disabled={Number(v) <= 1} aria-label="Moins">−</button>
+              <BigDigits n={Number(v)} />
+              <button type="button" onClick={() => set(Math.min(14, Number(v) + 1))} disabled={Number(v) >= 14} aria-label="Plus">+</button>
+            </div>
+            <span className="lbl onb-unit">{Number(v) > 1 ? "vidéos" : "vidéo"} par semaine</span>
+            <WeekDots n={Number(v)} />
+          </div>
+        )}
         {(q.kind === "one" || q.kind === "multi") && (
           <div className="onb-opts">
             {q.options!.map((o) => {
