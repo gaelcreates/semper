@@ -25,10 +25,11 @@ export async function sendCode(raw: string, meta?: Meta): Promise<Sent> {
   const { data: last } = await a.from("login_codes").select("created_at").eq("email", email).maybeSingle();
   if (last && Date.now() - new Date(last.created_at).getTime() < 55_000) return { ok: false, code: "wait" };
 
-  // Nouveau compte seulement depuis l'inscription ; la connexion ne crée rien.
+  // Nouveau compte seulement depuis l'inscription, et seulement une fois l'outil ouvert (SEMPER_OPEN=1).
+  // Fermé, seuls les comptes existants peuvent se connecter.
   const { data: known } = await a.from("profiles").select("id").eq("email", email).maybeSingle();
   if (!known) {
-    if (!meta) return { ok: false, code: "no_account" };
+    if (!meta || process.env.SEMPER_OPEN !== "1") return { ok: false, code: "no_account" };
     const { error } = await a.auth.admin.createUser({ email, email_confirm: true, user_metadata: meta });
     if (error) return { ok: false, code: "error" };
   }
