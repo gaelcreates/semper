@@ -16,7 +16,7 @@ import { announce, createContent, load, openSheet, useData, useNote, useOpen } f
 const nav = [
   { href: "/calendrier", label: "Calendrier", icon: "cal" },
   { href: "/constance", label: "Constance", icon: "lune" },
-  { href: "/instagram", label: "Instagram", icon: "insta" },
+  { href: "/organisation", label: "Organisation", icon: "orga" },
   { href: "/profil", label: "Profil", icon: "profil" },
 ] as const;
 

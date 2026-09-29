@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
 import DotIcon from "../DotIcon";
 import { duration } from "./lib";
@@ -17,7 +18,13 @@ export default function Sheet({ id }: { id: string }) {
   const c = d.contents.find((x) => x.id === id);
   const dur = d.profile.durations;
   const [full, setFull] = useState(() => { try { return localStorage.getItem("semper:full") === "1"; } catch { return false; } });
-  const toggleFull = () => { setFull(!full); try { localStorage.setItem("semper:full", full ? "0" : "1"); } catch {} };
+  // Le cadre se déforme d'un format à l'autre (View Transitions) ; sans cette API, le changement est direct.
+  const toggleFull = () => {
+    try { localStorage.setItem("semper:full", full ? "0" : "1"); } catch {}
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    if (doc.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) doc.startViewTransition(() => flushSync(() => setFull(!full)));
+    else setFull(!full);
+  };
 
   const close = () => {
     if (c && !c.title.trim()) deleteContent(id);
@@ -113,7 +120,7 @@ export default function Sheet({ id }: { id: string }) {
         </div>
 
         <footer className="sheet-foot">
-          <Link href="/profil#fiche" className="link" onClick={close}>Personnaliser la fiche</Link>
+          <Link href="/organisation#fiche" className="link" onClick={close}>Personnaliser la fiche</Link>
           <button type="button" className="link danger" onClick={() => { deleteContent(id); openSheet(null); }}>Supprimer</button>
         </footer>
       </aside>

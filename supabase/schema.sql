@@ -125,3 +125,7 @@ create policy "instagram : le sien" on public.ig_snapshots for select
 revoke execute on function public.on_signup() from public, anon, authenticated;
 revoke execute on function public.is_admin() from public, anon;
 grant execute on function public.is_admin() to authenticated;
+
+-- Le lien entre Semper et Meta : identifiant Instagram de Gael et jeton de page permanent (serveur seulement).
+create table public.meta_link (id int primary key default 1 check (id = 1), ig_id text not null, token text not null, updated_at timestamptz not null default now());
+alter table public.meta_link enable row level security;

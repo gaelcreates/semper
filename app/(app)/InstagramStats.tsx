@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { refreshInstagram } from "../actions";
-import { sb } from "../../supabase";
-import { DAYS, MONTHS_SHORT, addDays, dayKey, isoWeek, startOfWeek } from "../lib";
-import { useData } from "../store";
-import type { Post } from "../../instagram";
+import { refreshInstagram } from "./actions";
+import { sb } from "../supabase";
+import { DAYS, MONTHS_SHORT, addDays, dayKey, isoWeek, startOfWeek } from "./lib";
+import { useData } from "./store";
+import type { Post } from "../instagram";
 
 type Snap = {
   day: string; followers: number | null; media: number | null; avg_likes: number | null; avg_comments: number | null;
@@ -25,11 +24,12 @@ const SLOTS = [
   { name: "Nuit", phrase: "de nuit", from: 23, to: 29 },
 ];
 
-// Instagram : tout ce que l'API officielle laisse lire, rangé pour décider quoi publier et quand.
-export default function Instagram() {
+// Les chiffres Instagram, dans le Profil : tout ce que l'API officielle laisse lire, rangé pour décider quoi publier et quand.
+export default function InstagramStats() {
   const d = useData()!;
   const handle = d.profile.handle.toLowerCase();
   const [rows, setRows] = useState<Snap[] | null>(null);
+  const [state, setState] = useState<"ok" | "off" | "absent">("ok");
 
   useEffect(() => {
     let off = false;
@@ -39,27 +39,40 @@ export default function Instagram() {
       let { data } = await q();
       if (!data?.length || data[0].day !== new Date().toISOString().slice(0, 10)) {
         const { data: { session } } = await sb().auth.getSession();
-        if (session && (await refreshInstagram(session.access_token))) ({ data } = await q());
+        const r = session ? await refreshInstagram(session.access_token) : "absent";
+        if (!off) setState(r);
+        if (r === "ok") ({ data } = await q());
       }
       if (!off) setRows((data ?? []) as Snap[]);
     })();
     return () => { off = true; };
   }, [handle]);
 
-  if (!handle) return (
-    <div className="page"><header className="page-head"><h1>Instagram</h1></header>
-      <section className="box pf"><p>Ajoute ton pseudo dans le <Link href="/profil" className="u">Profil</Link> pour voir tes chiffres.</p></section></div>
+  const head = (
+    <header className="sub-head">
+      <h2>Instagram</h2>
+      {handle && <a className="muted" href={`https://www.instagram.com/${handle}/`} target="_blank" rel="noreferrer">@{handle}</a>}
+      {rows?.[0]?.followers != null && <span className="lbl push">Relevé du {new Date(rows[0].day).getDate()} {MONTHS_SHORT[new Date(rows[0].day).getMonth()]}</span>}
+    </header>
   );
+  if (!handle) return <>{head}<section className="box pf"><p>Ajoute ton pseudo Instagram ci-dessus pour voir tes chiffres.</p></section></>;
   if (rows === null) return null;
   const last = rows[0];
-  if (!last || last.followers == null) return (
-    <div className="page"><header className="page-head"><h1>Instagram</h1><a className="muted" href={`https://www.instagram.com/${handle}/`} target="_blank" rel="noreferrer">@{handle}</a></header>
+  if ((!last || last.followers == null) && state === "off") return (
+    <>{head}
       <section className="box pf">
-        <h2>Chiffres indisponibles</h2>
+        <h3>Bientôt ici</h3>
+        <p>Semper n&apos;est pas encore relié à Instagram. Tes chiffres apparaîtront ici dès que c&apos;est fait, sans rien à faire de ton côté.</p>
+      </section></>
+  );
+  if (!last || last.followers == null) return (
+    <>{head}
+      <section className="box pf">
+        <h3>Chiffres indisponibles</h3>
         <p>Instagram ne partage les chiffres que des comptes professionnels ou créateur. Le passage est gratuit et se fait en une minute :</p>
         <ol className="how"><li>Instagram, ton profil, le menu en haut à droite</li><li>Type de compte et outils</li><li>Passer à un compte professionnel</li></ol>
-        <p className="muted">Vérifie aussi que le pseudo du Profil est exactement le bon.</p>
-      </section></div>
+        <p className="muted">Vérifie aussi que le pseudo ci-dessus est exactement le bon.</p>
+      </section></>
   );
 
   const posts = last.posts ?? [];
@@ -70,6 +83,8 @@ export default function Instagram() {
   };
   const w7 = ago(7), m30 = ago(30);
   const eng = last.followers ? ((last.avg_likes ?? 0) + (last.avg_comments ?? 0)) / last.followers * 100 : 0;
+  const viewed = posts.filter((p) => p.views != null);
+  const views = viewed.length ? mean(viewed.map((p) => p.views!)) : null;
 
   // Rythme réel sur 8 semaines, à partir des dates de publication
   const cur = startOfWeek(new Date());
@@ -93,19 +108,14 @@ export default function Instagram() {
   read.push(`Sur Instagram, tu tiens ${dec(real)} publication${real >= 2 ? "s" : ""} par semaine. Ton rythme visé : ${d.profile.rythme}.`);
 
   const series = [...rows].reverse().filter((r) => r.followers != null);
-  const dd = new Date(last.day);
 
   return (
-    <div className="page wide">
-      <header className="page-head">
-        <h1>Instagram</h1>
-        <a className="muted" href={`https://www.instagram.com/${handle}/`} target="_blank" rel="noreferrer">@{handle}</a>
-        <span className="lbl push">Relevé du {dd.getDate()} {MONTHS_SHORT[dd.getMonth()]}</span>
-      </header>
+    <>
+      {head}
 
       <div className="cs-stats four">
-        <div className="box stat"><span className="lbl">Abonnés</span><b className="disp">{num(last.followers)}</b><span className="unit">{w7 == null ? "Évolution dès demain" : `${signed(w7)} sur 7 jours`}</span></div>
-        <div className="box stat"><span className="lbl">30 jours</span><b className="disp">{m30 == null ? "·" : signed(m30)}</b><span className="unit">abonnés</span></div>
+        <div className="box stat"><span className="lbl">Abonnés</span><b className="disp">{num(last.followers!)}</b><span className="unit">{w7 == null ? "Évolution dès demain" : `${signed(w7)} sur 7 jours${m30 == null ? "" : ` · ${signed(m30)} sur 30`}`}</span></div>
+        <div className="box stat"><span className="lbl">Vues moyennes</span><b className="disp">{views == null ? "·" : num(views)}</b><span className="unit">par publication récente</span></div>
         <div className="box stat"><span className="lbl">Engagement</span><b className="disp">{dec(eng)}<i>%</i></b><span className="unit">likes et commentaires par abonné</span></div>
         <div className="box stat"><span className="lbl">Par semaine</span><b className="disp">{dec(real)}<i>/{d.profile.rythme}</i></b><span className="unit">publications, 4 dernières semaines</span></div>
       </div>
@@ -148,7 +158,7 @@ export default function Instagram() {
             {top.map((p) => (
               <a key={p.link} href={p.link} target="_blank" rel="noreferrer" className="top">
                 <span className="thumb">{p.img ? <img src={p.img} alt="" referrerPolicy="no-referrer" loading="lazy" /> : <span className="lbl">{p.type}</span>}</span>
-                <span className="top-n"><b className="disp">{num(p.likes)}</b> likes · <b className="disp">{num(p.comments)}</b></span>
+                <span className="top-n">{p.views != null && <><b className="disp">{num(p.views)}</b> vues · </>}<b className="disp">{num(p.likes)}</b> likes</span>
               </a>
             ))}
           </div>
@@ -159,7 +169,7 @@ export default function Instagram() {
         <span className="lbl">Lecture</span>
         <ul className="read">{read.map((r) => <li key={r}>{r}</li>)}</ul>
       </section>
-    </div>
+    </>
   );
 }
 

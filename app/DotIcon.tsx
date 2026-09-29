@@ -19,12 +19,13 @@ const glyphs: Record<string, string[]> = {
   reduire:  ["0100010", "1100011", "0000000", "0000000", "0000000", "1100011", "0100010"],
   insta:    ["0111110", "1000011", "1011101", "1010101", "1011101", "1000001", "0111110"],
   cadenas:  ["0011100", "0100010", "0100010", "1111111", "1110111", "1110111", "1111111"],
+  orga:     ["0100000", "1111111", "0100000", "0000000", "0000010", "1111111", "0000010"],
 };
 
 // L'ordre dans lequel les points se rallument dit ce que fait l'icône :
 // les jours qui passent, la lune qui se remplit, l'objectif qui s'ouvre, le plus qui grandit.
 type Order = "lignes" | "colonnes" | "centre" | "tour";
-const ORDER: Record<string, Order> = { cal: "lignes", lune: "colonnes", profil: "lignes", ajout: "centre", insta: "tour", cadenas: "lignes", agrandir: "centre", reduire: "centre" };
+const ORDER: Record<string, Order> = { cal: "lignes", lune: "colonnes", profil: "lignes", ajout: "centre", insta: "tour", cadenas: "lignes", orga: "lignes", agrandir: "centre", reduire: "centre" };
 function rank(mode: Order, x: number, y: number, n: number) {
   const c = (n - 1) / 2;
   if (mode === "colonnes") return x * n + y;
