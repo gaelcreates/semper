@@ -845,7 +845,8 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 .float.f1 { top: 190px; }
 @media (max-width: 560px) {
   .mwk-head, .mwk-body { grid-template-columns: 26px repeat(7, minmax(0, 1fr)); }
-  .mwk-head small, .mwk-head > .lbl { display: none; }
+  .mwk-head small { display: none; }
+  .mwk-head > .lbl { visibility: hidden; }
   .mwk-head > span:not(.lbl) { justify-content: center; padding: 8px 0; }
   .mwk-head b { font-size: 12px; }
   .mwk-hours span { right: 4px; font-size: 9px; }
