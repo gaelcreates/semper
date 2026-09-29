@@ -19,12 +19,12 @@ type Q = { key: string; title: string; kind: "who" | "one" | "multi" | "rythme";
 export const QUESTIONS: Q[] = [
   { key: "who", title: "Faisons connaissance", kind: "who" },
   { key: "pourquoi", title: "Tu crées pour quoi ?", kind: "multi", options: ["Faire grandir ma marque perso", "Trouver des clients", "Vendre un produit ou une offre", "En faire mon métier", "Partager une passion"] },
-  { key: "objectif", title: "Où veux-tu en être dans 6 mois grâce à ton contenu ?", kind: "one", options: ["Trouver mes premiers clients", "Vivre de mon contenu", "Lancer une offre", "Faire grandir mon audience", "Simplement être régulier"] },
   { key: "abonnes", title: "Combien d'abonnés aujourd'hui ?", kind: "one", options: ["Moins de 1 000", "1 000 à 10 000", "10 000 à 50 000", "50 000 à 100 000", "Plus de 100 000"] },
+  { key: "objectif", title: "Où veux-tu en être dans 6 mois grâce à ton contenu ?", kind: "one", options: ["Trouver mes premiers clients", "Vivre de mon contenu", "Lancer une offre", "Faire grandir mon audience", "Simplement être régulier"] },
   { key: "investi", title: "Tu as déjà investi pour progresser ?", kind: "multi", alone: "Pas encore", options: ["Pas encore", "Du matériel", "Un outil ou un abonnement", "Une formation", "Un coach ou un accompagnement"] },
-  { key: "frequence", title: "Tu publies combien en ce moment ?", kind: "one", options: ["Presque jamais", "Une fois par semaine", "Deux à trois fois par semaine", "Presque tous les jours"] },
+  { key: "frequence", title: "Tu publies à quel rythme ?", kind: "one", options: ["Presque jamais", "Une fois par semaine", "Deux à trois fois par semaine", "Presque tous les jours"] },
   { key: "blocage", title: "Qu'est-ce qui te bloque le plus ?", kind: "one", options: ["Trouver des idées", "Tenir le rythme", "Le temps", "Savoir quoi dire pour vendre", "Le tournage ou le montage"] },
-  { key: "usage", title: "Tu attends quoi de Semper ?", kind: "multi", options: ["Tenir un rythme", "M'organiser", "Ne plus manquer d'idées", "Voir ma progression"] },
+  { key: "usage", title: "Tu attends quoi de Semper ?", kind: "multi", options: ["Tenir un rythme", "Planifier ma semaine", "Organiser mes idées", "Écrire mes scripts plus vite", "Suivre mes chiffres Instagram", "Voir ma progression"] },
   { key: "rythme", title: "Combien de vidéos par semaine tu veux tenir ?", kind: "rythme" },
   { key: "source", title: "Comment tu as connu Semper ?", kind: "one", options: ["Instagram", "TikTok", "YouTube", "Bouche à oreille", "La newsletter", "Autre"] },
 ];
