@@ -60,7 +60,8 @@ Publication automatique, connexion aux comptes Meta ou TikTok, date d'ouverture.
 
 ## La lettre (trysemper.app/lettre)
 
-- Source : `~/Desktop/SEMPER/Newsletter/editions/<slug>/` (.md pour le texte, contenu.py pour `titre_web` et `description`, distincts de l'objet du mail).
-- `node scripts/lettre.mjs` copie toutes les images vers `public/newsletter/` (les e-mails y pointent, publiés ou non).
-- `node scripts/lettre.mjs <slug>` publie aussi l'édition : copie le .md dans `content/lettre/`, ajoute l'entrée dans `editions.json`. Seulement les éditions désignées par Gael. L'annonce est refusée.
-- Pages : `app/(site)/lettre/` (liste, `[slug]`, formulaire en bas). Section « La lettre » sur l'accueil, lien dans le pied de page, sitemap.
+- Automatique : launchd `app.trysemper.lettre` lance `scripts/lettre.mjs --push` toutes les heures. Il travaille dans `~/Projects/semper-lp-en-ligne` (copie de main), jamais dans ce dossier, et ne pousse que `content/lettre` et `public/newsletter`.
+- Source : `~/Desktop/SEMPER/Newsletter/editions/<slug>/` (.md pour le texte ; contenu.py pour `titre_web`, `description`, `site`, `date_envoi`).
+- Une page par édition envoyée (broadcast Resend « sent » au même objet, ou `date_envoi`). Jamais l'annonce ni `"site": False`. Images de toutes les éditions servies sous `/newsletter/`.
+- Ne pas modifier `content/lettre` à la main dans v1 : c'est main qui fait foi.
+- Arrêter : `launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/app.trysemper.lettre.plist`. Journal : `~/Library/Logs/semper-lettre.log`.
