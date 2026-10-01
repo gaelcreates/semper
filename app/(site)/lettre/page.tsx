@@ -87,14 +87,6 @@ export default function Page() {
           )}
         </section>
 
-        {/* Qui écrit */}
-        <section className="wrap lt-sec lt-author" aria-label="Qui écrit">
-          <p>
-            Écrite par <b>Gael Fischer</b>, directeur créatif à Morges et fondateur de Semper, le calendrier éditorial gratuit des créateurs.
-            Sur Instagram : <a href="https://www.instagram.com/gaelcreates/">@gaelcreates</a>.
-          </p>
-        </section>
-
         <div className="wrap">
           <Abonnement />
         </div>

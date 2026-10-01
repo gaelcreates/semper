@@ -882,8 +882,6 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 .lt-formats img { width: 100%; height: auto; border-radius: 10px; margin-bottom: 8px; }
 .lt-formats h3 { font-size: 18px; letter-spacing: -0.01em; padding-inline: 4px; }
 .lt-formats p { color: var(--ink2); font-size: 14.5px; line-height: 1.5; padding-inline: 4px; }
-.lt-author p { max-width: 60ch; color: var(--ink2); line-height: 1.65; }
-.lt-author a { color: var(--ink); border-bottom: 1px solid rgba(255, 197, 8, 0.8); }
 .lettres .tagline { display: block; margin-bottom: 18px; }
 .lt-list { list-style: none; display: grid; gap: 14px; margin-top: 28px; max-width: 860px; }
 .lt-list a { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 20px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); transition: border-color 200ms, transform 300ms var(--ease); }
