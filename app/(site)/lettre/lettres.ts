@@ -45,3 +45,12 @@ export function lire(slug: string) {
   const ps = fin.split(/\n{2,}/).map((s) => s.trim()).filter((s) => s && !/^Gael\nCréer, toujours$/.test(s));
   return { chapo, blocs, ps: ps.map((s) => inline(s)) };
 }
+
+// Les cinq formats de la lettre, avec leur bannière (reference/Semper-Newsletter-Formats.md).
+export const FORMATS = [
+  { nom: "Le calendrier de…", banniere: "le-calendrier-de", texte: "L'organisation réelle d'un créateur : où naissent ses idées, où elles meurent, ce qui le fait s'arrêter." },
+  { nom: "La règle", banniere: "la-regle", texte: "Une règle nommée, qui s'applique dans la semaine." },
+  { nom: "Les coulisses", banniere: "les-coulisses", texte: "Une décision prise en construisant Semper, et ce qu'elle change pour toi." },
+  { nom: "Le piège", banniere: "le-piege", texte: "Une erreur précise que font les créateurs, et comment en sortir." },
+  { nom: "Le chiffre", banniere: "le-chiffre", texte: "Un seul nombre sur la constance des créateurs, et ce qu'il révèle." },
+];

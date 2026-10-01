@@ -1,4 +1,4 @@
-// Met le site à jour avec les lettres du dossier Newsletter. Tourne seul toutes les heures (launchd,
+// Met le site à jour avec les lettres du dossier Newsletter. Tourne seul tous les jours à 20 h (launchd,
 // app.trysemper.lettre), et à la main quand on veut :
 //
 //   node scripts/lettre.mjs          dans le dossier courant (pour tester en local)

@@ -60,7 +60,7 @@ Publication automatique, connexion aux comptes Meta ou TikTok, date d'ouverture.
 
 ## La lettre (trysemper.app/lettre)
 
-- Automatique : launchd `app.trysemper.lettre` lance `scripts/lettre.mjs --push` toutes les heures. Il travaille dans `~/Projects/semper-lp-en-ligne` (copie de main), jamais dans ce dossier, et ne pousse que `content/lettre` et `public/newsletter`.
+- Automatique : launchd `app.trysemper.lettre` lance `scripts/lettre.mjs --push` tous les jours à 20 h. Il travaille dans `~/Projects/semper-lp-en-ligne` (copie de main), jamais dans ce dossier, et ne pousse que `content/lettre` et `public/newsletter`.
 - Source : `~/Desktop/SEMPER/Newsletter/editions/<slug>/` (.md pour le texte ; contenu.py pour `titre_web`, `description`, `site`, `date_envoi`).
 - Une page par édition envoyée (broadcast Resend « sent » au même objet, ou `date_envoi`). Jamais l'annonce ni `"site": False`. Images de toutes les éditions servies sous `/newsletter/`.
 - Ne pas modifier `content/lettre` à la main dans v1 : c'est main qui fait foi.

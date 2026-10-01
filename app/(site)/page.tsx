@@ -8,7 +8,7 @@ import Stand from "../Stand";
 import Orbit from "../Orbit";
 import { site } from "../site";
 import Link from "next/link";
-import { lettres } from "./lettre/lettres";
+import { FORMATS, lettres } from "./lettre/lettres";
 
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
 
@@ -242,21 +242,26 @@ export default function Page() {
         </section>
 
         {/* ---------- La lettre : l'inscription, puis l'accès à l'archive */}
-        <section className="s lettre-band" id="lettre">
+        <section className="s lettre-sec" id="lettre">
           <div className="wrap lb">
-            <div className="lb-text" data-reveal style={{ ["--i" as string]: 1 }}>
-              <h2>La lettre <span className="w">Créer, toujours.</span></h2>
-              <p className="story">Une lettre par semaine sur la constance des créateurs.</p>
-              {lettres.length > 0 && (
-                <p className="lb-links">
-                  <Link href={`/lettre/${lettres[0].slug}`} className="link">Dernière : {lettres[0].titre}</Link>
-                  <Link href="/lettre" className="link">Toutes les lettres</Link>
-                </p>
-              )}
+            <div className="lb-text">
+              <p className="tagline dot-t" data-reveal style={{ ["--i" as string]: 0 }}><span className="b">La</span> <span className="w">lettre.</span></p>
+              <h2 data-reveal style={{ ["--i" as string]: 1 }}>Chaque dimanche, <span className="w">une lettre sur la constance.</span></h2>
+              <p className="story" data-reveal style={{ ["--i" as string]: 2 }}>
+                Le calendrier d&apos;un créateur ouvert, une règle à appliquer dans la semaine, les coulisses de Semper. Pour tenir, pas pour produire plus.
+              </p>
+              <div className="lb-form" data-reveal style={{ ["--i" as string]: 3 }}>
+                <JoinForm label="Recevoir la lettre" done="C'est noté. La prochaine lettre arrive dans ta boîte." />
+                <Link href="/lettre" className="link lb-more">
+                  {lettres.length ? `Lire les lettres · dernière : ${lettres[0].titre}` : "Découvrir la lettre"}
+                </Link>
+              </div>
             </div>
-            <div data-reveal style={{ ["--i" as string]: 2 }}>
-              <JoinForm label="Recevoir la lettre" done="C'est noté. La prochaine lettre arrive dans ta boîte." />
-            </div>
+            <Link href="/lettre" className="lb-fan" aria-label="Découvrir la lettre" data-reveal style={{ ["--i" as string]: 2 }}>
+              {FORMATS.slice(0, 4).map((f, i) => (
+                <img key={f.nom} src={`/newsletter/${f.banniere}.png`} alt="" width={1200} height={600} loading="lazy" style={{ ["--k" as string]: i }} />
+              ))}
+            </Link>
           </div>
         </section>
 

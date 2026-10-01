@@ -1,29 +1,68 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer, TopBar } from "../../Frame";
+import JoinForm from "../../JoinForm";
 import { site } from "../../site";
 import Abonnement from "./Abonnement";
-import { dateFr, lettres } from "./lettres";
+import { FORMATS, dateFr, lettres } from "./lettres";
 
-const description = "Les lettres de Gael Fischer sur la constance des créateurs de contenu : des calendriers ouverts, des règles, des coulisses.";
+const title = "Créer, toujours : la newsletter des créateurs de contenu réguliers · Semper";
+const description =
+  "Chaque dimanche, une lettre gratuite sur la constance : comment les créateurs organisent leurs idées, tiennent leur calendrier éditorial et ce qui les fait s'arrêter.";
 
 export const metadata: Metadata = {
-  title: "La lettre · Semper",
+  title,
   description,
   alternates: { canonical: `${site.url}/lettre` },
-  openGraph: { title: "La lettre · Semper", description, url: `${site.url}/lettre`, type: "website" },
+  openGraph: { title, description, url: `${site.url}/lettre`, type: "website", images: [`${site.url}/newsletter/le-calendrier-de.png`] },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  name: "Créer, toujours",
+  description,
+  url: `${site.url}/lettre`,
+  inLanguage: "fr",
+  author: { "@type": "Person", name: site.owner, url: "https://www.instagram.com/gaelcreates/" },
+  publisher: { "@type": "Organization", name: "Semper", url: site.url },
+  blogPost: lettres.map((l) => ({ "@type": "BlogPosting", headline: l.titre, description: l.description, datePublished: l.date, url: `${site.url}/lettre/${l.slug}` })),
 };
 
 export default function Page() {
   return (
     <>
       <TopBar cta={false} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <main className="lettres">
-        <div className="wrap narrow">
+        {/* L'en-tête : ce que c'est, et l'inscription tout de suite */}
+        <header className="wrap lt-hero">
           <p className="tagline dot-t"><span className="b">Créer,</span> <span className="w">toujours.</span></p>
-          <h1>La lettre</h1>
-          <p className="story">Ce qui fait tenir un créateur dans la durée.</p>
+          <h1>La lettre des créateurs <span className="w">qui tiennent.</span></h1>
+          <p className="lead">Chaque dimanche, un e-mail sur la constance : comment les créateurs organisent leurs idées, tiennent leur calendrier et ce qui les fait s&apos;arrêter.</p>
+          <div className="lt-hero-form">
+            <JoinForm label="Recevoir la lettre" done="C'est noté. La prochaine lettre arrive dans ta boîte." />
+            <p className="fine">Gratuit · Un e-mail par semaine · Désinscription en un clic</p>
+          </div>
+        </header>
 
+        {/* Les cinq formats */}
+        <section className="wrap lt-sec" aria-labelledby="formats">
+          <h2 id="formats">Cinq formats, <span className="w">une seule question : comment tenir.</span></h2>
+          <ul className="lt-formats">
+            {FORMATS.map((f) => (
+              <li key={f.nom}>
+                <img src={`/newsletter/${f.banniere}.png`} alt={`Bannière « ${f.nom} »`} width={1200} height={600} loading="lazy" />
+                <h3>{f.nom}</h3>
+                <p>{f.texte}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Les lettres envoyées */}
+        <section className="wrap lt-sec" aria-labelledby="archive">
+          <h2 id="archive">Les lettres <span className="w">envoyées.</span></h2>
           {lettres.length ? (
             <ol className="lt-list">
               {lettres.map((l) => (
@@ -40,9 +79,23 @@ export default function Page() {
               ))}
             </ol>
           ) : (
-            <p className="lt-empty">La première lettre arrive bientôt.</p>
+            <div className="lt-empty">
+              <span className="disp">N° 01</span>
+              <p>La première lettre arrive bientôt. Elle paraîtra ici après son envoi : inscris-toi pour la lire en premier.</p>
+              <a href="#recevoir" className="link">S&apos;inscrire</a>
+            </div>
           )}
+        </section>
 
+        {/* Qui écrit */}
+        <section className="wrap lt-sec lt-author" aria-label="Qui écrit">
+          <p>
+            Écrite par <b>Gael Fischer</b>, directeur créatif à Morges et fondateur de Semper, le calendrier éditorial gratuit des créateurs.
+            Sur Instagram : <a href="https://www.instagram.com/gaelcreates/">@gaelcreates</a>.
+          </p>
+        </section>
+
+        <div className="wrap">
           <Abonnement />
         </div>
       </main>

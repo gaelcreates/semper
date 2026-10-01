@@ -15,6 +15,7 @@ export function TopBar({ cta = true }: { cta?: boolean }) {
             <a href="#produit">L&apos;outil</a>
             <a href="#methode">Comment ça marche</a>
             <a href="#mission">La mission</a>
+            <a href="#lettre">La lettre</a>
             <a href="#questions">Questions</a>
           </nav>
         )}
