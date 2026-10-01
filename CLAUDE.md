@@ -57,3 +57,10 @@ Publication automatique, connexion aux comptes Meta ou TikTok, date d'ouverture.
 - Données structurées JSON-LD dans `app/page.tsx` (Organization, WebSite, SoftwareApplication, FAQPage à partir de `faq`).
 - Phrase d'identité dans le pied de page (`.about`), /connexion en noindex, `public/og.png` régénéré (H1 actuel, logo, fond clair).
 - À faire par Gael : Google Search Console et Bing Webmaster Tools avec le sitemap.
+
+## La lettre (trysemper.app/lettre)
+
+- Source : `~/Desktop/SEMPER/Newsletter/editions/<slug>/` (.md pour le texte, contenu.py pour `titre_web` et `description`, distincts de l'objet du mail).
+- `node scripts/lettre.mjs` copie toutes les images vers `public/newsletter/` (les e-mails y pointent, publiés ou non).
+- `node scripts/lettre.mjs <slug>` publie aussi l'édition : copie le .md dans `content/lettre/`, ajoute l'entrée dans `editions.json`. Seulement les éditions désignées par Gael. L'annonce est refusée.
+- Pages : `app/(site)/lettre/` (liste, `[slug]`, formulaire en bas). Section « La lettre » sur l'accueil, lien dans le pied de page, sitemap.

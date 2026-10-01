@@ -5,14 +5,14 @@ import { join, type JoinState } from "./actions";
 import Mark from "./Mark";
 import Orbit from "./Orbit";
 
-export default function JoinForm({ label = "Rejoindre la waitlist", light = false }: { label?: string; light?: boolean }) {
+export default function JoinForm({ label = "Rejoindre la waitlist", light = false, done }: { label?: string; light?: boolean; done?: string }) {
   const [state, action, pending] = useActionState<JoinState, FormData>(join, null);
   const id = useId();
 
   if (state?.ok) {
     return (
       <p className={`form-done${light ? " on-light" : ""}`} role="status">
-        <Mark className="mark-sm" /> {state.message}
+        <Mark className="mark-sm" /> {done ?? state.message}
       </p>
     );
   }

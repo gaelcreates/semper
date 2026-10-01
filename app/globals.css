@@ -854,3 +854,49 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
   .mwk-b::after, .mwk-b.k-pub em { display: none; }
   .app-filters .f-search { min-width: 0; }
 }
+
+/* ---------- La lettre : bande de l'accueil, archive, édition */
+.lettre-band { padding-block: clamp(56px, 7vw, 96px); }
+.lb { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 480px); gap: clamp(24px, 4vw, 56px); align-items: center; }
+.lb h2 { font-size: clamp(26px, 3.2vw, 38px); }
+.lb .story { margin-top: 12px; }
+.lb-links { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 16px; }
+.lb-links .link { border-bottom: 1px solid rgba(255, 197, 8, 0.8); }
+@media (max-width: 820px) { .lb { grid-template-columns: minmax(0, 1fr); } }
+
+.lettres { padding-block: clamp(48px, 7vw, 88px) var(--sp); }
+.lettres .narrow { max-width: 760px; }
+.lettres .tagline { display: block; margin-bottom: 18px; }
+.lt-list { list-style: none; display: grid; gap: 14px; margin-top: 40px; }
+.lt-list a { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 20px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); transition: border-color 200ms, transform 300ms var(--ease); }
+.lt-list a:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+.lt-list img { width: 100%; height: auto; border-radius: 10px; display: block; }
+.lt-list span { display: grid; gap: 6px; }
+.lt-list small, .lt-meta { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.lt-list b { font-weight: 900; font-size: 19px; line-height: 1.2; letter-spacing: -0.01em; }
+.lt-list em { font-style: normal; color: var(--ink2); font-size: 14.5px; line-height: 1.5; }
+.lt-empty { margin-top: 40px; color: var(--ink2); }
+@media (max-width: 560px) { .lt-list a { grid-template-columns: minmax(0, 1fr); } }
+
+.lt-back { display: inline-block; margin-bottom: 22px; }
+.lt-back::before { content: "← "; }
+.lt-banner { display: block; width: 100%; height: auto; border-radius: var(--r-xl); margin-bottom: 28px; }
+.lt h1 { font-size: clamp(32px, 5vw, 48px); margin-top: 12px; }
+.lt-chapo { margin-top: 16px; font-size: clamp(17px, 1.8vw, 19.5px); line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+.lt-body { margin-top: 36px; display: grid; gap: 18px; font-size: 17px; line-height: 1.7; }
+.lt-body h2 { display: grid; gap: 14px; margin-top: 26px; padding-top: 26px; border-top: 2px dotted var(--line-strong); font-size: 21px; letter-spacing: -0.01em; }
+.lt-body h2 .disp { font-size: 20px; letter-spacing: 0; }
+.lt-body b, .lt-retenir { font-weight: 900; }
+.lt-retenir { line-height: 1.5; }
+.lt-body a:not(.btn), .lt-sign a { border-bottom: 1px solid rgba(255, 197, 8, 0.8); }
+.lt-body .btn { display: inline-flex; }
+.lt-etapes { list-style: none; display: grid; gap: 12px; }
+.lt-etapes li { display: grid; grid-template-columns: 34px minmax(0, 1fr); }
+.lt-etapes .disp { color: var(--gold); font-size: 18px; }
+.lt-img { width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--line); }
+.lt-sign { margin-top: 40px; display: grid; gap: 4px; font-size: 16px; line-height: 1.6; }
+.lt-sign small { font-size: 12px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 18px; }
+
+.abo { margin-top: clamp(56px, 8vw, 88px); padding: clamp(28px, 4vw, 44px); border-radius: var(--r-xl); background: var(--card); border: 1px solid var(--line); display: grid; gap: 14px; justify-items: start; }
+.abo h2 { font-size: clamp(24px, 3vw, 32px); }
+.abo .story { margin: 0 0 6px; }

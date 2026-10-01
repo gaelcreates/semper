@@ -7,6 +7,8 @@ import Curve from "../Curve";
 import Stand from "../Stand";
 import Orbit from "../Orbit";
 import { site } from "../site";
+import Link from "next/link";
+import { lettres } from "./lettre/lettres";
 
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
 
@@ -236,6 +238,25 @@ export default function Page() {
                 <p>Monteur, assistant, invité. La collaboration arrivera dans une offre payante. Le créateur seul reste gratuit.</p>
               </li>
             </ol>
+          </div>
+        </section>
+
+        {/* ---------- La lettre : l'inscription, puis l'accès à l'archive */}
+        <section className="s lettre-band" id="lettre">
+          <div className="wrap lb">
+            <div className="lb-text" data-reveal style={{ ["--i" as string]: 1 }}>
+              <h2>La lettre <span className="w">Créer, toujours.</span></h2>
+              <p className="story">Une lettre par semaine sur la constance des créateurs.</p>
+              {lettres.length > 0 && (
+                <p className="lb-links">
+                  <Link href={`/lettre/${lettres[0].slug}`} className="link">Dernière : {lettres[0].titre}</Link>
+                  <Link href="/lettre" className="link">Toutes les lettres</Link>
+                </p>
+              )}
+            </div>
+            <div data-reveal style={{ ["--i" as string]: 2 }}>
+              <JoinForm label="Recevoir la lettre" done="C'est noté. La prochaine lettre arrive dans ta boîte." />
+            </div>
           </div>
         </section>
 
