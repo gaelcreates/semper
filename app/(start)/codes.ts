@@ -47,16 +47,18 @@ export async function verifyCode(email: string, code: string): Promise<"ok" | "w
 
 // Ajoute l'adresse à l'audience Resend si elle n'y est pas. Une adresse déjà présente n'est pas touchée :
 // quelqu'un qui s'est désabonné de la lettre le reste, même s'il se connecte ou crée un compte.
-export async function addToAudience(email: string, firstName?: string) {
+// Renvoie true quand l'adresse est bien dans l'audience (déjà présente ou ajoutée).
+export async function addToAudience(email: string, firstName?: string): Promise<boolean> {
   const key = process.env.RESEND_API_KEY, audience = process.env.RESEND_AUDIENCE_ID;
-  if (!key || !audience) return;
+  if (!key || !audience) return false;
   const url = `https://api.resend.com/audiences/${audience}/contacts`;
   const headers = { Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
   try {
     const known = await fetch(`${url}/${encodeURIComponent(email)}`, { headers });
-    if (known.ok) return;
-    await fetch(url, { method: "POST", headers, body: JSON.stringify({ email, first_name: firstName || undefined }) });
-  } catch {}
+    if (known.ok) return true;
+    const res = await fetch(url, { method: "POST", headers, body: JSON.stringify({ email, first_name: firstName || undefined }) });
+    return res.ok;
+  } catch { return false; }
 }
 
 // L'e-mail : papier clair, le code en grand, trois lignes utiles. Rien d'autre.
