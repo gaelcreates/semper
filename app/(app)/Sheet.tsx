@@ -27,7 +27,7 @@ export default function Sheet({ id }: { id: string }) {
   };
 
   const close = () => {
-    if (c && !c.title.trim()) deleteContent(id);
+    if (c && !c.title.trim()) deleteContent(id, true);
     openSheet(null);
   };
 

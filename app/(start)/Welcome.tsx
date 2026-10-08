@@ -143,6 +143,11 @@ export default function Welcome() {
           {step > 0 && <button type="button" className="link" onClick={() => setStep(step - 1)}>Retour</button>}
           {q.kind !== "one" && <button className="btn" type="submit" disabled={!ok || busy}>{busy ? "Un instant" : last ? "Recevoir mon code" : "Continuer"}</button>}
         </div>
+        {step === 0 && (
+          <p className="onb-legal">
+            En continuant, tu acceptes les <a href="/conditions" target="_blank">conditions</a> et la <a href="/confidentialite" target="_blank">politique de confidentialité</a>.
+          </p>
+        )}
       </form>
       )}
     </div>

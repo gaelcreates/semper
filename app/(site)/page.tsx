@@ -6,6 +6,7 @@ import Mark from "../Mark";
 import Curve from "../Curve";
 import Stand from "../Stand";
 import Orbit from "../Orbit";
+import Moon from "../(app)/Moon";
 import { site } from "../site";
 import Link from "next/link";
 import { FORMATS, lettres } from "./lettre/lettres";
@@ -146,13 +147,11 @@ export default function Page() {
 
               <article className="card gold" data-spot data-reveal style={{ ["--i" as string]: 3 }}>
                 <div className="cv cv-serie">
-                  <div className="serie-n"><b>7</b><span>semaines<br />tenues</span></div>
-                  <div className="streak-row">
-                    {Array.from({ length: 8 }).map((_, i) => <i key={i} className={i < 7 ? "on" : "now"} />)}
-                  </div>
+                  <Moon streak={7} n={15} orbit />
+                  <div className="serie-n"><b>7</b><span>semaines tenues<br /><em className="disp">Lune gibbeuse</em></span></div>
                 </div>
                 <h3>Ta série</h3>
-                <p>Tu fixes ton rythme. Chaque semaine tenue compte. Semper ne récompense jamais le volume, seulement la constance.</p>
+                <p>Tu fixes ton rythme. Chaque semaine tenue fait grandir ta lune. Semper ne récompense jamais le volume, seulement la constance.</p>
               </article>
             </div>
 
@@ -223,9 +222,9 @@ export default function Page() {
                 <p>Les fiches, les trois vues, ton rythme. Gratuit pour toujours pour le créateur seul.</p>
               </li>
               <li data-reveal style={{ ["--i" as string]: 2 }}>
-                <span>Ensuite</span>
+                <span className="rm-now">Maintenant</span>
                 <h3>Les structures de script</h3>
-                <p>Des modèles de script prêts à l&apos;emploi, les tiens et ceux d&apos;autres créateurs, à dupliquer en un geste.</p>
+                <p>Tes modèles de script, reliés à ta fiche. Tu écris chaque vidéo en suivant ta structure.</p>
               </li>
               <li data-reveal style={{ ["--i" as string]: 3 }}>
                 <span>Ensuite</span>

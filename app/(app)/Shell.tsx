@@ -11,6 +11,7 @@ import Moon from "./Moon";
 import Orbit from "../Orbit";
 import Install from "./Install";
 import { constance, titleOf } from "./stats";
+import Avatar from "./Avatar";
 import { announce, createContent, load, openSheet, useData, useNote, useOpen } from "./store";
 
 const nav = [
@@ -59,6 +60,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
         <Install />
+        {d && (
+          <Link href="/profil" className={`ws-me${path.startsWith("/profil") ? " on" : ""}`}>
+            <Avatar />
+            <span><b>{d.profile.firstName || "Mon profil"}</b><small>{d.profile.handle ? `@${d.profile.handle}` : d.profile.email}</small></span>
+          </Link>
+        )}
         <div className="ws-foot">
           <Link href="/constance" className="ws-streak" aria-label={`${title}, ${streak} semaines tenues`}>
             <Moon streak={streak} n={11} />
@@ -73,6 +80,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <span className="ws-top-r">
           <Link href="/constance" className="ws-top-moon" aria-label={`${title}, ${streak} semaines tenues`}><Moon streak={streak} n={9} /></Link>
           <ThemeToggle />
+          {d && <Link href="/profil" aria-label="Profil"><Avatar /></Link>}
         </span>
       </header>
 
@@ -94,14 +102,15 @@ function Note() {
   const n = useNote();
   useEffect(() => {
     if (!n) return;
-    const t = setTimeout(() => announce(null), 3600);
+    const t = setTimeout(() => announce(null), n.action ? 6000 : 3600);
     return () => clearTimeout(t);
   }, [n]);
   if (!n) return null;
   return (
-    <div className="note" role="status" key={n.at}>
-      <Moon streak={n.streak} n={9} />
+    <div className={`note${n.action ? " long" : ""}`} role="status" key={n.at}>
+      {!n.action && <Moon streak={n.streak} n={9} />}
       <span>{n.text}</span>
+      {n.action && <button type="button" className="note-act" onClick={n.action.run}>{n.action.label}</button>}
     </div>
   );
 }

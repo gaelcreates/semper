@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import DotIcon from "../DotIcon";
 
-// Installer Semper comme une application. Chrome, Edge et Android proposent la fenêtre d'installation ;
-// iPhone et Safari n'en ont pas, alors on montre le geste exact, en une phrase.
+// Installer Semper, proposé seulement dans l'espace (jamais sur la vitrine).
+// Mac : l'app à télécharger (DMG). Chrome, Edge et Android : la fenêtre d'installation du navigateur.
+// iPhone : le geste exact. Rien quand Semper est déjà installé ou ouvert dans l'app Mac.
 type Prompt = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 let deferred: Prompt | null = null;
 const subs = new Set<() => void>();
@@ -13,7 +14,7 @@ if (typeof window !== "undefined") {
   window.addEventListener("appinstalled", () => { deferred = null; subs.forEach((f) => f()); });
 }
 
-type Kind = "prompt" | "ios" | "mac" | null;
+type Kind = "mac" | "prompt" | "ios" | null;
 
 export default function Install({ className = "" }: { className?: string }) {
   const [kind, setKind] = useState<Kind>(null);
@@ -21,11 +22,11 @@ export default function Install({ className = "" }: { className?: string }) {
 
   useEffect(() => {
     const pick = () => {
-      const standalone = matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone;
       const ua = navigator.userAgent;
+      const standalone = matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone;
       const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-      const safariMac = /Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome|Chromium|Edg|Firefox/.test(ua);
-      setKind(standalone ? null : deferred ? "prompt" : ios ? "ios" : safariMac ? "mac" : null);
+      const mac = /Macintosh/.test(ua) && !ios;
+      setKind(standalone || /SemperMac/.test(ua) ? null : mac ? "mac" : deferred ? "prompt" : ios ? "ios" : null);
     };
     pick();
     subs.add(pick);
@@ -35,7 +36,7 @@ export default function Install({ className = "" }: { className?: string }) {
   if (!kind) return null;
 
   async function go() {
-    if (kind !== "prompt") return setHelp(!help);
+    if (kind !== "prompt") return setHelp(true);
     await deferred!.prompt();
     deferred = null;
     setKind(null);
@@ -43,13 +44,19 @@ export default function Install({ className = "" }: { className?: string }) {
 
   return (
     <div className={`install ${className}`}>
-      <button type="button" className="install-btn" onClick={go}><DotIcon name="fleche" /> Installer l&apos;app</button>
-      {help && (
-        <p className="install-help">
-          {kind === "ios"
-            ? <>Touche le bouton <b>Partager</b> (le carré avec la flèche), puis <b>Sur l&apos;écran d&apos;accueil</b>.</>
-            : <>Dans la barre du haut : menu <b>Fichier</b>, puis <b>Ajouter au Dock</b>.</>}
-        </p>
+      {kind === "mac" ? (
+        <a className="install-btn" href="/telecharger/Semper.dmg" download onClick={() => setHelp(true)}><DotIcon name="fleche" /> Télécharger pour Mac</a>
+      ) : (
+        <button type="button" className="install-btn" onClick={go}><DotIcon name="fleche" /> Installer l&apos;app</button>
+      )}
+      {help && kind === "mac" && (
+        <ol className="install-help">
+          <li>Ouvre <b>Semper.dmg</b>, glisse Semper dans <b>Applications</b>.</li>
+          <li>Au premier lancement, macOS le bloque : <b>Réglages Système</b>, <b>Confidentialité et sécurité</b>, puis <b>Ouvrir quand même</b>. Une seule fois.</li>
+        </ol>
+      )}
+      {help && kind === "ios" && (
+        <p className="install-help">Touche le bouton <b>Partager</b> (le carré avec la flèche), puis <b>Sur l&apos;écran d&apos;accueil</b>.</p>
       )}
     </div>
   );

@@ -190,7 +190,7 @@ i.chip { font-style: normal; }
 .ls-head:hover { background: var(--card); }
 
 /* ---------- La fiche */
-.veil { position: fixed; inset: 0; z-index: 50; background: rgba(14, 14, 14, 0.22); animation: fade-in 200ms ease; }
+.veil { position: fixed; inset: 0; z-index: 50; background: rgba(var(--fgr), 0.22); animation: fade-in 200ms ease; }
 @keyframes fade-in { from { opacity: 0; } }
 .sheet { position: absolute; top: 12px; right: 12px; bottom: 12px; width: min(460px, calc(100% - 24px)); display: flex; flex-direction: column; gap: 22px; padding: 20px 24px 20px; overflow-y: auto; background: var(--card); border-radius: 20px; box-shadow: var(--shadow); animation: sheet-in 380ms var(--ease); }
 @keyframes sheet-in { from { transform: translateX(28px); opacity: 0; } }
@@ -413,7 +413,7 @@ i.chip { font-style: normal; }
   .ws-tabs a.on { color: var(--ink); font-weight: 700; }
   .ws-tabs a .di { opacity: 0.5; }
   .ws-tabs a.on .di { opacity: 1; }
-  .ws-fab { position: fixed; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 21; display: grid; place-items: center; width: 56px; height: 56px; border: 0; border-radius: 50%; background: var(--ink); color: var(--bg); box-shadow: 0 16px 32px -12px rgba(14, 14, 14, 0.5); cursor: pointer; }
+  .ws-fab { position: fixed; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 21; display: grid; place-items: center; width: 56px; height: 56px; border: 0; border-radius: 50%; background: var(--ink); color: var(--bg); box-shadow: 0 16px 32px -12px rgba(var(--fgr), 0.5); cursor: pointer; }
   .ws-fab .di { width: 16px; height: 16px; }
 
   .pl { height: calc(100dvh - 55px - 16px - 76px - env(safe-area-inset-bottom)); gap: 12px; }
@@ -439,7 +439,7 @@ i.chip { font-style: normal; }
   .ls-row { grid-template-columns: minmax(0, 1fr) auto !important; padding: 14px 16px; }
   .ls-row > :nth-child(n + 3) { display: none; }
 
-  .veil { background: rgba(14, 14, 14, 0.3); }
+  .veil { background: rgba(var(--fgr), 0.3); }
   .sheet { inset: 0; width: 100%; border-radius: 0; padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); animation-name: sheet-up; }
   @keyframes sheet-up { from { transform: translateY(24px); opacity: 0; } }
   .steps-l li { grid-template-columns: 24px minmax(0, 1fr) auto; row-gap: 6px; }
@@ -628,3 +628,44 @@ i.chip { font-style: normal; }
 .ad-kpi li { display: grid; gap: 4px; padding: 14px 16px; }
 .ad-kpi b { font-size: 28px; line-height: 1; }
 .ad-kpi small { font-size: 12px; }
+
+/* ---------- La personne : photo ou initiale */
+.avatar { display: inline-grid; place-items: center; flex: none; border-radius: 50%; overflow: hidden; background: var(--ink); color: var(--bg); font-weight: 900; line-height: 1; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ws-me { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--disp-r); transition: background 200ms; min-width: 0; }
+.ws-me:hover, .ws-me.on { background: rgba(var(--fgr), 0.05); }
+.ws-me > span { display: grid; gap: 2px; min-width: 0; }
+.ws-me b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-me small { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-me + .ws-foot { margin-top: 0; }
+.ws-top-r .avatar { width: 30px; height: 30px; }
+
+/* ---------- Annonce avec action (annuler une suppression) */
+.note.long { animation: note-in 500ms var(--ease), note-out 400ms ease 5600ms forwards; }
+.note-act { margin-left: 4px; padding: 6px 12px; border: 0; border-radius: 999px; background: rgba(var(--bgr), 0.16); color: var(--gold); font: inherit; font-weight: 900; cursor: pointer; }
+.note-act:hover { background: rgba(var(--bgr), 0.26); }
+
+/* ---------- Profil : photo, adresse, données, liens */
+.pf-photo { display: flex; align-items: center; gap: 16px; }
+.pf-photo-btn { padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; transition: transform 300ms var(--ease), opacity 200ms; }
+.pf-photo-btn:hover { transform: scale(1.04); }
+.pf-photo-btn:disabled { opacity: 0.5; }
+.pf-photo > span { display: flex; gap: 14px; }
+.pf-photo .link, .pf-email .link { border: 0; background: none; padding: 0; cursor: pointer; font: inherit; font-size: 14px; color: var(--ink); }
+.pf-photo .link.muted, .pf-email .link.muted { color: var(--muted); }
+.pf-email { display: flex; align-items: center; gap: 12px; width: 100%; flex-wrap: wrap; }
+.pf-email .inp { flex: 1; min-width: 200px; }
+.pf-email .code { letter-spacing: 0.3em; font-family: var(--font-dot), monospace; }
+.pf-err { color: #c2410c; }
+.pf-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.pf-row > span { display: grid; gap: 4px; }
+.pf-row small { font-size: 13px; }
+.pf-legal { display: flex; gap: 18px; margin-top: 14px; font-size: 12.5px; color: var(--muted); }
+.pf-legal a:hover { color: var(--ink); }
+.ws .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line-strong); box-shadow: none; min-height: 40px; padding: 0 18px; font-size: 14px; }
+.ws .btn-ghost:hover { background: rgba(var(--fgr), 0.05); }
+ol.install-help { display: grid; gap: 6px; padding-left: 30px; list-style: decimal; }
+.ws-side .install ~ .ws-me { margin-top: 0; }
+a.install-btn { text-decoration: none; }
+.onb-legal { margin-top: 18px; font-size: 12.5px; line-height: 1.5; color: var(--muted); text-align: center; }
+.onb-legal a { color: var(--ink2); border-bottom: 1px solid var(--line-strong); }

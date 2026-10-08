@@ -49,6 +49,7 @@ export type Profile = {
   firstName: string; handle: string; email: string; rythme: number; durations: Record<StepKey, number>;
   answers: Record<string, Value>; // réponses du premier passage (qualification)
   lockUntil: string | null; // rythme bloqué jusqu'à cette date (AAAA-MM-JJ), choisi par la personne
+  avatar: string | null; // adresse publique de la photo de profil
   createdAt: string;
 };
 
@@ -124,7 +125,7 @@ export async function load(): Promise<"ok" | "none"> {
   const r = p.data;
   data = {
     v: 1,
-    profile: { firstName: r.first_name, handle: r.handle, email: r.email, rythme: r.rythme, durations: r.durations, answers: r.answers, lockUntil: r.rythme_locked_until, createdAt: r.created_at },
+    profile: { firstName: r.first_name, handle: r.handle, email: r.email, rythme: r.rythme, durations: r.durations, answers: r.answers, lockUntil: r.rythme_locked_until, avatar: r.avatar_url ?? null, createdAt: r.created_at },
     fields: r.fields ?? FIELDS(),
     structures: r.structures ?? STRUCTURES(),
     contents: (c.data ?? []).map(fromRow),
@@ -199,8 +200,47 @@ export function setProfile(p: Partial<Profile>) {
   if (p.durations !== undefined) cols.durations = p.durations;
   if (p.answers !== undefined) cols.answers = p.answers;
   if (p.lockUntil !== undefined) cols.rythme_locked_until = p.lockUntil;
+  if (p.avatar !== undefined) cols.avatar_url = p.avatar;
   if (Object.keys(cols).length) pushProfile(cols);
 }
+// La photo de profil : recadrée en carré de 256 px, envoyée en WebP sous avatars/<id>/.
+export async function setAvatar(file: File | null) {
+  const bucket = sb().storage.from("avatars");
+  if (!file) {
+    await bucket.remove([`${me}/avatar.webp`]);
+    return setProfile({ avatar: null });
+  }
+  const img = await createImageBitmap(file);
+  const side = Math.min(img.width, img.height);
+  const canvas = Object.assign(document.createElement("canvas"), { width: 256, height: 256 });
+  canvas.getContext("2d")!.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 256, 256);
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/webp", 0.9));
+  if (!blob) return announce("Cette image ne passe pas. Essaie un JPG ou un PNG.");
+  const { error } = await bucket.upload(`${me}/avatar.webp`, blob, { upsert: true, contentType: "image/webp" });
+  if (error) return announce("Photo pas enregistrée. Réessaie.");
+  setProfile({ avatar: `${bucket.getPublicUrl(`${me}/avatar.webp`).data.publicUrl}?v=${Date.now()}` });
+}
+
+// L'adresse a changé côté serveur : on met la copie en mémoire à jour, sans réécrire la base.
+export function setEmail(email: string) {
+  update((d) => ({ ...d, profile: { ...d.profile, email } }));
+}
+
+// Toutes les fiches en CSV (séparateur « ; », lisible par Excel et Numbers).
+export function exportCsv() {
+  if (!data) return;
+  const d = data;
+  const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const val = (c: Content, f: Field) => picked(c, f).join(", ");
+  const head = ["Titre", "Statut", "Publication", "Publié le", ...d.fields.map((f) => f.label), "Créé le"];
+  const rows = d.contents.map((c) => [c.title, STATUS.find((s) => s.key === statusOf(c))?.label, c.publishAt?.replace("T", " "), c.publishedAt?.replace("T", " "),
+    ...d.fields.map((f) => val(c, f)), c.createdAt.slice(0, 10)]);
+  const csv = "\ufeff" + [head, ...rows].map((r) => r.map(cell).join(";")).join("\r\n");
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })), download: `semper-contenus-${new Date().toLocaleDateString("sv-SE")}.csv` });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
 // Le rythme est-il bloqué aujourd'hui ? La base refuse aussi tout changement pendant le blocage.
 export const locked = (p: Profile) => !!p.lockUntil && p.lockUntil >= new Date().toISOString().slice(0, 10);
 
@@ -229,11 +269,20 @@ export function patchContent(id: string, fn: (c: Content, d: Data) => Content) {
   update((d) => ({ ...d, contents: d.contents.map((c) => (c.id === id ? fn(c, d) : c)) }));
   push(id);
 }
-export function deleteContent(id: string) {
+// Supprimer laisse 6 secondes pour annuler ; la base n'est touchée qu'ensuite.
+// Une fiche vide (jamais remplie) part sans annonce.
+export function deleteContent(id: string, quiet = false) {
   clearTimeout(pending.get(id));
   pending.delete(id);
+  const gone = data?.contents.find((c) => c.id === id);
   update((d) => ({ ...d, contents: d.contents.filter((c) => c.id !== id) }));
-  save(sb().from("contents").delete().eq("id", id));
+  const drop = () => save(sb().from("contents").delete().eq("id", id));
+  if (quiet || !gone) return drop();
+  const t = setTimeout(drop, 6000);
+  announce(`« ${gone.title.trim() || "Sans titre"} » supprimé`, 0, {
+    label: "Annuler",
+    run: () => { clearTimeout(t); update((d) => ({ ...d, contents: [...d.contents, gone] })); announce(null); },
+  });
 }
 
 // ---------- règles
@@ -296,12 +345,13 @@ export function openSheet(id: string | null) {
 }
 
 // ---------- une annonce brève (semaine tenue, nouveau titre)
-let note: { text: string; streak: number; at: number } | null = null;
+export type NoteAction = { label: string; run: () => void };
+let note: { text: string; streak: number; at: number; action?: NoteAction } | null = null;
 const noteSubs = new Set<() => void>();
 export function useNote() {
   return useSyncExternalStore((f) => { noteSubs.add(f); return () => noteSubs.delete(f); }, () => note, () => null);
 }
-export function announce(text: string | null, streak = 0) {
-  note = text ? { text, streak, at: Date.now() } : null;
+export function announce(text: string | null, streak = 0, action?: NoteAction) {
+  note = text ? { text, streak, at: Date.now(), action } : null;
   noteSubs.forEach((f) => f());
 }
