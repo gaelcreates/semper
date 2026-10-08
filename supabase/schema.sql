@@ -172,3 +172,6 @@ create policy "avatar : retirer le sien" on storage.objects for delete to authen
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
 create policy "avatar : lire le sien" on storage.objects for select to authenticated
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- CRM (/admin) : les signaux de chaque inscrit (activité, dernier relevé Instagram et celui d'il y a 4 semaines).
+-- Le classement (potentiel, usage, profil) se calcule dans app/(app)/admin/score.ts. Corps complet : migration crm_signaux.

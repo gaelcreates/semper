@@ -669,3 +669,50 @@ ol.install-help { display: grid; gap: 6px; padding-left: 30px; list-style: decim
 a.install-btn { text-decoration: none; }
 .onb-legal { margin-top: 18px; font-size: 12.5px; line-height: 1.5; color: var(--muted); text-align: center; }
 .onb-legal a { color: var(--ink2); border-bottom: 1px solid var(--line-strong); }
+
+/* ---------- CRM (/admin) */
+.crm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+.crm-bar .seg b { margin-left: 6px; font-size: 12px; }
+.crm-bar select.inp { width: auto; min-width: 150px; }
+.crm-bar input.inp { width: 220px; margin-left: auto; }
+.crm-row { display: grid; grid-template-columns: minmax(200px, 1.4fr) 120px 150px 130px 100px minmax(160px, 1.2fr) 150px 100px 150px; gap: 16px; align-items: center; min-width: 1320px; padding: 12px 20px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.crm-row:not(.ad-head) { cursor: pointer; transition: background 150ms; }
+.crm-row:not(.ad-head):hover, .crm-row.on { background: rgba(var(--fgr), 0.035); }
+.crm-row:last-child { border-bottom: 0; }
+.crm-row .who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.crm-row .who > span { display: grid; gap: 2px; min-width: 0; }
+.crm-row .who b, .crm-row .who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-row .who small { color: var(--muted); font-size: 12.5px; }
+.crm-row .clip { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.crm-row b.disp { font-size: 18px; }
+.temp { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+.temp b.disp { min-width: 34px; height: 28px; display: inline-grid; place-items: center; border-radius: 8px; font-size: 15px; }
+.temp.chaud b { background: var(--gold); color: #0e0e0e; }
+.temp.tiede b { background: rgba(255, 197, 8, 0.25); color: var(--ink); }
+.temp.froid b { background: rgba(var(--fgr), 0.07); color: var(--ink2); }
+.use { font-size: 12.5px; padding: 4px 10px; border-radius: 999px; background: rgba(var(--fgr), 0.06); color: var(--ink2); justify-self: start; white-space: nowrap; }
+.use.actif { background: rgba(34, 160, 90, 0.14); color: #1d7a47; }
+.use.relancer { background: rgba(255, 197, 8, 0.22); color: var(--ink); }
+.use.endormi, .use.jamais { background: rgba(194, 65, 12, 0.1); color: #c2410c; }
+:root[data-theme="dark"] .use.actif { color: #5ed19a; }
+:root[data-theme="dark"] .use.endormi, :root[data-theme="dark"] .use.jamais { color: #f08a5d; }
+
+.crm-veil { position: fixed; inset: 0; z-index: 70; background: rgba(var(--fgr), 0.2); animation: fade-in 200ms ease; }
+.crm-fiche { position: fixed; top: 0; right: 0; bottom: 0; z-index: 71; width: min(460px, 100%); overflow-y: auto; padding: 24px; display: grid; align-content: start; gap: 22px; background: var(--card); border-left: 1px solid var(--line); box-shadow: var(--shadow); animation: slide-in 300ms var(--ease); }
+.crm-fiche header { display: flex; align-items: center; gap: 14px; }
+.crm-fiche header > span { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.crm-fiche h2 { font-size: 22px; }
+.crm-fiche header small a { color: var(--ink2); font-size: 13px; }
+.crm-x { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: var(--ink2); }
+.crm-acts { display: flex; align-items: center; gap: 16px; }
+.crm-fiche section { display: grid; gap: 12px; }
+.crm-fiche h3 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 15px; font-weight: 700; }
+.crm-why { list-style: none; display: grid; gap: 6px; }
+.crm-why li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: 10px; background: rgba(var(--fgr), 0.04); font-size: 13.5px; }
+.crm-why b.disp { font-size: 14px; color: var(--ink2); }
+.crm-dl { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 8px 12px; font-size: 13.5px; }
+.crm-dl dt { color: var(--muted); }
+.crm-note { height: auto; padding: 10px 12px; resize: vertical; }
+@keyframes slide-in { from { transform: translateX(24px); opacity: 0; } }
+@keyframes fade-in { from { opacity: 0; } }
+@media (max-width: 760px) { .crm-bar input.inp { width: 100%; margin-left: 0; } }
