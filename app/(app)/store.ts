@@ -131,6 +131,8 @@ export async function load(): Promise<"ok" | "none"> {
   };
   emit();
   save(s.from("profiles").update({ seen_at: new Date().toISOString(), fields: data.fields, structures: data.structures }).eq("id", me));
+  // Un jour d'activité, à la date locale : c'est ce qui mesure qui revient.
+  save(s.from("activity").upsert({ day: new Date().toLocaleDateString("sv-SE") }, { onConflict: "user_id,day", ignoreDuplicates: true }));
   return "ok";
 }
 

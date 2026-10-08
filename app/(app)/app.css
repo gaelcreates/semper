@@ -616,3 +616,15 @@ i.chip { font-style: normal; }
 ::view-transition-group(sheet) { animation-duration: 460ms; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
 ::view-transition-old(sheet), ::view-transition-new(sheet) { height: 100%; width: auto; object-fit: none; object-position: right top; animation-duration: 300ms; }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+
+/* Profil : fin de page (déconnexion, suppression) */
+.pf-end { display: grid; justify-items: center; gap: 4px; margin-top: 8px; }
+.pf-end .link.out { margin-bottom: 0; }
+.link.del { border: 0; background: none; cursor: pointer; font-size: 12.5px; color: var(--muted); padding: 6px 10px; }
+.link.del:hover, .link.del.armed { color: #c2410c; }
+
+/* Admin : les chiffres */
+.ad-kpi { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 18px; }
+.ad-kpi li { display: grid; gap: 4px; padding: 14px 16px; }
+.ad-kpi b { font-size: 28px; line-height: 1; }
+.ad-kpi small { font-size: 12px; }

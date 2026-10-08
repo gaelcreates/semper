@@ -19,12 +19,14 @@ export default function Admin() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [denied, setDenied] = useState(false);
   const [tab, setTab] = useState<LeadStatus | "all">("all");
+  const [kpi, setKpi] = useState<Record<string, number> | null>(null);
 
   useEffect(() => {
     (async () => {
       const s = sb();
       const { data: ok } = await s.rpc("is_admin");
       if (!ok) return setDenied(true);
+      s.rpc("admin_kpis").then(({ data }) => setKpi(data));
       const [p, c, l, ig] = await Promise.all([
         s.from("profiles").select("*").order("created_at", { ascending: false }),
         s.from("contents").select("user_id, publish_at, published_at, steps"),
@@ -60,6 +62,20 @@ export default function Admin() {
   return (
     <div className="page wide">
       <header className="page-head"><h1>Inscrits</h1><b className="disp count">{rows.length}</b></header>
+
+      {kpi && (
+        <ul className="ad-kpi">
+          {[
+            ["Inscrits", kpi.inscrits, `+${kpi.inscrits_7j} en 7 j`],
+            ["Ont démarré", kpi.demarres, "au moins un contenu"],
+            ["Actifs", kpi.actifs_7j, `7 j · ${kpi.actifs_30j} en 30 j`],
+            ["Publient", kpi.publient_7j, "en 7 j"],
+            ["Reviennent", kpi.eligibles_s2 ? `${Math.round((100 * kpi.revenus_s2) / kpi.eligibles_s2)} %` : "–", "en semaine 2"],
+          ].map(([t, v, d]) => (
+            <li key={t as string} className="box"><span className="lbl">{t}</span><b className="disp">{v}</b><small className="muted">{d}</small></li>
+          ))}
+        </ul>
+      )}
 
       <div className="seg ad-tabs" role="tablist">
         {[{ key: "all" as const, label: "Tous" }, ...LEAD_STATUS].map((t) => (

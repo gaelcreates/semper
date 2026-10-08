@@ -5,6 +5,8 @@ import Install from "../Install";
 import InstagramStats from "../InstagramStats";
 import { cleanHandle } from "../lib";
 import { setProfile, signOut, useData } from "../store";
+import { deleteAccount } from "../actions";
+import { sb } from "../../supabase";
 
 // Profil : le compte, puis les chiffres des réseaux (Instagram pour l'instant).
 export default function Profil() {
@@ -39,7 +41,30 @@ export default function Profil() {
       <InstagramStats />
 
       <Install className="pf-install" />
-      <button type="button" className="link out" onClick={signOut}>Se déconnecter</button>
+      <div className="pf-end">
+        <button type="button" className="link out" onClick={signOut}>Se déconnecter</button>
+        <Supprimer />
+      </div>
     </div>
+  );
+}
+
+// Deux temps : le premier clic arme, le second supprime. Rien n'est récupérable ensuite.
+function Supprimer() {
+  const [armed, setArmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  async function go() {
+    if (!armed) return setArmed(true);
+    setBusy(true);
+    const { data } = await sb().auth.getSession();
+    if (await deleteAccount(data.session?.access_token ?? "")) {
+      await sb().auth.signOut();
+      location.href = "/";
+    } else setBusy(false);
+  }
+  return (
+    <button type="button" className={`link del${armed ? " armed" : ""}`} onClick={go} onBlur={() => !busy && setArmed(false)} disabled={busy}>
+      {busy ? "Suppression…" : armed ? "Confirmer : tout supprimer" : "Supprimer mon compte"}
+    </button>
   );
 }

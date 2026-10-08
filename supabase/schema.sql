@@ -129,3 +129,33 @@ grant execute on function public.is_admin() to authenticated;
 -- Le lien entre Semper et Meta : identifiant Instagram de Gael et jeton de page permanent (serveur seulement).
 create table public.meta_link (id int primary key default 1 check (id = 1), ig_id text not null, token text not null, updated_at timestamptz not null default now());
 alter table public.meta_link enable row level security;
+
+-- Activité : une ligne par personne et par jour d'ouverture (rétention). Notée par l'app au chargement.
+create table public.activity (
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  day date not null default current_date,
+  primary key (user_id, day)
+);
+alter table public.activity enable row level security;
+create policy "activité : noter la sienne" on public.activity for insert with check (user_id = auth.uid());
+create policy "activité : lire" on public.activity for select using (user_id = auth.uid() or public.is_admin());
+
+-- Chiffres de l'admin (inscrits, démarrés, actifs, publient, reviennent en semaine 2). Vide pour un non-admin.
+create function public.admin_kpis() returns json
+language sql stable security definer set search_path = ''
+as $$
+  select case when public.is_admin() then json_build_object(
+    'inscrits', (select count(*) from public.profiles),
+    'inscrits_7j', (select count(*) from public.profiles where created_at > now() - interval '7 days'),
+    'demarres', (select count(distinct user_id) from public.contents),
+    'actifs_7j', (select count(distinct user_id) from public.activity where day > current_date - 7),
+    'actifs_30j', (select count(distinct user_id) from public.activity where day > current_date - 30),
+    'publient_7j', (select count(distinct user_id) from public.contents where published_at >= to_char(current_date - 7, 'YYYY-MM-DD')),
+    'eligibles_s2', (select count(*) from public.profiles where created_at < now() - interval '14 days'),
+    'revenus_s2', (select count(*) from public.profiles p where p.created_at < now() - interval '14 days'
+                   and exists (select 1 from public.activity a where a.user_id = p.id
+                               and a.day between p.created_at::date + 7 and p.created_at::date + 13))
+  ) end
+$$;
+revoke execute on function public.admin_kpis() from public, anon;
+grant execute on function public.admin_kpis() to authenticated;
