@@ -6,7 +6,7 @@ import Install from "../Install";
 import InstagramStats from "../InstagramStats";
 import Avatar from "../Avatar";
 import { cleanHandle } from "../lib";
-import { exportCsv, setAvatar, setEmail, setProfile, signOut, useData } from "../store";
+import { exportCsv, forget, setAvatar, setEmail, setProfile, signOut, useData } from "../store";
 import { confirmEmail, deleteAccount, requestEmail, type EmailStep } from "../actions";
 import { sb } from "../../supabase";
 
@@ -73,8 +73,7 @@ function Photo() {
   const [busy, setBusy] = useState(false);
   async function pick(f: File | null) {
     setBusy(true);
-    await setAvatar(f);
-    setBusy(false);
+    try { await setAvatar(f); } finally { setBusy(false); }
   }
   return (
     <div className="pf-photo">
@@ -98,6 +97,9 @@ const EMAIL_MSG: Partial<Record<EmailStep, string>> = {
   wrong: "Ce n'est pas le bon code.",
   expired: "Code expiré. Demande-en un nouveau.",
   too_many: "Trop d'essais. Demande un nouveau code.",
+  hour: "Trop de demandes. Réessaie dans une heure.",
+  day: "Trop de codes aujourd'hui. Réessaie demain.",
+  locked: "Trop d'essais. Réessaie dans une heure.",
   error: "Ça n'a pas marché. Réessaie.",
 };
 
@@ -161,17 +163,23 @@ function Email({ current }: { current: string }) {
 function Supprimer() {
   const [armed, setArmed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(false);
   async function go() {
     if (!armed) return setArmed(true);
     setBusy(true);
-    if (await deleteAccount(await token())) {
-      await sb().auth.signOut();
+    setErr(false);
+    const ok = await deleteAccount(await token()).catch(() => false);
+    if (ok) {
+      await forget();
       location.href = "/";
-    } else setBusy(false);
+    } else { setBusy(false); setArmed(false); setErr(true); }
   }
   return (
-    <button type="button" className={`link del${armed ? " armed" : ""}`} onClick={go} onBlur={() => !busy && setArmed(false)} disabled={busy}>
-      {busy ? "Suppression…" : armed ? "Confirmer : tout supprimer" : "Supprimer mon compte"}
-    </button>
+    <>
+      <button type="button" className={`link del${armed ? " armed" : ""}`} onClick={go} onBlur={() => !busy && setArmed(false)} disabled={busy}>
+        {busy ? "Suppression…" : armed ? "Confirmer : tout supprimer" : "Supprimer mon compte"}
+      </button>
+      {err && <small className="pf-err" role="alert">Ça n&apos;a pas marché. Reconnecte-toi puis réessaie.</small>}
+    </>
   );
 }

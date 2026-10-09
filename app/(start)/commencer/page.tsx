@@ -15,7 +15,10 @@ export default function Page() {
         <span className="lbl">Bientôt</span>
         <h1>Semper ouvre bientôt.</h1>
         <p className="onb-sub">Rejoins la waitlist, tu seras prévenu le jour de l&apos;ouverture.</p>
-        <div className="onb-nav"><Link href="/#rejoindre" className="btn">Rejoindre la waitlist</Link></div>
+        <div className="onb-nav">
+          <Link href="/connexion" className="link">J&apos;ai déjà un compte</Link>
+          <Link href="/#rejoindre" className="btn">Rejoindre la waitlist</Link>
+        </div>
       </div>
     </div>
   );

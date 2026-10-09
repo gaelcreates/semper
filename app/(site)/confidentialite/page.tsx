@@ -16,18 +16,18 @@ export default function Page() {
       <h2>La liste et la lettre</h2>
       <p>
         Quand tu laisses ton adresse e-mail dans un formulaire du site, nous la gardons pour te prévenir de
-        l&apos;ouverture de Semper et t&apos;envoyer la lettre « Créer, toujours ». Nous nous appuyons sur ton
-        consentement. Chaque e-mail contient un lien de désabonnement : dès que tu l&apos;utilises, ton adresse
+        l&apos;ouverture de Semper et t&apos;envoyer la lettre «&nbsp;Créer, toujours&nbsp;». Nous nous appuyons sur ton
+        consentement. Chaque e-mail contient un lien de désabonnement&nbsp;: dès que tu l&apos;utilises, ton adresse
         sort de la liste d&apos;envoi.
       </p>
 
       <h2>Ton compte Semper</h2>
-      <p>Quand tu crées un compte, nous gardons ce qu&apos;il faut pour que l&apos;outil fonctionne :</p>
+      <p>Quand tu crées un compte, nous gardons ce qu&apos;il faut pour que l&apos;outil fonctionne&nbsp;:</p>
       <ul>
-        <li>ton prénom, ton adresse e-mail, ton pseudo Instagram et ta photo de profil si tu en ajoutes une ;</li>
-        <li>tes réponses aux questions de l&apos;inscription (pour quoi tu crées, ton rythme, ce qui te bloque) ;</li>
-        <li>tes contenus : titres, dates, étapes, fiches et scripts ;</li>
-        <li>les jours où tu ouvres Semper, pour calculer ta série et savoir si l&apos;outil t&apos;aide vraiment ;</li>
+        <li>ton prénom, ton adresse e-mail, ton pseudo Instagram et ta photo de profil si tu en ajoutes une&nbsp;;</li>
+        <li>tes réponses aux questions de l&apos;inscription (pour quoi tu crées, ton rythme, ce qui te bloque)&nbsp;;</li>
+        <li>tes contenus&nbsp;: titres, dates, étapes, fiches et scripts&nbsp;;</li>
+        <li>les jours où tu ouvres Semper, pour calculer ta série et savoir si l&apos;outil t&apos;aide vraiment&nbsp;;</li>
         <li>pour te connecter, un code à six chiffres, gardé seulement sous forme chiffrée et effacé après usage ou au bout d&apos;une heure.</li>
       </ul>
       <p>
@@ -61,7 +61,7 @@ export default function Page() {
       <h2>Combien de temps</h2>
       <p>
         Les données de ton compte restent tant que ton compte existe. Depuis ton Profil, tu peux exporter tes
-        contenus et supprimer ton compte : tout part immédiatement et définitivement, relevés Instagram compris.
+        contenus et supprimer ton compte&nbsp;: tout part immédiatement et définitivement, relevés Instagram compris.
         Ton adresse reste dans la liste de la lettre jusqu&apos;à ce que tu te désabonnes.
       </p>
 

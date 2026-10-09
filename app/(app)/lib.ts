@@ -48,5 +48,5 @@ export function duration(min: number) {
   return m ? `${h} h ${p(m)}` : `${h} h`;
 }
 
-// « @pseudo », « pseudo » ou le lien du profil : on garde le pseudo.
-export const cleanHandle = (s: string) => s.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/[/?].*$/, "").replace(/^@/, "");
+// « @pseudo », « pseudo » ou le lien du profil : on garde le pseudo, seulement les caractères permis par Instagram, 30 au plus.
+export const cleanHandle = (s: string) => s.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/[/?].*$/, "").replace(/[^A-Za-z0-9._]/g, "").slice(0, 30);

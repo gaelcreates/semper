@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Mentions légales · Semper" };
 
 export default function Page() {
   return (
-    <Legal title="Mentions légales" updated="22 septembre 2026">
+    <Legal title="Mentions légales" updated="8 octobre 2026">
       <h2>Éditeur</h2>
       <p>
         {site.owner}<br />
@@ -21,10 +21,23 @@ export default function Page() {
         vercel.com
       </p>
 
+      <h2>Stockage des données</h2>
+      <p>
+        Supabase, Inc.<br />
+        Centre de données de Zurich, Suisse<br />
+        supabase.com
+      </p>
+
       <h2>Envoi des e-mails</h2>
       <p>
         Resend, Inc., États-Unis<br />
         resend.com
+      </p>
+
+      <h2>Chiffres Instagram</h2>
+      <p>
+        Meta Platforms, Inc., États-Unis<br />
+        meta.com
       </p>
 
       <h2>Propriété intellectuelle</h2>

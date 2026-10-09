@@ -16,14 +16,14 @@ export default function Page() {
       <h2>La liste d&apos;attente</h2>
       <p>
         En laissant ton adresse e-mail, tu demandes à être prévenu de l&apos;ouverture de Semper et à recevoir la
-        lettre « Créer, toujours ». L&apos;inscription est gratuite, sans engagement, et tu peux te désabonner à
+        lettre «&nbsp;Créer, toujours&nbsp;». L&apos;inscription est gratuite, sans engagement, et tu peux te désabonner à
         tout moment depuis n&apos;importe quel e-mail. Être inscrit ne garantit ni une date d&apos;ouverture ni
-        l&apos;accès à une fonctionnalité précise : le produit évolue, et ce que nous annonçons peut changer.
+        l&apos;accès à une fonctionnalité précise&nbsp;: le produit évolue, et ce que nous annonçons peut changer.
       </p>
 
       <h2>Ton compte</h2>
       <p>
-        Semper est gratuit pour un créateur seul. Un compte est personnel : tu te connectes avec un code envoyé à
+        Semper est gratuit pour un créateur seul. Un compte est personnel&nbsp;: tu te connectes avec un code envoyé à
         ton adresse, sans mot de passe, et tu es responsable de l&apos;accès à cette adresse. Tu peux exporter tes
         contenus et supprimer ton compte à tout moment depuis ton Profil.
       </p>
@@ -38,7 +38,7 @@ export default function Page() {
 
       <h2>Le service</h2>
       <p>
-        Semper évolue : des fonctions peuvent être ajoutées, changées ou retirées. Si une offre payante arrive,
+        Semper évolue&nbsp;: des fonctions peuvent être ajoutées, changées ou retirées. Si une offre payante arrive,
         elle sera annoncée à l&apos;avance et ne changera rien sans ton accord pour le créateur seul. Si nous devions
         arrêter Semper, nous te préviendrions au moins trente jours avant, le temps d&apos;exporter tes contenus.
       </p>
@@ -66,7 +66,7 @@ export default function Page() {
 
       <h2>Contact</h2>
       <p>
-        Une question ? Écris à <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
+        Une question&nbsp;? Écris à <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
       </p>
     </Legal>
   );

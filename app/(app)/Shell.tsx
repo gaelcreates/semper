@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Logo from "../Logo";
@@ -12,7 +12,8 @@ import Orbit from "../Orbit";
 import Install from "./Install";
 import { constance, titleOf } from "./stats";
 import Avatar from "./Avatar";
-import { announce, createContent, load, openSheet, useData, useNote, useOpen } from "./store";
+import { announce, createContent, load, openSheet, openedSheet, useData, useNote, useOpen } from "./store";
+import { sb } from "../supabase";
 
 const nav = [
   { href: "/calendrier", label: "Calendrier", icon: "cal" },
@@ -20,6 +21,8 @@ const nav = [
   { href: "/organisation", label: "Organisation", icon: "orga" },
   { href: "/profil", label: "Profil", icon: "profil" },
 ] as const;
+// Le CRM, seulement pour les comptes admin (la base le garantit aussi, voir is_admin).
+const admin = { href: "/admin", label: "Inscrits", icon: "serie" } as const;
 
 export const newContent = () => openSheet(createContent());
 
@@ -30,15 +33,21 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const open = useOpen();
   const path = usePathname();
   const router = useRouter();
+  const [fail, setFail] = useState<"offline" | "error" | null>(null);
+  const [isAdmin, setAdmin] = useState(false);
 
-  // Sans session, direction la connexion.
-  useEffect(() => { load().then((r) => r === "none" && router.replace("/connexion")); }, [router]);
+  // Sans session, direction la connexion. Sans réseau ou base en panne, on le dit et on propose de réessayer.
+  const start = () => load().then((r) => (r === "none" ? router.replace("/connexion") : setFail(r === "ok" ? null : r)));
+  useEffect(() => { start(); }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
+  const ready = !!d;
+  useEffect(() => { if (ready) sb().rpc("is_admin").then(({ data }) => setAdmin(data === true)); }, [ready]);
+  const links = isAdmin ? [...nav, admin] : nav;
 
-  // « N » crée un contenu, où qu'on soit, sauf pendant la saisie.
+  // « N » crée un contenu, où qu'on soit, sauf pendant la saisie ou quand une fiche est déjà ouverte.
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (e.key !== "n" || e.metaKey || e.ctrlKey || e.altKey || t.closest("input, textarea, select, [contenteditable]")) return;
+      if (e.key !== "n" || e.metaKey || e.ctrlKey || e.altKey || openedSheet() || t.closest("input, textarea, select, [contenteditable]")) return;
       e.preventDefault();
       newContent();
     };
@@ -55,7 +64,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <Link href="/calendrier" className="brand" aria-label="Semper"><Logo /></Link>
         <button type="button" className="btn ws-new" onClick={newContent}><DotIcon name="ajout" /> Nouveau contenu</button>
         <nav className="ws-nav">
-          {nav.map((n) => (
+          {links.map((n) => (
             <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "on" : ""}><DotIcon name={n.icon} />{n.label}</Link>
           ))}
         </nav>
@@ -84,15 +93,19 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </span>
       </header>
 
-      <main className="ws-main">{d ? children : <span className="ws-wait"><Orbit size={28} /></span>}</main>
+      <main className="ws-main">
+        {d ? children : fail ? (
+          <span className="ws-wait off"><b>{fail === "offline" ? "Hors ligne" : "Serveur indisponible"}</b><button type="button" className="btn btn-ghost" onClick={() => { setFail(null); start(); }}>Réessayer</button></span>
+        ) : <span className="ws-wait"><Orbit size={28} /></span>}
+      </main>
 
       <nav className="ws-tabs">
-        {nav.map((n) => <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "on" : ""}><DotIcon name={n.icon} /><span>{n.label}</span></Link>)}
+        {links.map((n) => <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "on" : ""}><DotIcon name={n.icon} /><span>{n.label}</span></Link>)}
       </nav>
       <button type="button" className="ws-fab" onClick={newContent} aria-label="Nouveau contenu"><DotIcon name="ajout" /></button>
       <Note />
 
-      {d && open && <Sheet id={open} />}
+      {d && open && <Sheet key={open} id={open} />}
     </div>
   );
 }

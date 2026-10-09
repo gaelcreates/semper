@@ -29,7 +29,7 @@ export default function InstagramStats() {
   const d = useData()!;
   const handle = d.profile.handle.toLowerCase();
   const [rows, setRows] = useState<Snap[] | null>(null);
-  const [state, setState] = useState<"ok" | "off" | "absent">("ok");
+  const [state, setState] = useState<"ok" | "off" | "absent" | "later">("ok");
 
   useEffect(() => {
     let off = false;
@@ -63,6 +63,14 @@ export default function InstagramStats() {
       <section className="box pf">
         <h3>Bientôt ici</h3>
         <p>Semper n&apos;est pas encore relié à Instagram. Tes chiffres apparaîtront ici dès que c&apos;est fait, sans rien à faire de ton côté.</p>
+      </section></>
+  );
+  // Trop de relevés demandés dans l'heure : le pseudo n'y est pour rien, on le dit sans l'accuser.
+  if ((!last || last.followers == null) && state === "later") return (
+    <>{head}
+      <section className="box pf">
+        <h3>Relevé en attente</h3>
+        <p>Reviens dans une heure.</p>
       </section></>
   );
   if (!last || last.followers == null) return (

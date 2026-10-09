@@ -29,18 +29,28 @@ export function suggest(email: string) {
   return best ? `${local}@${best}` : null;
 }
 
+// Pourquoi un code n'est pas parti. wait : un code il y a moins d'une minute. hour : dix demandes
+// dans l'heure depuis cette connexion. day : dix codes en 24 heures pour cette adresse.
+export type SendFail = "wait" | "hour" | "day" | "no_account" | "error";
+// Pourquoi un code est refusé. too_many : cinq essais sur ce code. locked : dix essais dans l'heure sur l'adresse.
+export type CheckFail = "wrong" | "expired" | "too_many" | "locked" | "error";
+
+const AGAIN = "Ça n'a pas marché. Vérifie ta connexion internet, puis réessaie.";
 
 // Réponse de l'envoi du code (send.ts) en phrase claire.
-export function sendError(code: "wait" | "no_account" | "error") {
+export function sendError(code: SendFail) {
   if (code === "wait") return "Un code vient de partir. Attends une minute avant d'en demander un autre.";
+  if (code === "hour") return "Trop de demandes. Réessaie dans une heure.";
+  if (code === "day") return "Trop de codes aujourd'hui. Réessaie demain.";
   if (code === "no_account") return "Aucun compte avec cette adresse. Vérifie l'orthographe, ou crée ton espace.";
-  return "Ça n'a pas marché. Vérifie ta connexion internet, puis réessaie.";
+  return AGAIN;
 }
 
 // Réponse de la vérification du code (send.ts) en phrase claire.
-export function checkError(code: "wrong" | "expired" | "too_many" | "error") {
+export function checkError(code: CheckFail) {
   if (code === "wrong") return "Ce code ne correspond pas. Prends celui du dernier e-mail reçu.";
   if (code === "expired") return "Ce code a expiré. Demande-en un nouveau.";
   if (code === "too_many") return "Trop d'essais. Demande un nouveau code.";
-  return "Ça n'a pas marché. Vérifie ta connexion internet, puis réessaie.";
+  if (code === "locked") return "Trop d'essais. Réessaie dans une heure.";
+  return AGAIN;
 }

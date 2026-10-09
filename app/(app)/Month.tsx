@@ -5,7 +5,7 @@ import { DAYS, addDays, dayKey, hhmm, parse, startOfWeek } from "./lib";
 import { STEPS, createContent, movePublish, openSheet, patchContent, type Content } from "./store";
 
 // Le mois : les publications en clair, les étapes en points. Sur téléphone, seulement les points ;
-// toucher un jour ouvre sa semaine.
+// toucher un jour ouvre sa semaine. Au-delà de trois publications, « +n » ouvre aussi la semaine.
 export default function Month({ contents, anchor, narrow, onDay }: { contents: Content[]; anchor: Date; narrow: boolean; onDay: (d: Date) => void }) {
   const [over, setOver] = useState<string | null>(null);
   const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
@@ -29,7 +29,7 @@ export default function Month({ contents, anchor, narrow, onDay }: { contents: C
   pubs.forEach((l) => l.sort((a, b) => a.publishAt!.localeCompare(b.publishAt!)));
 
   function pick(e: React.MouseEvent, d: Date) {
-    if ((e.target as HTMLElement).closest(".mo-pub")) return;
+    if ((e.target as HTMLElement).closest(".mo-pub, .mo-more")) return;
     if (narrow) return onDay(d);
     const at = new Date(d);
     at.setHours(18);
@@ -65,7 +65,9 @@ export default function Month({ contents, anchor, narrow, onDay }: { contents: C
                   <span className="disp">{hhmm(parse(c.publishAt!))}</span>{c.title || "Sans titre"}
                 </button>
               ))}
-              {!narrow && list.length > 3 && <span className="mo-more disp">+{list.length - 3}</span>}
+              {!narrow && list.length > 3 && (
+                <button type="button" className="mo-more disp" onClick={() => onDay(d)} aria-label={`${list.length} publications, voir la semaine`}>+{list.length - 3}</button>
+              )}
               {ds.length > 0 && (
                 <span className="mo-dots" aria-hidden="true">
                   {ds.filter((x) => narrow || !x.pub).map((x) => <i key={x.k} className={`${x.pub ? "p" : ""}${x.done ? " on" : ""}`} />)}

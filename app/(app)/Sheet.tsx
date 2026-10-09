@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import Link from "next/link";
 import DotIcon from "../DotIcon";
 import { duration } from "./lib";
 import { constance, titleOf } from "./stats";
 import {
-  SEP, STATUS, STEPS, announce, deleteContent, movePublish, openSheet, patchContent, statusOf, subKey, useData, withStatus,
+  SEP, STATUS, STEPS, announce, closeSheet, deleteContent, movePublish, openSheet, patchContent, statusOf, subKey, useData, withStatus,
   type Content, type Field, type Structure, type Value,
 } from "./store";
 
 // La fiche d'un contenu, ouverte sur le côté. Tout s'enregistre à la frappe.
-// Une fiche fermée sans titre disparaît : un clic de trop dans le calendrier ne laisse pas de trace.
+// Une fiche créée à l'instant et fermée vierge disparaît : un clic de trop dans le calendrier ne laisse pas de trace.
+// Le focus reste dans la fiche tant qu'elle est ouverte, et revient où il était à la fermeture.
 export default function Sheet({ id }: { id: string }) {
   const d = useData()!;
   const c = d.contents.find((x) => x.id === id);
@@ -26,16 +27,30 @@ export default function Sheet({ id }: { id: string }) {
     else setFull(!full);
   };
 
-  const close = () => {
-    if (c && !c.title.trim()) deleteContent(id, true);
-    openSheet(null);
-  };
+  const close = closeSheet;
+  const box = useRef<HTMLElement>(null);
+  const [back] = useState(() => document.activeElement as HTMLElement | null); // ce qui avait le focus avant l'ouverture
+
+  useEffect(() => {
+    if (!box.current?.contains(document.activeElement)) (box.current?.querySelector<HTMLElement>(".sheet-title:placeholder-shown") ?? box.current)?.focus();
+    return () => { if (back?.isConnected) back.focus(); };
+  }, [back]);
 
   useEffect(() => {
     if (!c) openSheet(null);
-    const esc = (e: KeyboardEvent) => e.key === "Escape" && close();
-    window.addEventListener("keydown", esc);
-    return () => window.removeEventListener("keydown", esc);
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape") return close();
+      if (e.key !== "Tab" || !box.current) return;
+      const all = [...box.current.querySelectorAll<HTMLElement>("button, a[href], input, textarea, select")].filter((x) => !x.hasAttribute("disabled") && x.offsetParent);
+      const [first, last] = [all[0], all[all.length - 1]];
+      const at = document.activeElement;
+      if (!box.current.contains(at) || (e.shiftKey ? at === first || at === box.current : at === last)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first)?.focus();
+      }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
   });
 
   if (!c) return null;
@@ -59,7 +74,7 @@ export default function Sheet({ id }: { id: string }) {
 
   return (
     <div className="veil sheet-veil" onPointerDown={(e) => e.target === e.currentTarget && close()}>
-      <aside className={`sheet${full ? " full" : ""}`} role="dialog" aria-label="Fiche de contenu">
+      <aside className={`sheet${full ? " full" : ""}`} role="dialog" aria-modal="true" aria-label="Fiche de contenu" ref={box} tabIndex={-1}>
         <header className="sheet-head">
           <span className={`chip st-${st}`}>{STATUS.find((s) => s.key === st)!.label}</span>
           <span className="sheet-tools">
@@ -93,7 +108,7 @@ export default function Sheet({ id }: { id: string }) {
               const s = c.steps[key];
               return (
                 <li key={key} className={s.done ? "done" : ""}>
-                  <button type="button" className="chk" aria-pressed={s.done} aria-label={`${label} faite`}
+                  <button type="button" className="chk" aria-pressed={s.done} aria-label={`${label} ${key === "ecriture" ? "faite" : "fait"}`}
                     onClick={() => set((c) => ({ ...c, steps: { ...c.steps, [key]: { ...s, done: !s.done } } }))}>
                     {s.done && <DotIcon name="check" />}
                   </button>
@@ -129,9 +144,13 @@ export default function Sheet({ id }: { id: string }) {
 }
 
 // Le script suit une structure choisie dans le profil : une zone par partie, numérotée.
+// Le texte d'une structure ou d'une partie retirée depuis reste visible en dessous, pour le récupérer.
 function Script({ c, structures, set }: { c: Content; structures: Structure[]; set: (fn: (c: Content) => Content) => void }) {
   const sc = c.script ?? { structureId: null, parts: {} };
   const st = structures.find((s) => s.id === sc.structureId);
+  const ids = new Set(structures.flatMap((s) => s.parts.map((p) => p.id)));
+  const old = Object.entries(sc.parts).filter(([k, v]) => v.trim() && !ids.has(k));
+  const write = (k: string, v: string) => set((c) => ({ ...c, script: { ...sc, parts: { ...sc.parts, [k]: v } } }));
   return (
     <section className="sheet-sec">
       <span className="lbl">Script</span>
@@ -148,12 +167,17 @@ function Script({ c, structures, set }: { c: Content; structures: Structure[]; s
               <span className="disp">{String(i + 1).padStart(2, "0")}</span>
               <label>
                 <span>{p.label}</span>
-                <textarea className="inp long" rows={2} value={sc.parts[p.id] ?? ""}
-                  onChange={(e) => set((c) => ({ ...c, script: { ...sc, parts: { ...sc.parts, [p.id]: e.target.value } } }))} />
+                <textarea className="inp long" rows={2} value={sc.parts[p.id] ?? ""} onChange={(e) => write(p.id, e.target.value)} />
               </label>
             </li>
           ))}
         </ol>
+      )}
+      {old.length > 0 && (
+        <div className="parts-old">
+          <span className="lbl">Ancienne structure</span>
+          {old.map(([k, v]) => <textarea key={k} className="inp long" rows={2} value={v} aria-label="Ancienne structure" onChange={(e) => write(k, e.target.value)} />)}
+        </div>
       )}
     </section>
   );

@@ -1,19 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import Logo from "./Logo";
+import Logo from "../Logo";
 
-// Une erreur inattendue : on le dit simplement, on propose de réessayer.
+// Une erreur sur la vitrine : on propose de réessayer ou de revenir à l'accueil.
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
     <main className="lost">
-      <Link href="/" aria-label="Semper"><Logo /></Link>
+      <Link href="/" aria-label="Semper, accueil"><Logo /></Link>
       <b className="disp lost-n">Oups</b>
       <h1>Quelque chose a coincé.</h1>
-      <p>Rien n&apos;est perdu&nbsp;: tes contenus sont enregistrés au fur et à mesure.</p>
       <span className="lost-act">
         <button type="button" className="btn" onClick={reset}>Réessayer</button>
-        <Link href="/calendrier" className="link">Mon calendrier</Link>
+        <Link href="/" className="link">Retour à l&apos;accueil</Link>
       </span>
     </main>
   );

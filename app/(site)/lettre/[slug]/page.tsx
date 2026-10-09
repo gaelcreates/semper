@@ -45,8 +45,8 @@ export default async function Page({ params }: Props) {
 
   return (
     <>
-      <TopBar cta={false} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <TopBar />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <main className="lettres">
         <article className="wrap narrow lt">
           <Link href="/lettre" className="link lt-back">La lettre</Link>

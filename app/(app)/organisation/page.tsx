@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Stepper } from "../ui";
 import Rythme from "../Rythme";
 import { duration } from "../lib";
-import { FIELD_TYPES, STEPS, setFields, setProfile, setStructures, structure, uid, useData, type Field, type FieldType, type Structure } from "../store";
+import { FIELD_TYPES, STEPS, setFields, setProfile, setStructures, structure, uid, useData, type Content, type Field, type FieldType, type Structure } from "../store";
 
 type Tab = "methode" | "scripts";
 
@@ -61,7 +61,7 @@ export default function Organisation() {
       ) : (
         <section className="box pf">
           <h2>Structures de script</h2>
-          <StructureEditor list={d.structures} />
+          <StructureEditor list={d.structures} contents={d.contents} />
         </section>
       )}
     </div>
@@ -102,9 +102,13 @@ function FieldEditor({ fields }: { fields: Field[] }) {
   );
 }
 
-function StructureEditor({ list }: { list: Structure[] }) {
+// Retirer une structure ou une partie déjà écrite demande une confirmation, avec le nombre de scripts touchés.
+// Les textes restent dans les fiches (« Ancienne structure »), rien n'est effacé.
+function StructureEditor({ list, contents }: { list: Structure[]; contents: Content[] }) {
   const [arm, setArm] = useState<string | null>(null);
   const put = (id: string, fn: (s: Structure) => Structure) => setStructures(list.map((s) => (s.id === id ? fn(s) : s)));
+  const written = (ids: string[]) => contents.filter((c) => ids.some((k) => c.script?.parts[k]?.trim())).length;
+  const scripts = (n: number) => (n ? `, ${n} script${n > 1 ? "s" : ""}` : "");
   return (
     <>
       <div className="se">
@@ -116,7 +120,7 @@ function StructureEditor({ list }: { list: Structure[] }) {
               <span className="fe-act">
                 <button type="button" className={arm === s.id ? "arm" : ""} onBlur={() => setArm(null)}
                   onClick={() => (arm === s.id ? setStructures(list.filter((x) => x.id !== s.id)) : setArm(s.id))}
-                  aria-label="Supprimer la structure">{arm === s.id ? "Supprimer" : "×"}</button>
+                  aria-label="Supprimer la structure">{arm === s.id ? `Supprimer${scripts(written(s.parts.map((p) => p.id)))}` : "×"}</button>
               </span>
             </div>
             <ol className="se-parts">
@@ -128,8 +132,10 @@ function StructureEditor({ list }: { list: Structure[] }) {
                   <span className="fe-act">
                     <button type="button" disabled={i === 0} aria-label="Monter"
                       onClick={() => put(s.id, (x) => { const n = [...x.parts]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; return { ...x, parts: n }; })}>↑</button>
-                    <button type="button" aria-label="Retirer la partie"
-                      onClick={() => put(s.id, (x) => ({ ...x, parts: x.parts.filter((q) => q.id !== p.id) }))}>×</button>
+                    <button type="button" aria-label="Retirer la partie" className={arm === p.id ? "arm" : ""} onBlur={() => setArm(null)}
+                      onClick={() => (arm === p.id || !written([p.id]) ? put(s.id, (x) => ({ ...x, parts: x.parts.filter((q) => q.id !== p.id) })) : setArm(p.id))}>
+                      {arm === p.id ? `Retirer${scripts(written([p.id]))}` : "×"}
+                    </button>
                   </span>
                 </li>
               ))}

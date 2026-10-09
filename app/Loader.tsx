@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Orbit from "./Orbit";
 
+const none = () => () => {};
+
 // Voile de chargement : le symbole en orbite, petit, le temps que les polices arrivent. Puis le voile s'efface.
+// Seulement au premier chargement : après une navigation dans le site, la page arrive tout de suite (classe « back »).
 export default function Loader() {
-  const [gone, setGone] = useState(false);
+  const first = useSyncExternalStore(none, () => false, () => true);
+  const [gone, setGone] = useState(!first);
 
   useEffect(() => {
+    if (gone) { document.documentElement.classList.add("back"); return; }
     const start = performance.now();
     const ready = (document.fonts?.ready ?? Promise.resolve()) as Promise<unknown>;
     let t = 0;

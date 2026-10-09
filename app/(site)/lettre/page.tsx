@@ -6,9 +6,9 @@ import { site } from "../../site";
 import Abonnement from "./Abonnement";
 import { FORMATS, dateFr, lettres } from "./lettres";
 
-const title = "Créer, toujours : la newsletter des créateurs de contenu réguliers · Semper";
+const title = "Créer, toujours\u00a0: la newsletter des créateurs de contenu réguliers · Semper";
 const description =
-  "Chaque dimanche, une lettre gratuite sur la constance : comment les créateurs organisent leurs idées, tiennent leur calendrier éditorial et ce qui les fait s'arrêter.";
+  "Chaque dimanche, une lettre gratuite sur la constance\u00a0: comment les créateurs organisent leurs idées, tiennent leur calendrier éditorial et ce qui les fait s'arrêter.";
 
 export const metadata: Metadata = {
   title,
@@ -32,14 +32,14 @@ const jsonLd = {
 export default function Page() {
   return (
     <>
-      <TopBar cta={false} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <TopBar />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <main className="lettres">
         {/* L'en-tête : ce que c'est, et l'inscription tout de suite */}
         <header className="wrap lt-hero">
           <p className="tagline dot-t"><span className="b">Créer,</span> <span className="w">toujours.</span></p>
           <h1>La lettre des créateurs <span className="w">qui tiennent.</span></h1>
-          <p className="lead">Chaque dimanche, un e-mail sur la constance : comment les créateurs organisent leurs idées, tiennent leur calendrier et ce qui les fait s&apos;arrêter.</p>
+          <p className="lead">Chaque dimanche, un e-mail sur la constance&nbsp;: comment les créateurs organisent leurs idées, tiennent leur calendrier et ce qui les fait s&apos;arrêter.</p>
           <div className="lt-hero-form">
             <JoinForm label="Recevoir la lettre" done="C'est noté. La prochaine lettre arrive dans ta boîte." />
             <p className="fine">Gratuit · Un e-mail par semaine · Désinscription en un clic</p>
@@ -48,11 +48,11 @@ export default function Page() {
 
         {/* Les cinq formats */}
         <section className="wrap lt-sec" aria-labelledby="formats">
-          <h2 id="formats">Cinq formats, <span className="w">une seule question : comment tenir.</span></h2>
+          <h2 id="formats">Cinq formats, <span className="w">une seule question&nbsp;: comment tenir.</span></h2>
           <ul className="lt-formats">
             {FORMATS.map((f) => (
               <li key={f.nom}>
-                <img src={`/newsletter/${f.banniere}.png`} alt={`Bannière « ${f.nom} »`} width={1200} height={600} loading="lazy" />
+                <img src={`/newsletter/${f.banniere}.png`} alt={`Bannière «\u00a0${f.nom}\u00a0»`} width={1200} height={600} loading="lazy" />
                 <h3>{f.nom}</h3>
                 <p>{f.texte}</p>
               </li>
@@ -81,7 +81,7 @@ export default function Page() {
           ) : (
             <div className="lt-empty">
               <span className="disp">N° 01</span>
-              <p>La première lettre arrive bientôt. Elle paraîtra ici après son envoi : inscris-toi pour la lire en premier.</p>
+              <p>La première lettre arrive bientôt. Elle paraîtra ici après son envoi&nbsp;: inscris-toi pour la lire en premier.</p>
               <a href="#recevoir" className="link">S&apos;inscrire</a>
             </div>
           )}

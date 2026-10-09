@@ -65,3 +65,11 @@ Publication automatique, connexion aux comptes Meta ou TikTok, date d'ouverture.
 - Une page par édition envoyée (broadcast Resend « sent » au même objet, ou `date_envoi`). Jamais l'annonce ni `"site": False`. Images de toutes les éditions servies sous `/newsletter/`.
 - Ne pas modifier `content/lettre` à la main dans v1 : c'est main qui fait foi.
 - Arrêter : `launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/app.trysemper.lettre.plist`. Journal : `~/Library/Logs/semper-lettre.log`.
+
+## Sécurité et CRM (9 oct 2026, après audit complet)
+
+- En-têtes de sécurité dans next.config.ts (CSP, frame-ancestors none, nosniff, Referrer-Policy, Permissions-Policy). Tout nouveau domaine d'image ou d'API appelé du navigateur doit y être ajouté.
+- profiles : l'inscrit ne peut écrire que first_name, handle, rythme, durations, answers, fields, structures, rythme_locked_until, seen_at, avatar_url (droits de colonne). E-mail unique (lower), avatar seulement dans avatars/<id>/avatar.webp, pseudo ^[A-Za-z0-9._]{0,30}$, tailles bornées. Ajouter une colonne écrite par l'app = l'ajouter au grant.
+- Limites de débit (app/limit.ts, table hits, serveur seulement) : codes 10/h par IP et 10/jour par adresse, essais 10/h par adresse, waitlist 20/h par IP. Le compte n'est créé qu'après un code juste (login_codes.meta).
+- Resend : addToAudience n'ajoute que les absents, personne n'est jamais réabonné d'office.
+- CRM /admin (app/(app)/admin/) : statuts dans model.ts, score v2 dans score.ts, fiche Fiche.tsx, pipeline Pipeline.tsx, brouillons de DM dm.ts, styles crm.css (préfixe .cr-). Données : admin_people, admin_kpis, admin_funnel, admin_team, leads (suite datée, montant, raison), lead_events (historique, ajout seul). Rôle « setter » pour Lou à faire quand elle commence (spec : migration C).

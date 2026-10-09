@@ -54,8 +54,9 @@ function advice(d: Data, thisWeek: number, r: number, count: (w: Date) => number
   const missing = r - thisWeek - planned;
   if (missing > 0) return missing === 1 ? "Il manque une vidéo au calendrier pour tenir la semaine." : `Il manque ${missing} vidéos au calendrier pour tenir la semaine.`;
 
-  const both = d.contents.filter((c) => c.publishAt && c.steps.montage.at);
-  const same = both.filter((c) => c.publishAt!.slice(0, 10) === c.steps.montage.at!.slice(0, 10)).length;
+  // Lecture prudente : un contenu malformé en base ne doit pas casser l'espace.
+  const both = d.contents.filter((c) => c.publishAt && c.steps?.montage?.at);
+  const same = both.filter((c) => c.publishAt!.slice(0, 10) === c.steps!.montage!.at!.slice(0, 10)).length;
   if (both.length >= 3 && same / both.length >= 2 / 3) return "Tes montages tombent le jour de la publication. Avance-les d'un jour.";
 
   if (thisWeek >= r) return "Semaine tenue. Garde le même rythme.";

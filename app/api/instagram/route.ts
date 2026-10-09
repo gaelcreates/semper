@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { admin } from "../../server";
 import { snapshot } from "../../instagram";
 import { addToAudience } from "../../(start)/codes";
@@ -6,9 +7,11 @@ import { addToAudience } from "../../(start)/codes";
 // 1. filet de sécurité Resend : les comptes des 3 derniers jours sont (re)mis dans l'audience, au cas où l'ajout
 //    de l'inscription aurait échoué (Resend ne crée pas de doublon) ;
 // 2. relevé Instagram de tous les comptes.
+// Le secret se compare en temps constant : la durée de la réponse ne dit rien de sa valeur.
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return new Response("Non", { status: 401 });
+  const given = Buffer.from(req.headers.get("authorization") ?? ""), want = Buffer.from(`Bearer ${secret}`);
+  if (!secret || given.length !== want.length || !timingSafeEqual(given, want)) return new Response("Non", { status: 401 });
   const since = new Date(Date.now() - 3 * 864e5).toISOString();
   const { data: recent } = await admin().from("profiles").select("email, first_name").gte("created_at", since);
   for (const p of recent ?? []) { await addToAudience(p.email, p.first_name); await new Promise((r) => setTimeout(r, 600)); }

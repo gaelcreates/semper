@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { short } from "./lib";
-import { SEP, STATUS, openSheet, patchContent, picked, statusOf, withStatus, type Content, type Field, type Status } from "./store";
+import { addDays, dayKey, short } from "./lib";
+import { SEP, STATUS, movePublish, patchContent, openSheet, picked, statusOf, withStatus, type Content, type Field, type Status } from "./store";
 
 const byDate = (a: Content, b: Content) => (a.publishAt ?? "9999").localeCompare(b.publishAt ?? "9999");
 // Ce qui s'affiche d'un champ : le sous-choix quand il y en a un (plus précis), sinon le choix.
@@ -24,9 +24,9 @@ export function Kanban({ contents, fields }: { contents: Content[]; fields: Fiel
     const id = e.dataTransfer.getData("text/plain");
     const c = contents.find((x) => x.id === id);
     if (!c || statusOf(c) === s) return;
-    patchContent(id, (c) => withStatus(c, s));
-    // Une idée qui avance a besoin d'une date : on ouvre sa fiche.
-    if (!c.publishAt && s !== "idee" && s !== "publie") openSheet(id);
+    // Une idée qui avance a besoin d'une date : demain à 18 h, modifiable dans la fiche.
+    const date = !c.publishAt && s !== "idee" && s !== "publie";
+    patchContent(id, (c, d) => (date ? movePublish(withStatus(c, s), `${dayKey(addDays(new Date(), 1))}T18:00`, d.profile.durations) : withStatus(c, s)));
   }
 
   return (
@@ -55,10 +55,10 @@ export function Kanban({ contents, fields }: { contents: Content[]; fields: Fiel
 }
 
 // La liste : tout d'un coup d'œil, trié par date de publication.
-export function List({ contents, fields }: { contents: Content[]; fields: Field[] }) {
+export function List({ contents, fields, total }: { contents: Content[]; fields: Field[]; total: number }) {
   const cols = fields.filter((f) => f.type !== "long").slice(0, 3);
   const grid = { gridTemplateColumns: `minmax(0, 2.2fr) 104px 168px${" minmax(0, 1fr)".repeat(cols.length)}` };
-  if (!contents.length) return <p className="empty">Aucun contenu.</p>;
+  if (!contents.length) return <p className="empty">{total ? "Aucun résultat." : "Aucun contenu."}</p>;
   return (
     <div className="ls" role="table">
       <div className="ls-row ls-head" style={grid} role="row">

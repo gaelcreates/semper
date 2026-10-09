@@ -14,12 +14,12 @@ import { FORMATS, lettres } from "./lettre/lettres";
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
 
 const faq = [
-  { q: "C'est vraiment gratuit ?", a: "Oui. Pour un créateur seul, sans limite de fiches et sans carte bancaire. Les espaces d'équipe arriveront plus tard dans une offre payante. Le créateur seul reste gratuit." },
-  { q: "Quand est-ce que ça ouvre ?", a: "Bientôt, sans date annoncée pour ne pas en promettre une fausse. Les inscrits sur la liste sont prévenus en premier et entrent en premier." },
-  { q: "Ça marche sur mon téléphone ?", a: "Oui, dans ton navigateur, dès le premier jour. Pas de store, pas de téléchargement. Tu peux l'ajouter à ton écran d'accueil comme une application." },
-  { q: "Est-ce que Semper publie à ma place ?", a: "Non. Semper organise, suit et compte. Tu publies toi-même sur tes plateformes, comme aujourd'hui. Aucune connexion à tes comptes n'est demandée." },
-  { q: "Et mes données ?", a: "Chaque geste est sauvegardé immédiatement. Tes fiches t'appartiennent et tu peux demander leur suppression à tout moment, voir la page Confidentialité." },
-  { q: "Pourquoi une série et pas des points ?", a: "Parce que ce qui fait grandir un compte, c'est la constance, pas le volume. Semper compte les semaines tenues à ton rythme, jamais le nombre de vidéos." },
+  { q: "C'est vraiment gratuit\u00a0?", a: "Oui. Pour un créateur seul, sans limite de fiches et sans carte bancaire. Les espaces d'équipe arriveront plus tard dans une offre payante. Le créateur seul reste gratuit." },
+  { q: "Quand est-ce que ça ouvre\u00a0?", a: "Bientôt, sans date annoncée pour ne pas en promettre une fausse. Les inscrits sur la liste sont prévenus en premier et entrent en premier." },
+  { q: "Ça marche sur mon téléphone\u00a0?", a: "Oui, dans ton navigateur, dès le premier jour. Pas de store, pas de téléchargement. Tu peux l'ajouter à ton écran d'accueil comme une application." },
+  { q: "Est-ce que Semper publie à ma place\u00a0?", a: "Non. Semper organise, suit et compte. Tu publies toi-même sur tes plateformes, comme aujourd'hui. Aucune connexion à tes comptes n'est demandée." },
+  { q: "Et mes données\u00a0?", a: "Chaque geste est sauvegardé immédiatement. Tes fiches t'appartiennent et tu peux demander leur suppression à tout moment, voir la page Confidentialité." },
+  { q: "Pourquoi une série et pas des points\u00a0?", a: "Parce que ce qui fait grandir un compte, c'est la constance, pas le volume. Semper compte les semaines tenues à ton rythme, jamais le nombre de vidéos." },
 ];
 
 // Données structurées pour Google, Bing et les assistants IA : qui est Semper, ce que c'est, et la FAQ.
@@ -48,9 +48,9 @@ export default function Page() {
   return (
     <>
       <Loader />
-      <TopBar />
+      <TopBar home />
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
 
       <main>
         {/* ---------- 00 · Accueil */}
@@ -85,7 +85,7 @@ export default function Page() {
             <h2 data-reveal style={{ ["--i" as string]: 1 }}>Tu ne manques ni d&apos;idées, <span className="w">ni de motivation.</span></h2>
             <p className="story" data-reveal style={{ ["--i" as string]: 2 }}>
               Tu ne vois juste pas ton stock se vider. Une semaine chargée, un système bricolé dans les notes
-              du téléphone, une pause « temporaire » qui s&apos;installe. Ce n&apos;est pas un problème de talent.
+              du téléphone, une pause «&nbsp;temporaire&nbsp;» qui s&apos;installe. Ce n&apos;est pas un problème de talent.
               C&apos;est un problème de rythme.
             </p>
             <ul className="stats">
@@ -252,7 +252,7 @@ export default function Page() {
               <div className="lb-form" data-reveal style={{ ["--i" as string]: 3 }}>
                 <JoinForm label="Recevoir la lettre" done="C'est noté. La prochaine lettre arrive dans ta boîte." />
                 <Link href="/lettre" className="link lb-more">
-                  {lettres.length ? `Lire les lettres · dernière : ${lettres[0].titre}` : "Découvrir la lettre"}
+                  {lettres.length ? `Lire les lettres · dernière\u00a0: ${lettres[0].titre}` : "Découvrir la lettre"}
                 </Link>
               </div>
             </div>

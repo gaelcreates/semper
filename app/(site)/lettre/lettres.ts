@@ -11,7 +11,10 @@ export type Bloc =
   | { t: "bouton"; texte: string; href: string }
   | { t: "img"; src: string; alt: string };
 
-export const lettres = editions as Lettre[];
+// Espace insécable avant : ; ? ! » et après « : la ponctuation ne part jamais seule à la ligne.
+const nb = (s: string) => s.replace(/(\S) ([:;?!»])/g, "$1\u00a0$2").replace(/« /g, "«\u00a0");
+
+export const lettres = (editions as Lettre[]).map((l) => ({ ...l, titre: nb(l.titre), description: nb(l.description) }));
 export const lettre = (slug: string) => lettres.find((l) => l.slug === slug);
 
 export const dateFr = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString("fr-CH", { day: "numeric", month: "long", year: "numeric" });
@@ -19,7 +22,7 @@ export const dateFr = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateStrin
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 // Le gras et les liens, comme dans contenu.py. Le reste est échappé.
 const inline = (s: string) =>
-  esc(s)
+  esc(nb(s))
     .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
     .replace(/\[(.+?)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>');
 
@@ -28,7 +31,7 @@ export function lire(slug: string) {
   const md = readFileSync(join(process.cwd(), "content/lettre", `${slug}.md`), "utf8");
   const parts = md.split(/\n---\n/);
   const head = parts[0], fin = parts[parts.length - 1], corps = parts.slice(1, -1).join("\n");
-  const chapo = head.match(/\*\*Chapo et pre-en-tete\.\*\* (.+)/)?.[1] ?? "";
+  const chapo = nb(head.match(/\*\*Chapo et pre-en-tete\.\*\* (.+)/)?.[1] ?? "");
 
   const blocs: Bloc[] = [];
   for (const raw of corps.split(/\n{2,}/)) {

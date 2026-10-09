@@ -4,11 +4,11 @@ import { Footer, TopBar } from "./Frame";
 export default function Legal({ title, updated, children }: { title: string; updated: string; children: React.ReactNode }) {
   return (
     <>
-      <TopBar cta={false} />
+      <TopBar />
       <main className="legal">
         <div className="wrap narrow">
           <h1>{title}</h1>
-          <p className="fine">Dernière mise à jour : {updated}</p>
+          <p className="fine">Dernière mise à jour&nbsp;: {updated}</p>
           <div className="prose">{children}</div>
         </div>
       </main>

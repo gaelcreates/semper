@@ -12,13 +12,13 @@ export const metadata: Metadata = { title: "Système · Semper", robots: { index
 export default function Page() {
   return (
     <>
-      <TopBar cta={false} />
+      <TopBar />
       <main className="sg">
         <div className="wrap">
           <header className="sg-head">
             <p className="lbl disp">Système · branche pixel</p>
             <h1>Suisse matricielle.</h1>
-            <p className="story">Deux familles, une unité. Le papier suisse porte le sens : Suisse Intl, blanc cassé, coins ronds, mouvement fluide. La matrice compte : Doto, points, coins droits, mouvement par pas. Le point est l&apos;unité de tout.</p>
+            <p className="story">Deux familles, une unité. Le papier suisse porte le sens&nbsp;: Suisse Intl, blanc cassé, coins ronds, mouvement fluide. La matrice compte&nbsp;: Doto, points, coins droits, mouvement par pas. Le point est l&apos;unité de tout.</p>
           </header>
 
           <section>
@@ -31,7 +31,7 @@ export default function Page() {
 
           <section>
             <h2>Les couleurs</h2>
-            <p className="sg-rule">Trois couleurs. L&apos;or est le seul signal et n&apos;apparaît qu&apos;une fois par écran : ce qui est allumé, ce qui compte maintenant.</p>
+            <p className="sg-rule">Trois couleurs. L&apos;or est le seul signal et n&apos;apparaît qu&apos;une fois par écran&nbsp;: ce qui est allumé, ce qui compte maintenant.</p>
             <div className="sg-row">
               <div className="sg-box"><div className="sg-sw" style={{ background: "#f5f5f5" }} /><span className="lbl disp">Papier · F5F5F5</span></div>
               <div className="sg-box"><div className="sg-sw" style={{ background: "#0e0e0e" }} /><span className="lbl disp">Encre · 0E0E0E</span></div>
@@ -40,7 +40,7 @@ export default function Page() {
           </section>
 
           <section className="sg-type">
-            <h2>Le papier : Suisse Intl</h2>
+            <h2>Le papier&nbsp;: Suisse Intl</h2>
             <p className="sg-rule">Tout ce qui se lit. Titres en Black, second mot en Light, corps en Light. Jamais de points dans une phrase.</p>
             <div className="sg-paper">
               <p style={{ fontSize: 56, fontWeight: 900, letterSpacing: "-0.035em", lineHeight: 1 }}>Reste régulier. <span className="w">Pour de bon.</span></p>
@@ -50,7 +50,7 @@ export default function Page() {
           </section>
 
           <section className="sg-type">
-            <h2>La matrice : Doto</h2>
+            <h2>La matrice&nbsp;: Doto</h2>
             <p className="sg-rule">Tout ce qui compte. Chiffres de 20 à 60 px, étiquettes de 12 px en capitales espacées. Jamais au-dessus de 60 px, jamais dans un titre. Doto est libre, sur Google Fonts, variable, points ronds à fond.</p>
             <div className="sg-row">
               <div className="sg-disp">
@@ -68,7 +68,7 @@ export default function Page() {
 
           <section>
             <h2>Deux cartes</h2>
-            <p className="sg-rule">Papier : coins de 20 px, ombre douce, texte. Afficheur : coins de 4 px, pas d&apos;ombre, chiffres et barres. On ne mélange pas les deux dans une même carte.</p>
+            <p className="sg-rule">Papier&nbsp;: coins de 20 px, ombre douce, texte. Afficheur&nbsp;: coins de 4 px, pas d&apos;ombre, chiffres et barres. On ne mélange pas les deux dans une même carte.</p>
             <div className="sg-row">
               <div className="sg-card paper"><h3 style={{ marginBottom: 6 }}>Une fiche par vidéo</h3><p className="story" style={{ fontSize: 15 }}>Chaque contenu avance par statut, de l&apos;idée à la publication.</p></div>
               <div className="sg-card disp"><span className="lbl disp">Série</span><span className="disp sg-num s">7 <span style={{ fontFamily: "var(--font-intl)", fontWeight: 300, fontSize: 13 }}>semaines</span></span><i className="bar"><i /></i></div>
@@ -98,13 +98,13 @@ export default function Page() {
 
           <section>
             <h2>Le signe</h2>
-            <p className="sg-rule">Un anneau vu en perspective, ouvert en haut, épais devant. Le nom en minuscules, Suisse Intl Black. Le symbole a la hauteur des lettres et repose sur la ligne de base. En mouvement : il se dessine en un tour (chargement), ou tourne en orbite avec une traînée (attente).</p>
+            <p className="sg-rule">Un anneau vu en perspective, ouvert en haut, épais devant. Le nom en minuscules, Suisse Intl Black. Le symbole a la hauteur des lettres et repose sur la ligne de base. En mouvement&nbsp;: il se dessine en un tour (chargement), ou tourne en orbite avec une traînée (attente).</p>
             <div className="sg-marks"><Mark full /><Logo /><Orbit size={56} /><span style={{ color: "#ffc508" }}><Orbit size={56} lap={6} trail={220} /></span></div>
           </section>
 
           <section>
             <h2>Le mouvement</h2>
-            <p className="sg-rule">Le papier glisse, avec une courbe douce. La matrice s&apos;allume par pas de huit, comme un afficheur. Un chiffre qui monte, une barre qui se remplit, une semaine qui s&apos;allume : par pas.</p>
+            <p className="sg-rule">Le papier glisse, avec une courbe douce. La matrice s&apos;allume par pas de huit, comme un afficheur. Un chiffre qui monte, une barre qui se remplit, une semaine qui s&apos;allume&nbsp;: par pas.</p>
             <div className="sg-motion"><div className="paper"><i /></div><div className="disp"><i /></div></div>
           </section>
 

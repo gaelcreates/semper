@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DotIcon from "../../DotIcon";
 import Week from "../Week";
 import Month from "../Month";
@@ -24,7 +24,17 @@ export default function Calendrier() {
   const narrow = useNarrow();
   const [view, setView] = usePref<View>("semper:view", "calendrier");
   const [span, setSpan] = usePref<Span>("semper:span", "semaine");
-  const [anchor, setAnchor] = useState(() => new Date());
+  const [anchor, setDate] = useState(() => new Date());
+  // L'app reste souvent ouverte des jours : au retour, on revient à aujourd'hui, sauf si la personne
+  // s'est déplacée dans le calendrier elle-même.
+  const moved = useRef(false);
+  const setAnchor = (x: Date) => { moved.current = true; setDate(x); };
+  useEffect(() => {
+    const back = () => { if (document.visibilityState === "visible" && !moved.current) setDate((a) => (dayKey(a) === dayKey(new Date()) ? a : new Date())); };
+    document.addEventListener("visibilitychange", back);
+    window.addEventListener("focus", back);
+    return () => { document.removeEventListener("visibilitychange", back); window.removeEventListener("focus", back); };
+  }, []);
   const [q, setQ] = useState("");
   const [statuses, setStatuses] = useState<string[]>([]);
   const [picks, setPicks] = useState<Record<string, string[]>>({});
@@ -64,7 +74,7 @@ export default function Calendrier() {
           {cal && (
             <div className="pl-nav">
               <button type="button" onClick={() => move(-1)} aria-label="Précédent">‹</button>
-              <button type="button" className="today" onClick={() => setAnchor(new Date())}>Aujourd&apos;hui</button>
+              <button type="button" className="today" onClick={() => { setDate(new Date()); moved.current = false; }}>Aujourd&apos;hui</button>
               <button type="button" onClick={() => move(1)} aria-label="Suivant">›</button>
             </div>
           )}
@@ -104,10 +114,10 @@ export default function Calendrier() {
       )}
 
       <div className="pl-body">
-        {week && <Week contents={list} days={days} dur={d.profile.durations} />}
+        {week && <Week contents={list} days={days} dur={d.profile.durations} empty={!d.contents.length} />}
         {cal && span === "mois" && <Month contents={list} anchor={anchor} narrow={narrow} onDay={(x) => { setAnchor(x); setSpan("semaine"); }} />}
         {view === "kanban" && <Kanban contents={list} fields={d.fields} />}
-        {view === "liste" && <List contents={list} fields={d.fields} />}
+        {view === "liste" && <List contents={list} fields={d.fields} total={d.contents.length} />}
       </div>
     </div>
   );

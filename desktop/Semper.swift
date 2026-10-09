@@ -7,9 +7,14 @@ let homeURL = URL(string: "https://trysemper.app/calendrier")!
 let semperHost = "trysemper.app"
 let appVersion = "1.0"
 
+// Seul trysemper.app s'affiche dans la fenêtre : aucun sous-domaine n'est servi.
 func isSemper(_ url: URL?) -> Bool {
-    guard let host = url?.host?.lowercased() else { return false }
-    return host == semperHost || host.hasSuffix("." + semperHost)
+    url?.scheme?.lowercased() == "https" && url?.host?.lowercased() == semperHost
+}
+
+// Ce qui peut sortir de la fenêtre : les sites web et les e-mails. Jamais un fichier local ni un schéma système.
+func canOpenOutside(_ url: URL) -> Bool {
+    ["http", "https", "mailto"].contains(url.scheme?.lowercased() ?? "")
 }
 
 func openExternally(_ url: URL) {
@@ -56,6 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     let monitor = NWPathMonitor()
     var failedURL: URL?
     var downloadDestinations: [ObjectIdentifier: URL] = [:]
+    var quitting = false
 
     // MARK: Lancement
 
@@ -65,6 +71,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .default()
         config.applicationNameForUserAgent = "SemperMac/\(appVersion)"
+        // window.open passe toujours par createWebViewWith, même hors clic (le CRM ouvre Instagram après une copie).
+        // Aucune seconde fenêtre ne s'ouvre : c'est createWebViewWith qui décide où va le lien.
         config.preferences.javaScriptCanOpenWindowsAutomatically = true
 
         webView = WKWebView(frame: .zero, configuration: config)
@@ -121,10 +129,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
-    // Fermer = cacher la fenêtre
+    // Fermer = cacher la fenêtre. La page envoie d'abord ce qui attend (elle reste ouverte derrière).
     func windowShouldClose(_ sender: NSWindow) -> Bool {
+        flushPage()
         sender.orderOut(nil)
         return false
+    }
+
+    // Quitter : la page envoie ce qui attend, puis 300 ms pour que les écritures partent avant la fin.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if quitting || webView == nil { return .terminateNow }
+        quitting = true
+        flushPage()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            NSApp.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
+    }
+
+    // store.ts envoie tout en keepalive sur pagehide. Pas de visibilitychange : la page est encore visible
+    // à ce moment-là et le prendrait pour un retour.
+    func flushPage() {
+        webView?.evaluateJavaScript("dispatchEvent(new Event('pagehide'))", completionHandler: nil)
     }
 
     // MARK: Menus
@@ -226,26 +252,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
             return
         }
         guard let url = action.request.url, let scheme = url.scheme?.lowercased() else {
+            decisionHandler(.cancel)
+            return
+        }
+        if isSemper(url) || scheme == "about" || scheme == "blob" {
             decisionHandler(.allow)
             return
         }
-        switch scheme {
-        case "http", "https":
-            // Les autres sites s'ouvrent dans le navigateur (les iframes restent dans la page)
-            let isMainFrame = action.targetFrame?.isMainFrame ?? true
-            if isMainFrame && !isSemper(url) {
-                openExternally(url)
-                decisionHandler(.cancel)
-            } else {
-                decisionHandler(.allow)
-            }
-        case "about", "blob", "data", "file":
-            decisionHandler(.allow)
-        default:
-            // mailto:, tel:, etc.
+        // Le reste ne s'affiche jamais dans la fenêtre. Un autre site ou un e-mail demandé par la page
+        // s'ouvre dans le navigateur ou l'app Mail, clic ou pas (le CRM écrit l'e-mail par location.href).
+        // Fichiers locaux, réglages et autres schémas système : refusés.
+        if (action.targetFrame?.isMainFrame ?? true) && canOpenOutside(url) {
             openExternally(url)
-            decisionHandler(.cancel)
         }
+        decisionHandler(.cancel)
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor response: WKNavigationResponse,
@@ -302,12 +322,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
                  for action: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView?
     {
-        if let url = action.request.url {
-            if isSemper(url) || ["blob", "data"].contains(url.scheme?.lowercased() ?? "") {
-                webView.load(action.request)
-            } else if url.scheme != nil && url.absoluteString != "about:blank" {
-                openExternally(url)
-            }
+        // Nouvel onglet : un autre site ou un e-mail s'ouvre dans le navigateur ou l'app Mail, clic ou pas.
+        // Un lien Semper cliqué aussi : la page en cours reste (une inscription ne se perd pas en lisant
+        // les conditions). Un window.open vers Semper sans clic se charge dans la fenêtre.
+        guard let url = action.request.url else { return nil }
+        if isSemper(url) && action.navigationType != .linkActivated {
+            webView.load(action.request)
+        } else if canOpenOutside(url) {
+            openExternally(url)
         }
         return nil
     }

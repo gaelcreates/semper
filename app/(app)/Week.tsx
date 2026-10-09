@@ -2,25 +2,30 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { DAYS, addDays, dayKey, fmt, isoWeek, minutesOfDay, parse } from "./lib";
+import DotIcon from "../DotIcon";
 import { STEPS, createContent, movePublish, openSheet, patchContent, type Content, type StepKey } from "./store";
 
 // La semaine : une colonne par jour, une ligne par heure. Chaque vidéo y pose ses blocs :
 // écriture, tournage, montage (durée fixée dans le profil) et la publication.
 // Un bloc se déplace, il ne se redimensionne pas. Déplacer la publication entraîne ses étapes.
+// Au doigt, le bloc se prend après un appui long : un glissé simple fait défiler la journée.
+// Au clavier : Entrée ouvre la fiche, les flèches déplacent le bloc (15 min, un jour).
 
 const HOUR = 64;
 const PX = HOUR / 60;
 const SNAP = 15;
 const MIN_H = 15; // hauteur visible minimale d'un bloc, en minutes ; le bloc suivant passe par-dessus
 const PUB = 30; // la publication est un moment, affichée sur une demi-heure
+const GHOST = 18 * 60; // la première vidéo proposée, à 18 h
 
 type Item = { key: string; cid: string; kind: StepKey | "pub"; day: number; s: number; dur: number; done: boolean; title: string; label: string };
-type Drag = { it: Item; x: number; y: number; colW: number; moved: boolean };
+type Drag = { it: Item; x: number; y: number; colW: number; moved: boolean; held: boolean };
 type Off = { key: string; cid: string; pub: boolean; days: number; mins: number; colW: number };
 
-export default function Week({ contents, days, dur }: { contents: Content[]; days: Date[]; dur: Record<StepKey, number> }) {
+export default function Week({ contents, days, dur, empty = false }: { contents: Content[]; days: Date[]; dur: Record<StepKey, number>; empty?: boolean }) {
   const scroller = useRef<HTMLDivElement>(null);
   const drag = useRef<Drag | null>(null);
+  const hold = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [off, setOff] = useState<Off | null>(null);
   const [now, setNow] = useState(() => new Date());
 
@@ -29,9 +34,17 @@ export default function Week({ contents, days, dur }: { contents: Content[]; day
     return () => clearInterval(t);
   }, []);
 
-  // On ouvre juste avant le premier bloc de la période, sinon vers 7 h 30.
+  // Pendant un glissé au doigt, la page ne défile pas.
+  useEffect(() => {
+    const el = scroller.current;
+    const stop = (e: TouchEvent) => { if (drag.current?.held) e.preventDefault(); };
+    el?.addEventListener("touchmove", stop, { passive: false });
+    return () => el?.removeEventListener("touchmove", stop);
+  }, []);
+
+  // On ouvre juste avant le premier bloc de la période, sinon vers 7 h 30 (16 h pour une première vidéo).
   const items = build(contents, days, dur);
-  const first = items.length ? Math.min(...items.map((i) => i.s)) - 30 : 7.5 * 60;
+  const first = items.length ? Math.min(...items.map((i) => i.s)) - 30 : empty ? GHOST - 120 : 7.5 * 60;
   useLayoutEffect(() => {
     if (scroller.current) scroller.current.scrollTop = Math.max(0, first) * PX;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,31 +62,62 @@ export default function Week({ contents, days, dur }: { contents: Content[]; day
   function down(e: React.PointerEvent, it: Item) {
     if (e.button !== 0) return;
     e.stopPropagation();
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     const col = scroller.current!.querySelector(".wk-col")!.getBoundingClientRect();
-    drag.current = { it, x: e.clientX, y: e.clientY, colW: col.width, moved: false };
+    const touch = e.pointerType === "touch";
+    const g: Drag = { it, x: e.clientX, y: e.clientY, colW: col.width, moved: false, held: !touch };
+    drag.current = g;
+    clearTimeout(hold.current);
+    if (!touch) return (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    hold.current = setTimeout(() => {
+      if (drag.current !== g) return;
+      g.held = true;
+      navigator.vibrate?.(10);
+      setOff({ key: it.key, cid: it.cid, pub: it.kind === "pub", colW: g.colW, days: 0, mins: 0 });
+    }, 300);
   }
   function move(e: React.PointerEvent) {
     const g = drag.current;
     if (!g) return;
-    if (!g.moved && Math.abs(e.clientX - g.x) + Math.abs(e.clientY - g.y) < 5) return;
+    const dist = Math.abs(e.clientX - g.x) + Math.abs(e.clientY - g.y);
+    // Au doigt, bouger avant l'appui long, c'est faire défiler : le bloc ne bouge pas.
+    if (!g.held) { if (dist > 8) { clearTimeout(hold.current); drag.current = null; } return; }
+    if (!g.moved && dist < 5) return;
     g.moved = true;
     setOff({ key: g.it.key, cid: g.it.cid, pub: g.it.kind === "pub", colW: g.colW, ...offsets(g, e) });
   }
   function up(e: React.PointerEvent) {
     const g = drag.current;
     drag.current = null;
+    clearTimeout(hold.current);
     setOff(null);
     if (!g) return;
     if (!g.moved) return openSheet(g.it.cid);
     const o = offsets(g, e);
-    if (!o.days && !o.mins) return;
-    const d = addDays(days[g.it.day], o.days);
-    d.setMinutes(g.it.s + o.mins);
+    place(g.it, o.days, o.mins);
+  }
+  function cancel() {
+    clearTimeout(hold.current);
+    drag.current = null;
+    setOff(null);
+  }
+  function place(it: Item, nd: number, mins: number) {
+    if (!nd && !mins) return;
+    const d = addDays(days[it.day], nd);
+    d.setMinutes(it.s + mins);
     const at = fmt(d);
-    const kind = g.it.kind;
-    if (kind === "pub") patchContent(g.it.cid, (c, data) => movePublish(c, at, data.profile.durations));
-    else patchContent(g.it.cid, (c) => ({ ...c, steps: { ...c.steps, [kind]: { ...c.steps[kind], at } } }));
+    const kind = it.kind;
+    if (kind === "pub") patchContent(it.cid, (c, data) => movePublish(c, at, data.profile.durations));
+    else patchContent(it.cid, (c) => ({ ...c, steps: { ...c.steps, [kind]: { ...c.steps[kind], at } } }));
+  }
+  // Flèches : haut et bas par quart d'heure, gauche et droite d'un jour (dans la période affichée).
+  function key(e: React.KeyboardEvent, it: Item) {
+    const step = ({ ArrowUp: [0, -SNAP], ArrowDown: [0, SNAP], ArrowLeft: [-1, 0], ArrowRight: [1, 0] } as Record<string, number[]>)[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const dd = clamp(it.day + step[0], 0, days.length - 1) - it.day;
+    const mm = clamp(it.s + step[1], 0, 24 * 60 - SNAP) - it.s;
+    place(it, dd, mm);
+    if (dd) requestAnimationFrame(() => scroller.current?.querySelector<HTMLElement>(`[data-k="${it.key}"]`)?.focus());
   }
 
   // Un clic sur un créneau vide pose une nouvelle vidéo à cette heure.
@@ -105,14 +149,22 @@ export default function Week({ contents, days, dur }: { contents: Content[]; day
         {days.map((d, i) => (
           <div key={dayKey(d)} className="wk-col" onClick={(e) => slot(e, d)}>
             {dayKey(d) === today && <i className="wk-now" style={{ top: minutesOfDay(now) * PX }} />}
+            {empty && dayKey(d) === today && (
+              <button type="button" className="blk ghost" style={{ top: GHOST * PX, height: PUB * PX - 2, left: 2, right: 2 }}
+                onClick={(e) => { e.stopPropagation(); openSheet(createContent(`${today}T18:00`)); }}>
+                <DotIcon name="ajout" /><span>Première vidéo</span>
+              </button>
+            )}
             {byDay[i].map(({ it, lane, n }, z) => {
               const moving = off && (off.key === it.key || (off.pub && off.cid === it.cid));
               const h = Math.max(it.dur, MIN_H) * PX;
+              const tight = h < 44;
               return (
                 <button
                   type="button"
                   key={it.key}
-                  className={`blk k-${it.kind}${it.done ? " done" : ""}${h < 44 ? " tight" : ""}${moving ? " moving" : ""}`}
+                  data-k={it.key}
+                  className={`blk k-${it.kind}${it.done ? " done" : ""}${tight ? " tight" : ""}${moving ? " moving" : ""}`}
                   style={{
                     top: it.s * PX, height: h - 2, zIndex: moving ? 50 : 2 + z,
                     left: `calc(${(lane / n) * 100}% + 2px)`, width: `calc(${100 / n}% - 4px)`,
@@ -121,13 +173,14 @@ export default function Week({ contents, days, dur }: { contents: Content[]; day
                   onPointerDown={(e) => down(e, it)}
                   onPointerMove={move}
                   onPointerUp={up}
-                  onPointerCancel={() => { drag.current = null; setOff(null); }}
-                  onClick={(e) => e.stopPropagation()}
+                  onPointerCancel={cancel}
+                  onClick={(e) => { e.stopPropagation(); if (e.detail === 0) openSheet(it.cid); }}
+                  onKeyDown={(e) => key(e, it)}
                   aria-label={`${it.label}, ${it.title || "sans titre"}, ${time(it.s)}`}
                 >
                   {it.kind === "pub"
                     ? <><b className="disp">{time(it.s)}</b><span>{it.title || "Sans titre"}</span></>
-                    : <><small className="lbl">{it.label}</small><span>{it.title || "Sans titre"}</span></>}
+                    : <><small className="lbl">{tight ? it.label[0] : it.label}</small><span>{it.title || "Sans titre"}</span></>}
                 </button>
               );
             })}
