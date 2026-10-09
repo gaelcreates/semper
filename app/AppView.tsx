@@ -24,20 +24,26 @@ const nav = [
 ] as const;
 
 const KANBAN: [string, string, { t: string; d: string; tag?: string }[]][] = [
-  ["Idée", "s-idee", [{ t: "Le piège du volume", d: "Sans date", tag: "Attirer" }]],
-  ["À écrire", "s-ecrire", [{ t: "Ma méthode en 3 blocs", d: "sam. 3 oct. · 19:00", tag: "Attacher" }]],
-  ["À tourner", "s-tourner", [{ t: "3 erreurs de calendrier", d: "jeu. 1 oct. · 12:00", tag: "Attirer" }]],
-  ["À monter", "s-monter", [{ t: "Pourquoi tu t'arrêtes", d: "mar. 29 sept. · 18:00", tag: "Convertir" }]],
+  ["Idée", "s-idee", [{ t: "Le piège du volume", d: "Sans date", tag: "Attacher · Avis" }]],
+  ["À écrire", "s-ecrire", [{ t: "Ma méthode en 3 blocs", d: "sam. 3 oct. · 19:00", tag: "Convertir · Tutoriel" }]],
+  ["À tourner", "s-tourner", [{ t: "3 erreurs de calendrier", d: "jeu. 1 oct. · 12:00", tag: "Attirer · Erreur" }]],
+  ["À monter", "s-monter", [{ t: "Pourquoi tu t'arrêtes", d: "mar. 29 sept. · 18:00", tag: "Convertir · Offre" }]],
   ["Prêt", "s-pret", []],
-  ["Publié", "s-publie", [{ t: "Ma semaine de fondateur", d: "lun. 28 sept. · 18:00", tag: "Attacher" }]],
+  ["Publié", "s-publie", [{ t: "Ma semaine de fondateur", d: "lun. 28 sept. · 18:00", tag: "Attacher · Coulisses" }]],
 ];
 const LIST = [
-  ["Ma semaine de fondateur", "Publié", "s-publie", "lun. 28 sept. · 18:00", "Attacher"],
-  ["Pourquoi tu t'arrêtes", "À monter", "s-monter", "mar. 29 sept. · 18:00", "Convertir"],
-  ["3 erreurs de calendrier", "À tourner", "s-tourner", "jeu. 1 oct. · 12:00", "Attirer"],
-  ["Ma méthode en 3 blocs", "À écrire", "s-ecrire", "sam. 3 oct. · 19:00", "Attacher"],
-  ["Le piège du volume", "Idée", "s-idee", "Sans date", "Attirer"],
+  ["Ma semaine de fondateur", "Publié", "s-publie", "lun. 28 sept. · 18:00", "Attacher · Coulisses"],
+  ["Pourquoi tu t'arrêtes", "À monter", "s-monter", "mar. 29 sept. · 18:00", "Convertir · Offre"],
+  ["3 erreurs de calendrier", "À tourner", "s-tourner", "jeu. 1 oct. · 12:00", "Attirer · Erreur"],
+  ["Ma méthode en 3 blocs", "À écrire", "s-ecrire", "sam. 3 oct. · 19:00", "Convertir · Tutoriel"],
+  ["Le piège du volume", "Idée", "s-idee", "Sans date", "Attacher · Avis"],
 ];
+
+// « Attacher · Avis » : au téléphone, la colonne est trop étroite, seul le sous-choix reste.
+function Tag({ v }: { v: string }) {
+  const [o, s] = v.split(" · ");
+  return <i className="tag">{s ? <><span className="tag-o">{o} · </span>{s}</> : o}</i>;
+}
 
 export default function AppView() {
   const [tab, setTab] = useState<Tab>("calendrier");
@@ -68,7 +74,7 @@ export default function AppView() {
             </header>
             {tab !== "constance" && (
               <div className="app-filters" aria-hidden="true">
-                <span className="f-search"><DotIcon name="loupe" /> Rechercher</span><span>Statut</span><span>Format</span><span>Plateforme</span>
+                <span className="f-search"><DotIcon name="loupe" /> Rechercher</span><span>Statut</span><span>Objectif</span>
               </div>
             )}
 
@@ -79,7 +85,7 @@ export default function AppView() {
                   {KANBAN.map(([label, cls, cards]) => (
                     <div className="kcol" key={label}>
                       <h4><span className="lbl">{label}</span><b className="disp">{cards.length}</b></h4>
-                      {cards.map((c) => <div className="kcard" key={c.t}>{c.t}<small>{c.d}</small>{c.tag && <i className="tag">{c.tag}</i>}</div>)}
+                      {cards.map((c) => <div className="kcard" key={c.t}>{c.t}<small>{c.d}</small>{c.tag && <Tag v={c.tag} />}</div>)}
                     </div>
                   ))}
                 </div>

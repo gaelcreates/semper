@@ -71,15 +71,15 @@ export const STATUS: { key: Status; label: string }[] = [
 
 export const uid = () => crypto.randomUUID();
 
+// La fiche de départ des nouveaux inscrits : une vue d'ensemble, à compléter par les templates (Organisation).
+// Les comptes qui ont déjà une fiche la gardent.
 const FIELDS = (): Field[] => [
-  { id: uid(), label: "Format", type: "choix", options: ["Face caméra", "Voix off", "Tutoriel", "Carrousel"] },
-  { id: uid(), label: "Plateforme", type: "multi", options: ["Instagram", "TikTok", "YouTube"] },
+  {
+    id: uid(), label: "Objectif", type: "choix", options: ["Attirer", "Attacher", "Convertir"],
+    sub: { Attirer: ["Astuce", "Erreur", "Tendance"], Attacher: ["Histoire", "Coulisses", "Avis"], Convertir: ["Tutoriel", "Témoignage", "Offre"] },
+  },
 ];
-const STRUCTURES = (): Structure[] => [
-  structure("Problème, solution", ["Hook", "Problème", "Solution", "Appel à l'action"]),
-  structure("Histoire", ["Hook", "Contexte", "Tournant", "Leçon"]),
-  structure("Liste", ["Hook", "Point 1", "Point 2", "Point 3", "Conclusion"]),
-];
+const STRUCTURES = (): Structure[] => [structure("Simple", ["Hook", "Message", "Appel à l'action"])];
 
 export function structure(name: string, parts: string[]): Structure {
   return { id: uid(), name, parts: parts.map((label) => ({ id: uid(), label })) };

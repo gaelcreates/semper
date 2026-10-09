@@ -124,7 +124,7 @@ export default function Page() {
                 <div className="cv cv-fiche">
                   <div className="fiche">
                     <div className="fiche-t">Pourquoi tu t&apos;arrêtes</div>
-                    <div className="fiche-m"><span>Instagram</span><span>Lun 21 · 19 h</span></div>
+                    <div className="fiche-m"><span>Convertir · Offre</span><span>Lun 21 · 19 h</span></div>
                     <div className="fiche-steps">
                       {steps.map((s, i) => <span key={s} className={`chip st st${i}`}>{s}</span>)}
                     </div>
@@ -178,7 +178,7 @@ export default function Page() {
               <li className="card" data-spot data-reveal style={{ ["--i" as string]: 1 }}>
                 <span className="step-n">1</span>
                 <h3>Note l&apos;idée</h3>
-                <p>Une fiche en un geste, depuis ton téléphone ou ton ordinateur. Titre, plateforme, date. Le reste attendra.</p>
+                <p>Une fiche en un geste, depuis ton téléphone ou ton ordinateur. Titre, objectif, date. Le reste attendra.</p>
                 <div className="step-v"><span className="chip s-idee">Idée</span><b>Le piège du volume</b></div>
               </li>
               <li className="card" data-spot data-reveal style={{ ["--i" as string]: 2 }}>

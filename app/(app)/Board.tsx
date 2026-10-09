@@ -5,12 +5,12 @@ import { addDays, dayKey, short } from "./lib";
 import { SEP, STATUS, movePublish, patchContent, openSheet, picked, statusOf, withStatus, type Content, type Field, type Status } from "./store";
 
 const byDate = (a: Content, b: Content) => (a.publishAt ?? "9999").localeCompare(b.publishAt ?? "9999");
-// Ce qui s'affiche d'un champ : le sous-choix quand il y en a un (plus précis), sinon le choix.
+// Ce qui s'affiche d'un champ : « Choix · Sous-choix » quand il y a un sous-choix, comme sur la vitrine, sinon le choix.
 const values = (c: Content, fields: Field[]) =>
   fields.flatMap((f) => {
     const all = picked(c, f);
     const subs = all.filter((x) => x.includes(SEP));
-    return all.filter((x) => !x.includes(SEP) && !subs.some((s) => s.startsWith(x + SEP))).concat(subs.map((s) => s.split(SEP)[1]));
+    return all.filter((x) => !x.includes(SEP) && !subs.some((s) => s.startsWith(x + SEP))).concat(subs.map((s) => s.replace(SEP, " · ")));
   });
 
 // Le kanban : une colonne par statut. Glisser une carte change son statut.
@@ -44,7 +44,7 @@ export function Kanban({ contents, fields }: { contents: Content[]; fields: Fiel
                 onDragStart={(e) => e.dataTransfer.setData("text/plain", c.id)} onClick={() => openSheet(c.id)}>
                 <b>{c.title || "Sans titre"}</b>
                 <small>{short(c.publishAt)}</small>
-                {values(c, tags).length > 0 && <span className="tags">{values(c, tags).slice(0, 3).map((v) => <i key={v}>{v}</i>)}</span>}
+                {values(c, tags).length > 0 && <span className="tags">{values(c, tags).slice(0, 3).map((v) => <i key={v} title={v}>{v}</i>)}</span>}
               </button>
             ))}
           </section>
@@ -72,7 +72,7 @@ export function List({ contents, fields, total }: { contents: Content[]; fields:
             <b>{c.title || "Sans titre"}</b>
             <span><i className={`chip st-${st}`}>{STATUS.find((s) => s.key === st)!.label}</i></span>
             <span className="muted">{short(c.publishAt)}</span>
-            {cols.map((f) => <span key={f.id} className="muted col-f">{values(c, [f]).join(", ")}</span>)}
+            {cols.map((f) => { const v = values(c, [f]).join(", "); return <span key={f.id} className="muted col-f" title={v || undefined}>{v}</span>; })}
           </button>
         );
       })}

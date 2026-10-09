@@ -31,7 +31,7 @@ export default function Rythme({ compact = false }: { compact?: boolean }) {
           <div className="opts">
             {WEEKS.map((w) => <button type="button" key={w} className={weeks === w ? "on" : ""} onClick={() => setWeeks(w)}>{w} sem.</button>)}
           </div>
-          <p>{p.rythme} par semaine, sans retour possible avant le {until(end).replace(/\.$/, "")}.</p>
+          <p>Jusqu&apos;au {until(end)}</p>
           <div className="lock-act">
             <button type="button" className="link" onClick={() => setOpen(false)}>Annuler</button>
             <button type="button" className="btn btn-sm" onClick={() => { setProfile({ lockUntil: end }); setOpen(false); }}>Je m&apos;engage</button>

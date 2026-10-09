@@ -40,6 +40,8 @@ Périmètre dicté par Gael : voir la mémoire `project_semper_v1`. Deux groupes
 - Premier passage (`Welcome.tsx`) : une question par écran (prénom, Instagram, pourquoi il crée, abonnés, fréquence, attentes, rythme, source, e-mail). Réponses dans `profile.answers`, affichées dans l'admin. Pas de téléphone (décision du 28 sept).
 - Titres (`stats.ts`, `Moon.tsx`) : la lune en points croît avec la série (Nouvelle lune 0, Premier croissant 1, Premier quartier 2, Lune gibbeuse 4, Pleine lune 8), puis l'orbite (Équinoxe 13, Solstice 26, Révolution 52). Série cassée = la lune décroît. Annonce en bas d'écran quand une semaine devient tenue.
 - Fiche : bouton plein écran (retenu dans `semper:full`). Structures de script éditées dans le profil, choisies dans la fiche, une zone par partie.
+- Fiche de départ (9 oct 2026) : un seul champ « Objectif » (Attirer, Attacher, Convertir, trois sous-choix chacun) et un script « Simple » (`FIELDS()`, `STRUCTURES()` dans `store.ts`), seulement pour les profils sans fields ni structures.
+- Organisation : onglets Méthode, Scripts, Templates (`#scripts`, `#templates`). Les templates vivent dans `(app)/templates.ts`, s'ajoutent sans rien écraser, « Ajouté » quand le nom existe déjà (casse, accents, ponctuation ignorés). L'Objectif complet s'ajoute sous « Objectif complet » si un autre « Objectif » existe.
 - Icônes de l'espace en 7×7 (`cal`, `lune`, `profil`, `ajout`), les points s'allument à la suite au survol.
 - Peu de texte : un libellé court, pas de phrase d'aide (demande explicite de Gael).
 

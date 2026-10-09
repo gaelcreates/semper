@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import DotIcon from "../DotIcon";
 
 // Petites pièces partagées : le compteur à boutons et le menu de filtre.
 
@@ -9,9 +10,10 @@ export function Stepper({ value, onChange, min = 0, max = 999, step = 1, format 
 }) {
   return (
     <span className={`stepper${disabled ? " off" : ""}`} role="group" aria-label={label}>
-      <button type="button" onClick={() => onChange(Math.max(min, value - step))} disabled={disabled || value <= min} aria-label="Moins">−</button>
-      <b className="disp">{format(value)}</b>
-      <button type="button" onClick={() => onChange(Math.min(max, value + step))} disabled={disabled || value >= max} aria-label="Plus">+</button>
+      <button type="button" onClick={() => onChange(Math.max(min, value - step))} disabled={disabled || value <= min} aria-label="Moins"><DotIcon name="moins" /></button>
+      {/* Doto pour les chiffres, Suisse Intl pour l'unité : dans Doto, le point de « sem. » se lit comme un plus. */}
+      <b>{format(value).split(/(\d+)/).filter(Boolean).map((s, i) => (/\d/.test(s) ? <span key={i} className="disp">{s}</span> : <small key={i}>{s.trim()}</small>))}</b>
+      <button type="button" onClick={() => onChange(Math.min(max, value + step))} disabled={disabled || value >= max} aria-label="Plus"><DotIcon name="plus" /></button>
     </span>
   );
 }

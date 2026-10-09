@@ -833,6 +833,9 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 .app .kcol h4 b { font-size: 14px; font-weight: 900; color: var(--ink); }
 .app .kcard { background: var(--card); border-color: var(--line); font-size: 12px; }
 .app .kcard .tag, .float .tag { justify-self: start; padding: 2px 7px; border-radius: 999px; background: rgba(var(--fgr), 0.06); font-size: 10px; font-style: normal; font-weight: 300; color: var(--ink2); }
+/* Une étiquette reste sur une ligne : une pastille qui passe à la ligne devient une bulle ovale. */
+.app .kcard .tag { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+@media (max-width: 560px) { .app .kcard .tag-o { display: none; } }
 .s-pret { background: none; box-shadow: inset 0 0 0 1px var(--ink); color: var(--ink); }
 .app .list .row { grid-template-columns: minmax(0, 2fr) 90px 150px minmax(0, 1fr); }
 .cst { display: grid; gap: 18px; padding: 16px 20px 20px; border-top: 1px solid var(--line); }
@@ -855,7 +858,7 @@ h1, h2, h3, h1 .w, h2 .w { font-family: var(--font-intl), sans-serif; font-varia
 .float.f1 .moon { width: 28px; height: 28px; }
 .float.f1 .moon circle { fill: rgba(var(--bgr), 0.2); }
 .float.f1 .moon circle.on { fill: var(--gold); }
-@media (max-width: 860px) { .app-filters span:nth-child(n+3) { display: none; } .app .kanban { grid-template-columns: repeat(3, minmax(0, 1fr)); } .app .kcol:nth-child(n+4) { display: none; } .cst-hero .moon { width: 90px; height: 90px; } .app .list .row { grid-template-columns: minmax(0, 1fr) auto; } .app .list .row > :nth-child(n+3) { display: none; } }
+@media (max-width: 860px) { .app-filters span:nth-child(n+4) { display: none; } .app .kanban { grid-template-columns: repeat(3, minmax(0, 1fr)); } .app .kcol:nth-child(3) { display: grid; } .app .kcol:nth-child(n+4) { display: none; } .cst-hero .moon { width: 90px; height: 90px; } .app .list .row { grid-template-columns: minmax(0, 1fr) auto; } .app .list .row > :nth-child(n+3) { display: none; } }
 .float.f1 { top: 190px; }
 @media (max-width: 560px) {
   .mwk-head, .mwk-body { grid-template-columns: 26px repeat(7, minmax(0, 1fr)); }

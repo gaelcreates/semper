@@ -89,7 +89,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <span className="ws-top-r">
           <Link href="/constance" className="ws-top-moon" aria-label={`${title}, ${streak} semaines tenues`}><Moon streak={streak} n={9} /></Link>
           <ThemeToggle />
-          {d && <Link href="/profil" aria-label="Profil"><Avatar /></Link>}
+          {d && <Link href="/profil" aria-label="Profil"><Avatar size={40} /></Link>}
         </span>
       </header>
 

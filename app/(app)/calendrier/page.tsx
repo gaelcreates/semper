@@ -73,9 +73,9 @@ export default function Calendrier() {
         <div className="pl-ctrl">
           {cal && (
             <div className="pl-nav">
-              <button type="button" onClick={() => move(-1)} aria-label="Précédent">‹</button>
+              <button type="button" onClick={() => move(-1)} aria-label="Précédent"><DotIcon name="gauche" /></button>
               <button type="button" className="today" onClick={() => { setDate(new Date()); moved.current = false; }}>Aujourd&apos;hui</button>
-              <button type="button" onClick={() => move(1)} aria-label="Suivant">›</button>
+              <button type="button" onClick={() => move(1)} aria-label="Suivant"><DotIcon name="droite" /></button>
             </div>
           )}
           {cal && (

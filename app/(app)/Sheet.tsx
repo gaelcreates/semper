@@ -79,7 +79,7 @@ export default function Sheet({ id }: { id: string }) {
           <span className={`chip st-${st}`}>{STATUS.find((s) => s.key === st)!.label}</span>
           <span className="sheet-tools">
             <button type="button" className="x grow" onClick={toggleFull} aria-label={full ? "Réduire" : "Plein écran"}><DotIcon name={full ? "reduire" : "agrandir"} /></button>
-            <button type="button" className="x" onClick={close} aria-label="Fermer">×</button>
+            <button type="button" className="x" onClick={close} aria-label="Fermer"><DotIcon name="croix" /></button>
           </span>
         </header>
 

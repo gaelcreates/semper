@@ -1,8 +1,10 @@
 "use server";
 
+import { after } from "next/server";
 import { admin } from "../server";
 import { allow, ip } from "../limit";
 import { addToAudience, issueCode, verifyCode, type Meta } from "./codes";
+import { sendWelcome } from "./bienvenue";
 import { cleanHandle } from "../(app)/lib";
 import type { CheckFail, SendFail } from "./auth";
 
@@ -60,6 +62,8 @@ export async function checkCode(raw: string, code: string): Promise<Checked> {
     if (!meta || !open()) return { ok: false, code: "error" };
     const { error } = await a.auth.admin.createUser({ email, email_confirm: true, user_metadata: meta });
     if (error && !/already/i.test(error.message)) return { ok: false, code: "error" };
+    // Compte tout neuf (pas « déjà là ») : le mail de bienvenue part après la réponse, sans la retarder.
+    if (!error) after(() => sendWelcome(email, meta.first_name));
   }
   await addToAudience(email, known?.first_name || meta?.first_name);
   const { data, error } = await a.auth.admin.generateLink({ type: "magiclink", email });
