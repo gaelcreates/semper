@@ -4,6 +4,8 @@ import { admin, userFrom } from "../server";
 import { metaLink, snapshot } from "../instagram";
 import { addToAudience, issueCode, moveInAudience, verifyCode } from "../(start)/codes";
 import { allow, ip } from "../limit";
+import { createHash, randomBytes } from "crypto";
+import { headers } from "next/headers";
 
 // Relevé Instagram immédiat pour la personne connectée (au premier passage ou quand elle change de pseudo).
 // « off » : Semper n'est pas encore relié à Meta. « absent » : le compte ne renvoie rien (perso, mauvais pseudo).
@@ -76,4 +78,31 @@ export async function confirmEmail(token: string, raw: string, code: string): Pr
   if (user.email) await moveInAudience(user.email.toLowerCase(), email, p?.first_name);
   else await addToAudience(email, p?.first_name);
   return "ok";
+}
+
+// Connecteur Claude : une adresse personnelle (api/mcp/<jeton>). Le jeton n'est montré qu'une fois, à la création ;
+// la base n'en garde que l'empreinte. En recréer une révoque l'ancienne.
+export async function claudeState(token: string): Promise<{ on: boolean; used: string | null } | null> {
+  const user = await userFrom(token);
+  if (!user) return null;
+  const { data } = await admin().from("mcp_tokens").select("used_at").eq("user_id", user.id).maybeSingle();
+  return { on: !!data, used: data?.used_at ?? null };
+}
+export async function claudeCreate(token: string): Promise<string | null> {
+  const user = await userFrom(token);
+  if (!user || !(await allow(`mcp-new:${user.id}`, 10, 3600))) return null;
+  const secret = `smp_${randomBytes(32).toString("base64url")}`;
+  const hash = createHash("sha256").update(secret).digest("hex");
+  const { error } = await admin().from("mcp_tokens").upsert({ user_id: user.id, hash, created_at: new Date().toISOString(), used_at: null });
+  if (error) return null;
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "trysemper.app";
+  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}/api/mcp/${secret}`;
+}
+export async function claudeRevoke(token: string): Promise<boolean> {
+  const user = await userFrom(token);
+  if (!user) return false;
+  const { error } = await admin().from("mcp_tokens").delete().eq("user_id", user.id);
+  return !error;
 }

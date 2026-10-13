@@ -5,6 +5,7 @@ import Link from "next/link";
 import Install from "../Install";
 import InstagramStats from "../InstagramStats";
 import Avatar from "../Avatar";
+import Claude from "../Claude";
 import { cleanHandle } from "../lib";
 import { exportCsv, forget, setAvatar, setEmail, setProfile, signOut, useData } from "../store";
 import { confirmEmail, deleteAccount, requestEmail, type EmailStep } from "../actions";
@@ -12,7 +13,7 @@ import { sb } from "../../supabase";
 
 const token = async () => (await sb().auth.getSession()).data.session?.access_token ?? "";
 
-// Profil : le compte, les chiffres des réseaux, l'installation, tes données.
+// Profil : le compte, Claude, les chiffres des réseaux, l'installation, tes données.
 export default function Profil() {
   const d = useData()!;
   const p = d.profile;
@@ -40,6 +41,8 @@ export default function Profil() {
           <Email current={p.email} />
         </div>
       </section>
+
+      <Claude />
 
       <InstagramStats />
 

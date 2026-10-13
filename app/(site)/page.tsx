@@ -17,6 +17,7 @@ const faq = [
   { q: "C'est vraiment gratuit\u00a0?", a: "Oui. Pour un créateur seul, sans limite de fiches et sans carte bancaire. Les espaces d'équipe arriveront plus tard dans une offre payante. Le créateur seul reste gratuit." },
   { q: "Quand est-ce que ça ouvre\u00a0?", a: "Bientôt, sans date annoncée pour ne pas en promettre une fausse. Les inscrits sur la liste sont prévenus en premier et entrent en premier." },
   { q: "Ça marche sur mon téléphone\u00a0?", a: "Oui, dans ton navigateur, dès le premier jour. Pas de store, pas de téléchargement. Tu peux l'ajouter à ton écran d'accueil comme une application." },
+  { q: "Semper marche avec Claude\u00a0?", a: "Oui. Dans ton Profil, tu crées ton adresse Semper et tu la colles dans Claude, rubrique Connecteurs. Claude lit ta semaine, crée tes vidéos, écrit tes scripts et les fait avancer. Il ne publie rien à ta place." },
   { q: "Est-ce que Semper publie à ma place\u00a0?", a: "Non. Semper organise, suit et compte. Tu publies toi-même sur tes plateformes, comme aujourd'hui. Aucune connexion à tes comptes n'est demandée." },
   { q: "Et mes données\u00a0?", a: "Chaque geste est sauvegardé immédiatement. Tes fiches t'appartiennent et tu peux demander leur suppression à tout moment, voir la page Confidentialité." },
   { q: "Pourquoi une série et pas des points\u00a0?", a: "Parce que ce qui fait grandir un compte, c'est la constance, pas le volume. Semper compte les semaines tenues à ton rythme, jamais le nombre de vidéos." },
@@ -160,6 +161,7 @@ export default function Page() {
               <li data-reveal style={{ ["--i" as string]: 2 }}><Mark /><span>Aucune perte de données. Chaque geste est sauvegardé immédiatement.</span></li>
               <li data-reveal style={{ ["--i" as string]: 3 }}><Mark /><span>Sur ton téléphone dès le premier jour, sans passer par un store.</span></li>
             </ul>
+            <p className="claude-note" data-reveal style={{ ["--i" as string]: 4 }}><i className="dot" /> Relié à Claude&nbsp;: demande-lui ta semaine, il crée tes vidéos et écrit tes scripts.</p>
           </div>
         </section>
 

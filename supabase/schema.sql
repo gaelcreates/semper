@@ -534,3 +534,14 @@ begin
   return new;
 end $$;
 revoke execute on function public.lead_touch() from public, anon, authenticated;
+
+-- Connecteur Claude (MCP) : une adresse personnelle par compte, gardée seulement sous forme chiffrée.
+-- Lue et écrite par le serveur seul (api/mcp et les actions du Profil).
+create table public.mcp_tokens (
+  user_id uuid primary key references auth.users on delete cascade,
+  hash text not null unique,
+  created_at timestamptz not null default now(),
+  used_at timestamptz
+);
+alter table public.mcp_tokens enable row level security;
+revoke all on public.mcp_tokens from anon, authenticated;

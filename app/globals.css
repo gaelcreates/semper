@@ -1024,3 +1024,8 @@ h2 { letter-spacing: -0.035em; }
 .cst-stats em { font-style: normal; font-size: 12px; color: var(--ink2); }
 @media (max-width: 860px) { .app-today, .app-span { display: none; } .app-ctrl { order: 3; width: 100%; } .app-ctrl .tabs { width: 100%; } .cst-phases span:nth-child(n+5) { display: none; } .cst-phases { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .mwk-b:not(.k-pub) em { display: none; } .mwk-b:not(.tight) .lbl { font-size: 0; } .mwk-b:not(.tight) .lbl::before { content: attr(data-i); font-size: 8.5px; } .mwk-b { padding: 0 3px; } .cst-stats { grid-template-columns: 1fr 1fr; } .cst-stats span:last-child { display: none; } }
+
+/* La note Claude, sous les promesses : une ligne, une pastille grise. */
+.claude-note { display: flex; align-items: center; gap: 10px; width: max-content; max-width: 100%; margin: 22px auto 0; padding: 9px 16px 9px 13px; border-radius: 999px; background: rgba(var(--fgr), 0.05); font-size: 14px; color: var(--ink2); text-wrap: balance; }
+.claude-note .dot { width: 6px; height: 6px; flex: none; }
+@media (max-width: 560px) { .claude-note { border-radius: 16px; align-items: flex-start; } .claude-note .dot { margin-top: 7px; } }

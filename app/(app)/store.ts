@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { isAuthRetryableFetchError } from "@supabase/supabase-js";
-import { addMinutes, diffMinutes } from "./lib";
+import { FIELDS, SEP, STATUS, STEPS, STRUCTURES, movePublish, stamp, statusOf, uid } from "./rules";
 import { sb } from "../supabase";
 
 // Les données de l'espace, chargées depuis Supabase à la connexion et gardées en mémoire.
@@ -12,11 +12,8 @@ import { sb } from "../supabase";
 // seulement ce qui a changé ici.
 
 export type StepKey = "ecriture" | "tournage" | "montage";
-export const STEPS: { key: StepKey; label: string }[] = [
-  { key: "ecriture", label: "Écriture" },
-  { key: "tournage", label: "Tournage" },
-  { key: "montage", label: "Montage" },
-];
+// Les règles (statuts, étapes à rebours) vivent dans rules.ts : le serveur s'en sert aussi (connecteur Claude).
+export { SEP, STEPS, STATUS, statusOf, withStatus, placeSteps, movePublish, stamp, structure, uid, type Status } from "./rules";
 
 export type FieldType = "texte" | "long" | "choix" | "multi";
 export const FIELD_TYPES: { type: FieldType; label: string }[] = [
@@ -29,7 +26,6 @@ export const FIELD_TYPES: { type: FieldType; label: string }[] = [
 // seuls les formats d'Attirer s'affichent. Le sous-choix est rangé sous « Choix › Sous-choix ».
 export type Field = { id: string; label: string; type: FieldType; options: string[]; sub?: Record<string, string[]> };
 export type Value = string | string[];
-export const SEP = " › ";
 export const subKey = (f: Field) => `${f.id}/sub`;
 const arr = (v: Value | undefined) => (Array.isArray(v) ? v : v ? [v] : []);
 // Tout ce qui est coché dans un champ : ses choix et ses sous-choix.
@@ -59,31 +55,8 @@ export type Profile = {
 
 export type Data = { v: 1; profile: Profile; fields: Field[]; structures: Structure[]; contents: Content[] };
 
-export type Status = "idee" | "ecrire" | "tourner" | "monter" | "pret" | "publie";
-export const STATUS: { key: Status; label: string }[] = [
-  { key: "idee", label: "Idée" },
-  { key: "ecrire", label: "À écrire" },
-  { key: "tourner", label: "À tourner" },
-  { key: "monter", label: "À monter" },
-  { key: "pret", label: "Prêt" },
-  { key: "publie", label: "Publié" },
-];
 
-export const uid = () => crypto.randomUUID();
 
-// La fiche de départ des nouveaux inscrits : une vue d'ensemble, à compléter par les templates (Organisation).
-// Les comptes qui ont déjà une fiche la gardent.
-const FIELDS = (): Field[] => [
-  {
-    id: uid(), label: "Objectif", type: "choix", options: ["Attirer", "Attacher", "Convertir"],
-    sub: { Attirer: ["Astuce", "Erreur", "Tendance"], Attacher: ["Histoire", "Coulisses", "Avis"], Convertir: ["Tutoriel", "Témoignage", "Offre"] },
-  },
-];
-const STRUCTURES = (): Structure[] => [structure("Simple", ["Hook", "Message", "Appel à l'action"])];
-
-export function structure(name: string, parts: string[]): Structure {
-  return { id: uid(), name, parts: parts.map((label) => ({ id: uid(), label })) };
-}
 
 // ---------- le magasin : une copie en mémoire, chaque changement part aussitôt vers Supabase
 type Row = Record<string, unknown>;
@@ -620,54 +593,6 @@ export function deleteContent(id: string, quiet = false) {
       announce(null);
     },
   });
-}
-
-// ---------- règles
-export function statusOf(c: Content): Status {
-  if (c.publishedAt) return "publie";
-  if (!c.steps.ecriture.done) return c.publishAt ? "ecrire" : "idee";
-  if (!c.steps.tournage.done) return "tourner";
-  if (!c.steps.montage.done) return "monter";
-  return "pret";
-}
-
-// Change le statut depuis le kanban : les étapes d'avant sont faites, celles d'après non.
-export function withStatus(c: Content, s: Status): Content {
-  const order: Status[] = ["ecrire", "tourner", "monter", "pret"];
-  if (s === "idee") {
-    return { ...c, publishAt: null, publishedAt: null, steps: { ecriture: { at: null, done: false }, tournage: { at: null, done: false }, montage: { at: null, done: false } } };
-  }
-  const n = s === "publie" ? 3 : order.indexOf(s);
-  const steps = { ...c.steps };
-  STEPS.forEach((st, i) => { steps[st.key] = { ...steps[st.key], done: i < n }; });
-  return { ...c, steps, publishedAt: s === "publie" ? c.publishedAt ?? c.publishAt ?? stamp() : null };
-}
-
-// Les étapes se posent à rebours de la publication : le montage finit à l'heure de publication,
-// le tournage avant le montage, l'écriture avant le tournage.
-export function placeSteps(publishAt: string, dur: Record<StepKey, number>) {
-  const montage = addMinutes(publishAt, -dur.montage);
-  const tournage = addMinutes(montage, -dur.tournage);
-  const ecriture = addMinutes(tournage, -dur.ecriture);
-  return { ecriture, tournage, montage };
-}
-
-// Déplacer la publication entraîne ses étapes. Une étape jamais posée se pose à rebours.
-export function movePublish(c: Content, at: string | null, dur: Record<StepKey, number>): Content {
-  if (!at) return { ...c, publishAt: null };
-  const delta = c.publishAt ? diffMinutes(at, c.publishAt) : 0;
-  const auto = placeSteps(at, dur);
-  const steps = { ...c.steps };
-  STEPS.forEach(({ key }) => {
-    const s = steps[key];
-    steps[key] = { ...s, at: s.at && c.publishAt ? addMinutes(s.at, delta) : auto[key] };
-  });
-  return { ...c, publishAt: at, steps };
-}
-
-export function stamp(d = new Date()) {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
 // ---------- état d'interface : la fiche ouverte
