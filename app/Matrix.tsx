@@ -120,7 +120,7 @@ export default function Matrix() {
       const cx = Math.max(W * 0.72 + R, W - R * 0.62), cy = H * 0.5 - scrollY * 0.05;
       ctx.clearRect(0, 0, W, H);
       const col = dark ? "245, 245, 245" : "14, 14, 14";
-      const ink = dark ? 0.8 : 0.5;                                     // trame en retrait : elle accompagne, le texte reste devant
+      const ink = dark ? 0.85 : 0.68;                                     // trame en retrait : elle accompagne, le texte reste devant
       const x0 = Math.max(0, Math.floor((cx - R) / P)), x1 = Math.min(Math.ceil(W / P), Math.ceil((cx + R) / P));
       const y0 = Math.max(0, Math.floor((cy - R) / P)), y1 = Math.min(Math.ceil(H / P), Math.ceil((cy + R) / P));
       const eps = 0.0025;

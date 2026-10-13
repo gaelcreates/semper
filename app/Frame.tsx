@@ -6,7 +6,7 @@ import Reveal from "./Reveal";
 // Barre du haut et pied de page communs à toutes les pages.
 // Partout : se connecter et rejoindre la waitlist. Le menu des sections n'existe que sur l'accueil.
 export function TopBar({ home = false }: { home?: boolean }) {
-  const join = <><span className="full">Rejoindre la waitlist</span><span className="short">Rejoindre</span></>;
+  const join = <span className="roll"><span className="full">Rejoindre la waitlist</span><span className="short">Rejoindre</span></span>;
   return (
     <header className="topbar">
       <div className="wrap nav">
