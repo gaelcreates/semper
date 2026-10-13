@@ -75,3 +75,10 @@ Publication automatique, connexion aux comptes Meta ou TikTok, date d'ouverture.
 - Limites de débit (app/limit.ts, table hits, serveur seulement) : codes 10/h par IP et 10/jour par adresse, essais 10/h par adresse, waitlist 20/h par IP. Le compte n'est créé qu'après un code juste (login_codes.meta).
 - Resend : addToAudience n'ajoute que les absents, personne n'est jamais réabonné d'office.
 - CRM /admin (app/(app)/admin/) : statuts dans model.ts, score v2 dans score.ts, fiche Fiche.tsx, pipeline Pipeline.tsx, brouillons de DM dm.ts, styles crm.css (préfixe .cr-). Données : admin_people, admin_kpis, admin_funnel, admin_team, leads (suite datée, montant, raison), lead_events (historique, ajout seul). Rôle « setter » pour Lou à faire quand elle commence (spec : migration C).
+
+## Connecteur Claude (MCP)
+
+- `app/api/mcp/[token]/route.ts` : serveur MCP en HTTP « streamable », sans session, JSON seulement (GET et DELETE en 405). L'adresse personnelle `/api/mcp/smp_…` désigne le compte ; seule son empreinte sha256 est gardée (`mcp_tokens`, serveur seul). Limite : 600 appels par heure et par adresse.
+- `app/api/mcp/tools.ts` : 7 outils (lire_semaine, lister_contenus, lire_contenu, creer_contenu, modifier_contenu, lire_constance, lire_organisation). Heure de Zurich, règles de `app/(app)/rules.ts` (partagées avec l'espace, sans « use client »).
+- Profil, section Claude (`app/(app)/Claude.tsx`) : créer, recréer (coupe l'ancienne), déconnecter. L'adresse ne s'affiche qu'une fois.
+- Aucune suppression de contenu par Claude, et rien n'est publié sur les réseaux.
