@@ -79,6 +79,8 @@ Publication automatique, connexion aux comptes Meta ou TikTok, date d'ouverture.
 ## Connecteur Claude (MCP)
 
 - `app/api/mcp/[token]/route.ts` : serveur MCP en HTTP « streamable », sans session, JSON seulement (GET et DELETE en 405). L'adresse personnelle `/api/mcp/smp_…` désigne le compte ; seule son empreinte sha256 est gardée (`mcp_tokens`, serveur seul). Limite : 600 appels par heure et par adresse.
-- `app/api/mcp/tools.ts` : 7 outils (lire_semaine, lister_contenus, lire_contenu, creer_contenu, modifier_contenu, lire_constance, lire_organisation). Heure de Zurich, règles de `app/(app)/rules.ts` (partagées avec l'espace, sans « use client »).
+- `app/api/mcp/tools.ts` : 12 outils. Lecture : lire_semaine, lister_contenus, lire_contenu, lire_constance, lire_organisation. Écriture : creer_contenu, modifier_contenu (étapes comprises), supprimer_contenu, modifier_champ, modifier_structure, ajouter_template, modifier_reglages (rythme, sauf s'il est bloqué, et durées). Heure de Zurich, règles de `app/(app)/rules.ts` (partagées avec l'espace, sans « use client »).
 - Profil, section Claude (`app/(app)/Claude.tsx`) : créer, recréer (coupe l'ancienne), déconnecter. L'adresse ne s'affiche qu'une fois.
-- Aucune suppression de contenu par Claude, et rien n'est publié sur les réseaux.
+- Rien n'est publié sur les réseaux. Les suppressions sont marquées destructives et les instructions demandent confirmation au créateur.
+- Serveur distant : chaque déploiement met à jour le connecteur pour tout le monde, les adresses restent valables. Ne jamais renommer un outil existant (les conversations en cours s'en servent) : en ajouter, ou ajouter des paramètres facultatifs.
+- Mac : `app/mac/route.ts` sert l'installation en une ligne (`curl -fsSL https://trysemper.app/mac | sh`), sans quarantaine, en secours du DMG non signé.
