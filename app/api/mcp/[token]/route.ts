@@ -13,6 +13,7 @@ const VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 const INSTRUCTIONS =
   "Semper est le calendrier éditorial du créateur : chaque vidéo a une date de publication et trois étapes (écriture, tournage, montage) posées à rebours. " +
   "Lis lire_organisation avant de remplir des champs ou un script. Les dates sont en heure locale, AAAA-MM-JJTHH:MM. " +
+  "Avant de supprimer un contenu, un champ ou une structure, demande confirmation au créateur. " +
   "Semper ne publie rien sur les réseaux : il organise et compte les semaines tenues.";
 
 type Msg = { jsonrpc?: string; id?: string | number | null; method?: string; params?: Record<string, unknown> };
@@ -38,7 +39,7 @@ async function handle(m: Msg, uid: string): Promise<object | null> {
       return ok(m.id, {
         protocolVersion: VERSIONS.includes(asked) ? asked : VERSIONS[0],
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "semper", title: "Semper", version: "1.0.0" },
+        serverInfo: { name: "semper", title: "Semper", version: "1.1.0" },
         instructions: INSTRUCTIONS,
       });
     }

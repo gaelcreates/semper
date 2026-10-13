@@ -15,10 +15,14 @@ if (typeof window !== "undefined") {
 }
 
 type Kind = "mac" | "prompt" | "ios" | null;
+// Le secours Mac : installé par curl, Semper n'est pas mis en quarantaine (voir app/mac/route.ts).
+const CMD = "curl -fsSL https://trysemper.app/mac | sh";
 
 export default function Install({ className = "" }: { className?: string }) {
   const [kind, setKind] = useState<Kind>(null);
   const [help, setHelp] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copy = () => navigator.clipboard.writeText(CMD).then(() => setCopied(true), () => setCopied(false));
 
   useEffect(() => {
     const pick = () => {
@@ -53,14 +57,22 @@ export default function Install({ className = "" }: { className?: string }) {
         <button type="button" className="install-btn" onClick={go}><DotIcon name="fleche" /> Installer l&apos;app</button>
       )}
       {help && kind === "mac" && (
-        <ol className="install-help">
-          <li>Ouvre <b>Semper.dmg</b>, glisse Semper dans <b>Applications</b>.</li>
-          <li>Ouvre Semper. macOS l&apos;arrête, car l&apos;app ne vient pas de l&apos;App Store : clique sur <b>Terminé</b>.</li>
-          <li><b>Réglages Système</b>, <b>Confidentialité et sécurité</b>, tout en bas : <b>Ouvrir quand même</b>, puis ton mot de passe. Une seule fois, ensuite Semper s&apos;ouvre normalement.</li>
-        </ol>
+        <div className="install-help">
+          <ol>
+            <li>Ouvre <b>Semper.dmg</b>, glisse Semper dans <b>Applications</b>.</li>
+            <li>Ouvre Semper. macOS l&apos;arrête, car l&apos;app ne vient pas de l&apos;App Store : clique sur <b>Terminé</b>.</li>
+            <li><b>Réglages Système</b>, <b>Confidentialité et sécurité</b>, tout en bas : <b>Ouvrir quand même</b>.</li>
+          </ol>
+          <p>Toujours bloqué ? Ouvre le <b>Terminal</b>, colle cette ligne, puis Entrée. Semper s&apos;installe et s&apos;ouvre.</p>
+          <span className="install-cmd"><code>{CMD}</code><button type="button" onClick={copy}>{copied ? "Copiée" : "Copier"}</button></span>
+          <button type="button" className="install-close" onClick={() => setHelp(false)}>Fermer</button>
+        </div>
       )}
       {help && kind === "ios" && (
-        <p className="install-help">Touche le bouton <b>Partager</b> (le carré avec la flèche), puis <b>Sur l&apos;écran d&apos;accueil</b>.</p>
+        <div className="install-help">
+          <p>Touche le bouton <b>Partager</b> (le carré avec la flèche), puis <b>Sur l&apos;écran d&apos;accueil</b>.</p>
+          <button type="button" className="install-close" onClick={() => setHelp(false)}>Fermer</button>
+        </div>
       )}
     </div>
   );

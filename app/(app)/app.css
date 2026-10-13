@@ -822,3 +822,10 @@ span.opt-l { cursor: default; }
 .cl-act { display: flex; gap: 16px; }
 .cl .link { border: 0; background: none; padding: 0; cursor: pointer; font: inherit; font-size: 14px; color: var(--ink); }
 .cl .link.muted { color: var(--muted); }
+div.install-help { display: grid; gap: 10px; }
+div.install-help ol { display: grid; gap: 6px; padding-left: 18px; list-style: decimal; }
+.install-cmd { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 10px; border-radius: 8px; background: var(--card); border: 1px solid var(--line); }
+.install-cmd code { flex: 1; min-width: 0; font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink); overflow-wrap: anywhere; user-select: all; }
+.install-cmd button, .install-close { flex: none; border: 0; background: none; padding: 4px 6px; font: inherit; font-size: 12px; font-weight: 700; color: var(--ink); cursor: pointer; }
+.install-close { justify-self: end; font-weight: 300; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.install-close:hover { color: var(--ink); }
