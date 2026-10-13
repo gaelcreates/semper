@@ -202,7 +202,7 @@ export default function Page() {
         <Join />
 
         {/* ---------- 04 · La mission (île sombre) */}
-        <section className="s island" id="mission">
+        <section className="s dark island" id="mission">
           <div className="wrap mission">
             <div className="mission-text">
               <h2 data-reveal style={{ ["--i" as string]: 1 }}>La régularité <span className="w">bat le volume.</span></h2>

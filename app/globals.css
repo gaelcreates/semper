@@ -970,6 +970,12 @@ h2 { letter-spacing: -0.035em; }
 .s.problem::after { display: none; }
 .s.problem .glass { background: var(--bg); box-shadow: none; }
 
+/* Nuances de noir : la mission en panneau sombre, les trois chiffres sur cartes sombres (inversés en mode sombre). */
+.s.island.dark { background: var(--bg); box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.45); }
+.s.problem .glass { background: var(--alt-bg); border-color: transparent; box-shadow: 0 24px 48px -28px rgba(0, 0, 0, 0.5);
+  --ink: var(--alt-ink); --ink2: var(--alt-ink2); --muted: var(--alt-muted); --fgr: var(--alt-fgr); --line: rgba(var(--alt-fgr), 0.1); color: var(--alt-ink); }
+.s.problem .glass:hover { border-color: transparent; }
+
 /* étapes : centrées, le numéro flotte sur le bord comme une pastille noire */
 .steps { margin-top: clamp(56px, 6vw, 76px); row-gap: 40px; }
 .steps .card { overflow: visible; justify-items: center; text-align: center; padding: 40px 24px 24px; }
