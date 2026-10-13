@@ -120,6 +120,7 @@ export default function Matrix() {
       const cx = Math.max(W * 0.72 + R, W - R * 0.62), cy = H * 0.5 - scrollY * 0.05;
       ctx.clearRect(0, 0, W, H);
       const col = dark ? "245, 245, 245" : "14, 14, 14";
+      const ink = dark ? 0.8 : 0.5;                                     // trame en retrait : elle accompagne, le texte reste devant
       const x0 = Math.max(0, Math.floor((cx - R) / P)), x1 = Math.min(Math.ceil(W / P), Math.ceil((cx + R) / P));
       const y0 = Math.max(0, Math.floor((cy - R) / P)), y1 = Math.min(Math.ceil(H / P), Math.ceil((cy + R) / P));
       const eps = 0.0025;
@@ -145,7 +146,7 @@ export default function Matrix() {
           const cov = (dark ? Math.pow(lum, 1.1) : Math.pow(1 - lum, 1.25) * 0.95) * edge;
           if (cov < 0.04) continue;
           const r = Math.sqrt(cov) * P * 0.5 * 0.96;
-          ctx.fillStyle = `rgba(${col}, ${(Math.min(1, 0.25 + cov) * fade).toFixed(3)})`;
+          ctx.fillStyle = `rgba(${col}, ${(Math.min(1, 0.25 + cov) * fade * ink).toFixed(3)})`;
           ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill();
         }
       }

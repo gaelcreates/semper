@@ -79,7 +79,7 @@ export default function Page() {
         </section>
 
         {/* ---------- 01 · Le vrai problème (bloc sombre, l'aperçu déborde dessus) */}
-        <section className="s dark problem" id="probleme">
+        <section className="s problem" id="probleme">
           <Curve />
           <div className="wrap center">
             <h2 data-reveal style={{ ["--i" as string]: 1 }}>Tu ne manques ni d&apos;idées, <span className="w">ni de motivation.</span></h2>
@@ -145,7 +145,7 @@ export default function Page() {
                 <p>Liste, kanban ou calendrier, sur les mêmes fiches. La semaine par défaut, parce que c&apos;est là que tu travailles.</p>
               </article>
 
-              <article className="card gold" data-spot data-reveal style={{ ["--i" as string]: 3 }}>
+              <article className="card" data-spot data-reveal style={{ ["--i" as string]: 3 }}>
                 <div className="cv cv-serie">
                   <Moon streak={7} n={15} orbit />
                   <div className="serie-n"><b>7</b><span>semaines tenues<br /><em className="disp">Lune gibbeuse</em></span></div>
@@ -200,7 +200,7 @@ export default function Page() {
         <Join />
 
         {/* ---------- 04 · La mission (île sombre) */}
-        <section className="s dark island" id="mission">
+        <section className="s island" id="mission">
           <div className="wrap mission">
             <div className="mission-text">
               <h2 data-reveal style={{ ["--i" as string]: 1 }}>La régularité <span className="w">bat le volume.</span></h2>

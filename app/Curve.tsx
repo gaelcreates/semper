@@ -62,8 +62,8 @@ export default function Curve() {
       <svg ref={ref} className="curve" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <linearGradient id="curve-area" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#ffc508" stopOpacity="0.14" />
-            <stop offset="1" stopColor="#ffc508" stopOpacity="0" />
+            <stop offset="0" stopColor="currentColor" stopOpacity="0.05" />
+            <stop offset="1" stopColor="currentColor" stopOpacity="0" />
           </linearGradient>
           <clipPath id="curve-clip"><rect className="curve-reveal" x="-30" y="0" width="1070" height="1000" /></clipPath>
         </defs>
