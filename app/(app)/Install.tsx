@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import DotIcon from "../DotIcon";
+import { DEMO_FRAME } from "./demo";
 
 // Installer Semper, proposé seulement dans l'espace (jamais sur la vitrine).
 // Mac : l'app à télécharger (DMG, signée sans Apple : macOS demande une fois « Ouvrir quand même »). Chrome, Edge et Android : la fenêtre d'installation du navigateur.
@@ -30,7 +31,8 @@ export default function Install({ className = "" }: { className?: string }) {
       const standalone = matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone;
       const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
       const mac = /Macintosh/.test(ua) && !ios;
-      setKind(standalone || /SemperMac/.test(ua) ? null : mac ? "mac" : deferred ? "prompt" : ios ? "ios" : null);
+      // Rien à installer dans l'app Mac, une fois installé, ni dans la démo de la vitrine.
+      setKind(standalone || /SemperMac/.test(ua) || window.name === DEMO_FRAME ? null : mac ? "mac" : deferred ? "prompt" : ios ? "ios" : null);
     };
     pick();
     subs.add(pick);

@@ -56,7 +56,7 @@ export default function JoinForm({ label = "Rejoindre la waitlist", light = fals
       />
       <button className="btn" type="submit" disabled={pending}>
         {pending ? <Orbit size={16} /> : null}
-        {pending ? "Un instant" : <span className="roll">{label}</span>}
+        {pending ? "Un instant" : <span className="roll"><span>{label}</span></span>}
       </button>
       {fix ? (
         <button type="button" className="form-msg form-fix" onClick={() => setEmail(fix)}>Tu voulais dire <b>{fix}</b>&nbsp;?</button>

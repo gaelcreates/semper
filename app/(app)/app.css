@@ -831,3 +831,6 @@ div.install-help { position: relative; padding-right: 34px; }
 .install-close { position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border-radius: 50%; color: var(--muted); }
 .install-close:hover { color: var(--ink); background: rgba(var(--fgr), 0.06); }
 .install-close .di { width: 9px; height: 9px; }
+
+/* Démo de la vitrine : au bout du calendrier, la molette fait défiler la page qui l'entoure. */
+.demo .wk { overscroll-behavior: auto; }

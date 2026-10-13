@@ -1,4 +1,4 @@
-import AppView from "../AppView";
+import AppDemo from "../AppDemo";
 import { Footer, TopBar } from "../Frame";
 import JoinForm from "../JoinForm";
 import Loader from "../Loader";
@@ -74,7 +74,7 @@ export default function Page() {
           </div>
 
           <div className="wrap mock-wrap">
-            <AppView />
+            <AppDemo />
             <Stand />
           </div>
         </section>

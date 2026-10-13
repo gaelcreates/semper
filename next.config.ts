@@ -4,7 +4,8 @@ import type { NextConfig } from "next";
 const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const dev = process.env.NODE_ENV === "development";
 
-// Ce que le navigateur a le droit de charger. Next a besoin des scripts en ligne (thème, données des pages),
+// Ce que le navigateur a le droit de charger. Seul Semper peut s'afficher dans Semper (la démo de la vitrine).
+// Next a besoin des scripts en ligne (thème, données des pages),
 // React a besoin d'eval en développement seulement. Les vignettes Instagram viennent des serveurs de Meta.
 const csp = [
   "default-src 'self'",
@@ -13,8 +14,8 @@ const csp = [
   `img-src 'self' data: blob: ${supabase} https://*.cdninstagram.com https://*.fbcdn.net`,
   "font-src 'self'",
   `connect-src 'self' ${supabase}`,
-  "frame-src 'none'",
-  "frame-ancestors 'none'",
+  "frame-src 'self'",
+  "frame-ancestors 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -30,7 +31,7 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: [
           { key: "Content-Security-Policy", value: csp },
-          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()" },

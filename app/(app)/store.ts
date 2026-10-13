@@ -112,6 +112,13 @@ let loading: Promise<Load> | null = null;
 export function load() {
   return (loading ??= first().finally(() => { loading = null; }));
 }
+// La démo de la vitrine : le vrai espace, des données fictives en mémoire, aucune écriture (voir demo.ts).
+let demo = false;
+export function loadDemo(d: Data) {
+  demo = true;
+  data = d;
+  emit();
+}
 async function first(): Promise<Load> {
   const s = sb();
   const { data: { session }, error } = await s.auth.getSession();
@@ -267,6 +274,7 @@ const pending = new Map<string, ReturnType<typeof setTimeout>>();
 const flying = new Set<string>(); // écritures parties, réponse pas encore reçue
 const strikes = new Map<string, number>(); // conflits d'affilée sur un contenu
 function push(id: string) {
+  if (demo) return;
   clearTimeout(pending.get(id));
   pending.set(id, setTimeout(() => send(id), 500));
 }
@@ -331,6 +339,7 @@ let profileCols: Row = {};
 let profileTimer: ReturnType<typeof setTimeout> | undefined;
 let profileBusy = 0;
 function pushProfile(cols: Row) {
+  if (demo) return;
   profileCols = { ...profileCols, ...cols };
   clearTimeout(profileTimer);
   profileTimer = setTimeout(flushProfile, 400);
@@ -414,6 +423,7 @@ function unstash(rows: Row[]) {
 }
 
 export async function signOut() {
+  if (demo) return announce("Dans la démo, rien n'est enregistré.");
   leaving = true;
   await Promise.allSettled([flushProfile(), ...[...pending.keys()].map((id) => send(id)), ...[...drops.keys()].map((id) => drop(id))]);
   stash();
@@ -483,6 +493,7 @@ export function setProfile(p: Partial<Profile>) {
 }
 // La photo de profil : recadrée en carré de 256 px, envoyée en WebP sous avatars/<id>/.
 export async function setAvatar(file: File | null) {
+  if (demo) return announce("Dans la démo, rien n'est enregistré.");
   const bucket = sb().storage.from("avatars");
   if (!file) {
     await bucket.remove([`${me}/avatar.webp`]);
@@ -563,6 +574,7 @@ export function patchContent(id: string, fn: (c: Content, d: Data) => Content) {
 // est caché ou fermé. Une fiche vierge part sans annonce.
 const drops = new Map<string, ReturnType<typeof setTimeout>>();
 async function drop(id: string, beacon = false) {
+  if (demo) return;
   clearTimeout(drops.get(id));
   drops.delete(id);
   if (!base.has(id)) return void retry.delete(id); // jamais écrit dans la base

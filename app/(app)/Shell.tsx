@@ -12,7 +12,8 @@ import Orbit from "../Orbit";
 import Install from "./Install";
 import { constance, titleOf } from "./stats";
 import Avatar from "./Avatar";
-import { announce, createContent, load, openSheet, openedSheet, useData, useNote, useOpen } from "./store";
+import { announce, createContent, load, loadDemo, openSheet, openedSheet, useData, useNote, useOpen } from "./store";
+import { DEMO_FRAME, demoData } from "./demo";
 import { sb } from "../supabase";
 
 const nav = [
@@ -37,10 +38,23 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [isAdmin, setAdmin] = useState(false);
 
   // Sans session, direction la connexion. Sans réseau ou base en panne, on le dit et on propose de réessayer.
-  const start = () => load().then((r) => (r === "none" ? router.replace("/connexion") : setFail(r === "ok" ? null : r)));
+  // Dans la vitrine (iframe « semper-demo »), l'espace tourne sur des données de démo, sans compte ni base.
+  const [demo] = useState(() => typeof window !== "undefined" && window.name === DEMO_FRAME);
+  const start = () => {
+    if (demo) return loadDemo(demoData());
+    load().then((r) => (r === "none" ? router.replace("/connexion") : setFail(r === "ok" ? null : r)));
+  };
   useEffect(() => { start(); }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
   const ready = !!d;
-  useEffect(() => { if (ready) sb().rpc("is_admin").then(({ data }) => setAdmin(data === true)); }, [ready]);
+  useEffect(() => { if (ready && !demo) sb().rpc("is_admin").then(({ data }) => setAdmin(data === true)); }, [ready, demo]);
+  // La démo suit le thème choisi sur la vitrine, et laisse la page défiler une fois le calendrier au bout.
+  useEffect(() => {
+    if (!demo) return;
+    document.documentElement.classList.add("demo");
+    const sync = (e: StorageEvent) => { if (e.key === "theme") document.documentElement.dataset.theme = e.newValue === "dark" ? "dark" : "light"; };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, [demo]);
   const links = isAdmin ? [...nav, admin] : nav;
 
   // « N » crée un contenu, où qu'on soit, sauf pendant la saisie ou quand une fiche est déjà ouverte.
