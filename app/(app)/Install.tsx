@@ -58,6 +58,7 @@ export default function Install({ className = "" }: { className?: string }) {
       )}
       {help && kind === "mac" && (
         <div className="install-help">
+          <button type="button" className="install-close" onClick={() => setHelp(false)} aria-label="Fermer les explications"><DotIcon name="croix" /></button>
           <ol>
             <li>Ouvre <b>Semper.dmg</b>, glisse Semper dans <b>Applications</b>.</li>
             <li>Ouvre Semper. macOS l&apos;arrête, car l&apos;app ne vient pas de l&apos;App Store : clique sur <b>Terminé</b>.</li>
@@ -65,13 +66,12 @@ export default function Install({ className = "" }: { className?: string }) {
           </ol>
           <p>Toujours bloqué ? Ouvre le <b>Terminal</b>, colle cette ligne, puis Entrée. Semper s&apos;installe et s&apos;ouvre.</p>
           <span className="install-cmd"><code>{CMD}</code><button type="button" onClick={copy}>{copied ? "Copiée" : "Copier"}</button></span>
-          <button type="button" className="install-close" onClick={() => setHelp(false)}>Fermer</button>
         </div>
       )}
       {help && kind === "ios" && (
         <div className="install-help">
+          <button type="button" className="install-close" onClick={() => setHelp(false)} aria-label="Fermer les explications"><DotIcon name="croix" /></button>
           <p>Touche le bouton <b>Partager</b> (le carré avec la flèche), puis <b>Sur l&apos;écran d&apos;accueil</b>.</p>
-          <button type="button" className="install-close" onClick={() => setHelp(false)}>Fermer</button>
         </div>
       )}
     </div>
