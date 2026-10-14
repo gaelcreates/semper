@@ -239,7 +239,7 @@ i.chip { font-style: normal; }
 .sheet.full .sheet-side { grid-area: side; position: sticky; top: 0; padding: 20px; border-radius: 16px; background: var(--bg); }
 .sheet.full .sheet-main { grid-area: main; }
 .sheet.full .steps-l li { grid-template-columns: 24px minmax(0, 1fr) auto; }
-.sheet.full .steps-l li input { grid-column: 2 / -1; }
+.sheet.full .steps-l li .qd-when { grid-column: 2 / -1; }
 .parts { display: grid; gap: 14px; margin-top: 4px; }
 .parts li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; }
 .parts li > .disp { padding-top: 2px; font-size: 14px; color: var(--muted); }
@@ -255,7 +255,6 @@ i.chip { font-style: normal; }
 .sheet-title::placeholder { color: rgba(var(--fgr), 0.22); }
 .sheet-sec { display: grid; gap: 10px; }
 .sheet-when { display: grid; grid-template-columns: minmax(0, 1fr) 116px; gap: 8px; }
-.sheet input[type="date"], .sheet input[type="time"], .sheet input[type="datetime-local"] { width: 100%; min-width: 0; height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 14px; color: var(--ink); outline: none; }
 .sheet input:disabled { opacity: 0.4; }
 .sheet input:focus { border-color: var(--ink); }
 .pub-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border: 1px solid var(--ink); border-radius: 999px; background: none; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 250ms, color 250ms; }
@@ -443,7 +442,7 @@ i.chip { font-style: normal; }
   .sheet { inset: 0; width: 100%; border-radius: 0; padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); animation-name: sheet-up; }
   @keyframes sheet-up { from { transform: translateY(24px); opacity: 0; } }
   .steps-l li { grid-template-columns: 24px minmax(0, 1fr) auto; row-gap: 6px; }
-  .steps-l li input { grid-column: 2 / -1; }
+  .steps-l li .qd-when { grid-column: 2 / -1; }
   /* Cibles au doigt : 36 à 44 px. */
   .chk { width: 36px; height: 36px; }
   .steps-l li, .sheet.full .steps-l li { grid-template-columns: 36px minmax(0, 1fr) auto; }
@@ -1129,3 +1128,39 @@ div.install-help { position: relative; padding-right: 34px; }
   .step-row { flex-wrap: wrap; }
   .step-row .step-name { flex-basis: 100%; }
 }
+
+/* Le jour et l'heure, à la manière de Semper (Quand.tsx) */
+.qd { display: inline-flex; align-items: center; gap: 10px; width: 100%; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; text-align: left; cursor: pointer; transition: border-color 200ms; }
+.qd:hover:not(:disabled), .qd[aria-expanded="true"] { border-color: var(--ink); }
+.qd:disabled { opacity: 0.4; cursor: default; }
+.qd .di { width: 12px; height: 12px; flex: none; opacity: 0.6; }
+.qd span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qd.empty { color: var(--muted); }
+.qd.time { justify-content: center; }
+.qd.time .disp { font-size: 15px; }
+.qd.sm { height: 36px; padding: 0 10px; font-size: 13px; gap: 8px; }
+.qd-when { display: grid; grid-template-columns: minmax(0, 1fr) 76px; gap: 6px; min-width: 0; }
+.qd-pop { position: fixed; z-index: 90; padding: 14px; border-radius: 18px; background: var(--card); box-shadow: 0 0 0 1px var(--line), 0 24px 48px -20px rgba(var(--fgr), 0.35); animation: qd-in 220ms var(--ease); }
+@keyframes qd-in { from { opacity: 0; transform: translateY(-4px); } }
+.qd-month header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.qd-month header b { font-size: 15px; font-weight: 900; letter-spacing: -0.02em; }
+.qd-month header::first-letter { text-transform: uppercase; }
+.qd-month header span { display: flex; gap: 4px; }
+.qd-month header .x { width: 30px; height: 30px; }
+.qd-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.qd-grid small { padding: 4px 0 6px; text-align: center; font-size: 10px; }
+.qd-grid button { position: relative; display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink); cursor: pointer; transition: background 150ms; }
+.qd-grid button .disp { font-size: 14px; }
+.qd-grid button:hover { background: rgba(var(--fgr), 0.06); }
+.qd-grid button.out { color: rgba(var(--fgr), 0.28); }
+.qd-grid button.pub::after { content: ""; position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: rgba(var(--fgr), 0.45); }
+.qd-grid button.today::after { content: ""; position: absolute; bottom: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
+.qd-grid button.on { background: var(--ink); color: var(--bg); }
+.qd-grid button.on::after { background: var(--gold); }
+.qd-month footer { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+.qd-month footer .link { padding: 0; border: 0; background: none; font-size: 13px; cursor: pointer; }
+.qd-times { display: grid; gap: 2px; max-height: 248px; overflow-y: auto; margin: -4px; padding: 4px; scrollbar-width: thin; }
+.qd-times button { height: 34px; border: 0; border-radius: 8px; background: none; color: var(--ink); cursor: pointer; }
+.qd-times button:hover { background: rgba(var(--fgr), 0.06); }
+.qd-times button.on { background: var(--ink); color: var(--bg); }
+.qd-times button .disp { font-size: 14px; }

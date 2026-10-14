@@ -6,6 +6,7 @@ import Link from "next/link";
 import DotIcon from "../DotIcon";
 import { duration } from "./lib";
 import ProofRow from "./Preuve";
+import { DateField, TimeField, When } from "./Quand";
 import { today } from "./jour";
 import { constance, titleOf } from "./stats";
 import {
@@ -93,10 +94,10 @@ export default function Sheet({ id }: { id: string }) {
         <section className="sheet-sec">
           <span className="lbl">Publication</span>
           <div className="sheet-when">
-            <input type="date" value={date} aria-label="Jour"
-              onChange={(e) => set((c) => movePublish(c, e.target.value ? `${e.target.value}T${time || "18:00"}` : null, dur))} />
-            <input type="time" step={900} value={time} disabled={!date} aria-label="Heure"
-              onChange={(e) => e.target.value && set((c) => movePublish(c, `${date}T${e.target.value}`, dur))} />
+            <DateField label="Jour de publication" value={date}
+              onChange={(k) => set((c) => movePublish(c, k ? `${k}T${time || "18:00"}` : null, dur))} />
+            <TimeField label="Heure de publication" value={time} disabled={!date}
+              onChange={(t) => set((c) => movePublish(c, `${date}T${t}`, dur))} />
           </div>
           {/* Instagram relié : la preuve remplace le bouton, la vidéo se vérifie au lieu de se déclarer. */}
           {d.ig?.verified && c.publishAt && c.publishAt.slice(0, 10) <= today() ? <ProofRow c={c} compact /> : !d.ig?.verified && (
@@ -119,8 +120,8 @@ export default function Sheet({ id }: { id: string }) {
                   </button>
                   <span className="st-name">{label}</span>
                   <span className="st-dur disp">{duration(minutes)}</span>
-                  <input type="datetime-local" step={900} value={s.at ?? ""} aria-label={`${label} : quand`}
-                    onChange={(e) => set((c) => ({ ...c, steps: { ...c.steps, [key]: { ...s, at: e.target.value || null } } }))} />
+                  <When label={label} value={s.at} fallback={time || "10:00"}
+                    onChange={(at) => set((c) => ({ ...c, steps: { ...c.steps, [key]: { ...s, at } } }))} />
                 </li>
               );
             })}
