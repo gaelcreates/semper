@@ -3,9 +3,9 @@ import AppKit
 import WebKit
 import Network
 
-let homeURL = URL(string: "https://trysemper.app/calendrier")!
+let homeURL = URL(string: "https://trysemper.app/aujourdhui")!
 let semperHost = "trysemper.app"
-let appVersion = "1.0"
+let appVersion = "1.1"
 
 // Seul trysemper.app s'affiche dans la fenêtre : aucun sous-domaine n'est servi.
 func isSemper(_ url: URL?) -> Bool {
@@ -52,6 +52,150 @@ final class OfflineView: NSView {
     required init?(coder: NSCoder) { fatalError() }
 }
 
+// L'ouverture : l'anneau de Semper se dessine au centre, un point or en tête du trait, puis tout s'efface
+// sur la page, chargée pendant ce temps. Même géométrie que app/brand.ts (grille 100 × 100).
+final class SplashView: NSView {
+    private static let SY: CGFloat = 0.65, RO: CGFloat = 42, W: CGFloat = 15, A0: CGFloat = 30, A1: CGFloat = 330
+    private static let CY: CGFloat = 50 - 9.4 * SY
+    // La grille du logo a y vers le bas, AppKit vers le haut : on retourne y.
+    private static func pt(_ r: CGFloat, _ a: CGFloat) -> CGPoint {
+        let t = a * .pi / 180
+        return CGPoint(x: 50 + r * sin(t), y: 100 - (CY - r * cos(t) * SY))
+    }
+    private static func wa(_ a: CGFloat) -> CGFloat {
+        a < A0 || a > A1 ? 0 : W * pow(sin(.pi * (a - A0) / (A1 - A0)), 0.9)
+    }
+
+    private let ring = CALayer()          // l'anneau, centré et mis à l'échelle
+    private let shape = CAShapeLayer()    // l'anneau plein
+    private let reveal = CAShapeLayer()   // le trait qui avance et le découvre
+    private let head = CAShapeLayer()     // le point or, en tête du trait
+    private var drawn = false, ready = false, leaving = false
+    private let still = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        let dark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let paper = dark ? CGColor(srgbRed: 14 / 255, green: 14 / 255, blue: 14 / 255, alpha: 1) : CGColor(srgbRed: 245 / 255, green: 245 / 255, blue: 245 / 255, alpha: 1)
+        let ink = dark ? CGColor(srgbRed: 245 / 255, green: 245 / 255, blue: 245 / 255, alpha: 1) : CGColor(srgbRed: 14 / 255, green: 14 / 255, blue: 14 / 255, alpha: 1)
+        wantsLayer = true
+        layer?.backgroundColor = paper
+
+        let outline = CGMutablePath(), center = CGMutablePath()
+        var inner: [CGPoint] = []
+        let n = 160
+        for k in 0...n {
+            let a = Self.A0 + (Self.A1 - Self.A0) * CGFloat(k) / CGFloat(n)
+            let o = Self.pt(Self.RO, a)
+            if k == 0 { outline.move(to: o) } else { outline.addLine(to: o) }
+            inner.append(Self.pt(Self.RO - Self.wa(a), a))
+            let c = Self.pt(Self.RO - Self.wa(a) / 2, a)
+            if k == 0 { center.move(to: c) } else { center.addLine(to: c) }
+        }
+        inner.reversed().forEach { outline.addLine(to: $0) }
+        outline.closeSubpath()
+
+        ring.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+        // Le centre visible du symbole (boîte 8 → 92 en x, 20,25 → 71,19 en y dans la grille).
+        ring.anchorPoint = CGPoint(x: 0.5, y: (100 - 45.72) / 100)
+        shape.path = outline
+        shape.fillColor = ink
+        reveal.path = center
+        reveal.fillColor = nil
+        reveal.strokeColor = ink
+        reveal.lineWidth = Self.W + 3
+        reveal.lineCap = .round
+        reveal.strokeEnd = still ? 1 : 0
+        shape.mask = reveal
+        head.path = CGPath(ellipseIn: CGRect(x: -2.3, y: -2.3, width: 4.6, height: 4.6), transform: nil)
+        head.fillColor = CGColor(srgbRed: 1, green: 197 / 255, blue: 8 / 255, alpha: 1)
+        head.position = Self.pt(Self.RO, Self.A0)
+        head.opacity = 0
+        ring.addSublayer(shape)
+        ring.addSublayer(head)
+        layer?.addSublayer(ring)
+        place()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func layout() {
+        super.layout()
+        place()
+    }
+
+    // L'anneau fait le quart de la largeur de la fenêtre, entre 150 et 260 points.
+    private func place() {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        let s = min(260, max(150, bounds.width / 4)) / 84
+        ring.position = CGPoint(x: bounds.midX, y: bounds.midY)
+        ring.transform = CATransform3DMakeScale(s, s, 1)
+        CATransaction.commit()
+    }
+
+    func start() {
+        let ease = CAMediaTimingFunction(controlPoints: 0.65, 0, 0.35, 1)
+        let delay = CACurrentMediaTime() + 0.15, dur = 1.05
+        if !still {
+            let grow = CABasicAnimation(keyPath: "strokeEnd")
+            grow.fromValue = 0; grow.toValue = 1
+            grow.beginTime = delay; grow.duration = dur; grow.timingFunction = ease
+            grow.fillMode = .both; grow.isRemovedOnCompletion = false
+            reveal.add(grow, forKey: "grow")
+
+            let path = (reveal.path)!
+            let move = CAKeyframeAnimation(keyPath: "position")
+            move.path = path; move.calculationMode = .paced
+            move.beginTime = delay; move.duration = dur; move.timingFunction = ease
+            move.fillMode = .both; move.isRemovedOnCompletion = false
+            head.add(move, forKey: "move")
+
+            let glow = CAKeyframeAnimation(keyPath: "opacity")
+            glow.values = [0, 1, 1, 0]; glow.keyTimes = [0, 0.08, 0.85, 1]
+            glow.beginTime = delay; glow.duration = dur + 0.25
+            glow.fillMode = .both; glow.isRemovedOnCompletion = false
+            head.add(glow, forKey: "glow")
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + (still ? 0.3 : 0.15 + dur + 0.35)) { [weak self] in
+            self?.drawn = true
+            self?.leave()
+        }
+        // Jamais bloqué derrière l'ouverture : au bout de 8 secondes, on laisse voir la page.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8) { [weak self] in self?.pageReady() }
+    }
+
+    func pageReady() {
+        ready = true
+        leave()
+    }
+
+    // La sortie : l'anneau s'agrandit et s'efface, le papier s'efface juste après, la page apparaît.
+    private func leave() {
+        guard drawn, ready, !leaving else { return }
+        leaving = true
+        let out = CAMediaTimingFunction(controlPoints: 0.5, 0, 0.75, 0)
+        CATransaction.begin()
+        CATransaction.setCompletionBlock { [weak self] in self?.removeFromSuperview() }
+        let zoom = CABasicAnimation(keyPath: "transform.scale")
+        zoom.byValue = 0.35; zoom.duration = 0.5; zoom.timingFunction = out
+        zoom.fillMode = .forwards; zoom.isRemovedOnCompletion = false
+        ring.add(zoom, forKey: "zoom")
+        let fade = CABasicAnimation(keyPath: "opacity")
+        fade.toValue = 0; fade.duration = 0.4; fade.timingFunction = out
+        fade.fillMode = .forwards; fade.isRemovedOnCompletion = false
+        ring.add(fade, forKey: "fade")
+        let paper = CABasicAnimation(keyPath: "opacity")
+        paper.toValue = 0; paper.beginTime = CACurrentMediaTime() + 0.15; paper.duration = 0.45
+        paper.fillMode = .both; paper.isRemovedOnCompletion = false
+        layer?.add(paper, forKey: "paper")
+        CATransaction.commit()
+    }
+
+    // Pendant l'ouverture, les clics ne passent pas à la page.
+    override func hitTest(_ point: NSPoint) -> NSView? { leaving ? nil : self }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     WKNavigationDelegate, WKUIDelegate, WKDownloadDelegate
 {
@@ -62,6 +206,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     var failedURL: URL?
     var downloadDestinations: [ObjectIdentifier: URL] = [:]
     var quitting = false
+    var splash: SplashView?
 
     // MARK: Lancement
 
@@ -106,10 +251,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         offlineView.isHidden = true
         container.addSubview(offlineView)
         window.contentView = container
+        let s = SplashView(frame: container.bounds)
+        s.autoresizingMask = [.width, .height]
+        container.addSubview(s)
+        splash = s
 
         webView.load(URLRequest(url: homeURL))
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        s.start()
 
         // Recharge automatique au retour du réseau
         monitor.pathUpdateHandler = { [weak self] path in
@@ -290,6 +440,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        splash?.pageReady()
         offlineView.isHidden = true
         failedURL = nil
     }
@@ -308,6 +459,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         if e.domain == NSURLErrorDomain && e.code == NSURLErrorCancelled { return }
         if e.domain == "WebKitErrorDomain" && (e.code == 102 || e.code == 204) { return }
         guard e.domain == NSURLErrorDomain else { return }
+        splash?.pageReady()
         failedURL = (e.userInfo[NSURLErrorFailingURLErrorKey] as? URL) ?? webView.url
         if let u = failedURL, !isSemper(u) { failedURL = homeURL }
         offlineView.isHidden = false
