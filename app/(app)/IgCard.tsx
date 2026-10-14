@@ -48,7 +48,8 @@ export default function IgCard() {
     if (r.state !== "ok") return setMsg(SAY[r.state]);
     if (r.link) setIg(r.link);
     if (r.rows?.length) applyRows(r.rows);
-    announce(r.rows?.length ? `Compte vérifié. ${r.rows.length} vidéo${r.rows.length > 1 ? "s" : ""} retrouvée${r.rows.length > 1 ? "s" : ""} le jour prévu.` : "Compte vérifié.");
+    // Une seule annonce : c'est relié, le code peut quitter la bio.
+    announce(`@${r.link?.handle ?? handle} est relié. Tu peux retirer le code de ta bio.`);
   }
   async function forget() {
     if (!(await igForget(await token()))) return setMsg(SAY.error);
@@ -58,11 +59,11 @@ export default function IgCard() {
   return (
     <section className="box pf ig-card" id="instagram">
       <header className="ig-card-h"><h2>Vérifier mes publications</h2>{ig?.verified ? <span className="pf-chip ok"><DotIcon name="check" />@{ig.handle}</span> : <span className="muted">Compte professionnel ou créateur</span>}</header>
-      <ol className="ig-steps">
+      {!ig?.verified && <ol className="ig-steps">
         {["Ton pseudo", "Le code dans ta bio", "C'est vérifié"].map((t, i) => (
           <li key={t} className={i + 1 === step ? "on" : i + 1 < step || ig?.verified ? "ok" : ""}><i className="disp">{i + 1 < step || ig?.verified ? "✓" : i + 1}</i>{t}</li>
         ))}
-      </ol>
+      </ol>}
 
       {step === 1 && (
         <>
@@ -98,7 +99,6 @@ export default function IgCard() {
 
       {step === 3 && (
         <>
-          <p><b>@{ig!.handle} est bien à toi.</b> <span className="muted">Tu peux retirer le code de ta bio.</span></p>
           <div className="ig-found">
             <div><b className="disp">{n(["ok", "late"])}</b><small>vidéos vérifiées</small></div>
             <div><b className="disp">{n(["propose"])}</b><small>à confirmer</small></div>
