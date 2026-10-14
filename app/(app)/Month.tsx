@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { DAYS, addDays, dayKey, hhmm, parse, startOfWeek } from "./lib";
-import { STEPS, createContent, movePublish, openSheet, patchContent, type Content } from "./store";
+import { createContent, live, movePublish, openSheet, patchContent, useData, type Content } from "./store";
 
 // Le mois : les publications en clair, les étapes en points. Sur téléphone, seulement les points ;
 // toucher un jour ouvre sa semaine. Au-delà de trois publications, « +n » ouvre aussi la semaine.
 export default function Month({ contents, anchor, narrow, onDay }: { contents: Content[]; anchor: Date; narrow: boolean; onDay: (d: Date) => void }) {
+  const steps = useData()!.profile.steps;
   const [over, setOver] = useState<string | null>(null);
   const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
   const last = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
@@ -24,7 +25,7 @@ export default function Month({ contents, anchor, narrow, onDay }: { contents: C
       add(pubs, c.publishAt.slice(0, 10), c);
       add(dots, c.publishAt.slice(0, 10), { k: `${c.id}p`, done: !!c.publishedAt, pub: true });
     }
-    STEPS.forEach(({ key }) => { const s = c.steps[key]; if (s.at) add(dots, s.at.slice(0, 10), { k: c.id + key, done: s.done, pub: false }); });
+    live(steps).forEach(({ key }) => { const s = c.steps[key]; if (s?.at) add(dots, s.at.slice(0, 10), { k: c.id + key, done: s.done, pub: false }); });
   }
   pubs.forEach((l) => l.sort((a, b) => a.publishAt!.localeCompare(b.publishAt!)));
 
@@ -39,7 +40,7 @@ export default function Month({ contents, anchor, narrow, onDay }: { contents: C
     e.preventDefault();
     setOver(null);
     const id = e.dataTransfer.getData("text/plain");
-    patchContent(id, (c, data) => (c.publishAt ? movePublish(c, `${dayKey(d)}T${c.publishAt.slice(11, 16)}`, data.profile.durations) : c));
+    patchContent(id, (c, data) => (c.publishAt ? movePublish(c, `${dayKey(d)}T${c.publishAt.slice(11, 16)}`, data.profile.steps) : c));
   }
 
   return (

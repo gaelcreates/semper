@@ -1,6 +1,7 @@
 import { addDays, fmt, startOfWeek } from "./lib";
 import type { Content, Data, StepKey } from "./store";
 import { newGame } from "./jour";
+import { DEF_STEPS } from "./rules";
 
 // L'espace de démonstration, montré dans la vitrine (iframe nommée « semper-demo ») : le vrai Semper, avec
 // une créatrice fictive. Tout est calé sur la semaine en cours, pour que l'aperçu ne vieillisse jamais.
@@ -53,7 +54,7 @@ export function demoData(now = new Date()): Data {
     v: 1,
     profile: {
       firstName: "Léa", handle: "lea.cree", email: "lea@exemple.com", rythme: 2,
-      durations: { ecriture: 30, tournage: 20, montage: 45 }, answers: {}, lockUntil: null, avatar: null,
+      steps: DEF_STEPS(), answers: {}, lockUntil: null, avatar: null,
       createdAt: addDays(mon, -56).toISOString(),
     },
     fields: [{

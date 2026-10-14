@@ -2,10 +2,10 @@ import { gameOf } from "../../(app)/jour";
 import { randomUUID } from "crypto";
 import { admin } from "../../server";
 import { addDays, dayKey, parse, startOfWeek } from "../../(app)/lib";
-import { FIELDS, SEP, STATUS, STEPS, STRUCTURES, movePublish, statusOf, structure, uid as newId, withStatus, type Status } from "../../(app)/rules";
+import { DEF_STEPS, FIELDS, SEP, STRUCTURES, live, movePublish, statusOf, statuses, stepIn, structure, uid as newId, withStatus, type StepDef } from "../../(app)/rules";
 import { FIELD_TPLS, SCRIPT_TPLS, fieldAdded, fieldLabel, same, scriptAdded } from "../../(app)/templates";
 import { constance, titleOf } from "../../(app)/stats";
-import type { Content, Data, Field, FieldType, StepKey, Structure, Value } from "../../(app)/store";
+import type { Content, Data, Field, FieldType, Structure, Value } from "../../(app)/store";
 
 // Les outils du connecteur Claude. Chaque appel relit le compte dans la base et n'écrit que ses propres contenus.
 // Les règles sont celles de l'espace (rules.ts) : statuts, étapes posées à rebours de la publication.
@@ -26,7 +26,7 @@ function now() {
 async function load({ uid }: Ctx): Promise<Data> {
   const a = admin();
   const [{ data: p, error: e1 }, { data: rows, error: e2 }, { data: ig }] = await Promise.all([
-    a.from("profiles").select("first_name, rythme, rythme_locked_until, durations, fields, structures, created_at, engagement").eq("id", uid).single(),
+    a.from("profiles").select("first_name, rythme, rythme_locked_until, durations, steps, fields, structures, created_at, engagement").eq("id", uid).single(),
     a.from("contents").select("*").eq("user_id", uid),
     a.from("ig_links").select("handle, code, verified_at, synced_at").eq("user_id", uid).maybeSingle(),
   ]);
@@ -42,7 +42,7 @@ async function load({ uid }: Ctx): Promise<Data> {
   }));
   return {
     v: 1,
-    profile: { firstName: p.first_name, rythme: p.rythme, lockUntil: p.rythme_locked_until, durations: p.durations, createdAt: p.created_at } as Data["profile"],
+    profile: { firstName: p.first_name, rythme: p.rythme, lockUntil: p.rythme_locked_until, steps: (p.steps as StepDef[] | null) ?? DEF_STEPS(p.durations), createdAt: p.created_at } as Data["profile"],
     fields: (p.fields as Field[] | null) ?? [], structures: (p.structures as Structure[] | null) ?? [], contents,
     game: gameOf(p.engagement),
     ig: ig ? { handle: ig.handle, code: ig.code, verified: !!ig.verified_at, syncedAt: ig.synced_at, posts: [] } : null,
@@ -50,7 +50,7 @@ async function load({ uid }: Ctx): Promise<Data> {
 }
 
 // ---------- lecture
-const label = (s: Status) => STATUS.find((x) => x.key === s)!.label;
+const label = (d: Data, c: Content) => { const s = statusOf(c, d.profile.steps); return statuses(d.profile.steps).find((x) => x.key === s)?.label ?? s; };
 const arr = (v: Value | undefined) => (Array.isArray(v) ? v : v ? [v] : []);
 function fieldsOf(d: Data, c: Content) {
   const out: Record<string, string | string[]> = {};
@@ -63,14 +63,14 @@ function fieldsOf(d: Data, c: Content) {
   return out;
 }
 function brief(d: Data, c: Content) {
-  return { id: c.id, titre: c.title || "Sans titre", statut: label(statusOf(c)), publication: c.publishAt, ...fieldsOf(d, c) };
+  return { id: c.id, titre: c.title || "Sans titre", statut: label(d, c), publication: c.publishAt, ...fieldsOf(d, c) };
 }
 function full(d: Data, c: Content) {
   const st = c.script?.structureId ? d.structures.find((s) => s.id === c.script!.structureId) : undefined;
   const parts = st ? Object.fromEntries(st.parts.map((p) => [p.label, c.script!.parts[p.id] ?? ""]).filter(([, t]) => t)) : {};
   return {
     ...brief(d, c), publiee_le: c.publishedAt,
-    etapes: Object.fromEntries(STEPS.map((s) => [s.label, { date: c.steps[s.key].at, faite: c.steps[s.key].done }])),
+    etapes: Object.fromEntries(d.profile.steps.map((s) => [s.label, { date: stepIn(c, s.key).at, faite: stepIn(c, s.key).done }])),
     ...(st ? { script: { structure: st.name, parties: parts } } : {}),
   };
 }
@@ -130,29 +130,30 @@ function setScript(d: Data, c: Content, script: unknown, structure: unknown): Co
 }
 function setPublish(d: Data, c: Content, v: unknown): Content {
   if (v === undefined) return c;
-  if (v === null || v === "") return withStatus(c, "idee");
+  if (v === null || v === "") return withStatus(c, "idee", d.profile.steps);
   let at = String(v).trim();
   if (DATE.test(at)) at += "T18:00";
   if (!AT.test(at) || isNaN(parse(at).getTime())) throw new Oops("« publication » attend AAAA-MM-JJTHH:MM (heure locale), par exemple 2026-10-20T18:00.");
-  return movePublish(c, at, d.profile.durations);
+  return movePublish(c, at, d.profile.steps);
 }
-function setStatus(c: Content, v: unknown): Content {
+function setStatus(d: Data, c: Content, v: unknown): Content {
   if (v == null) return c;
-  const s = STATUS.find((x) => x.key === v || x.label.toLowerCase() === String(v).toLowerCase())?.key;
-  if (!s) throw new Oops(`Statut inconnu. Statuts : ${STATUS.map((x) => x.key).join(", ")}.`);
-  const next = withStatus({ ...c, publishedAt: s === "publie" ? c.publishedAt ?? c.publishAt ?? now() : c.publishedAt }, s);
+  const list = statuses(d.profile.steps);
+  const s = list.find((x) => x.key === v || x.label.toLowerCase() === String(v).toLowerCase())?.key;
+  if (!s) throw new Oops(`Statut inconnu. Statuts : ${list.map((x) => x.key).join(", ")}.`);
+  const next = withStatus({ ...c, publishedAt: s === "publie" ? c.publishedAt ?? c.publishAt ?? now() : c.publishedAt }, s, d.profile.steps);
   return next;
 }
-const stepOf = (name: string) => STEPS.find((s) => s.key === name.toLowerCase() || same(s.label, name))?.key;
-function setSteps(c: Content, v: unknown): Content {
+const stepOf = (d: Data, name: string) => d.profile.steps.find((s) => s.key === name.toLowerCase() || same(s.label, name))?.key;
+function setSteps(d: Data, c: Content, v: unknown): Content {
   if (v == null) return c;
   if (typeof v !== "object" || Array.isArray(v)) throw new Oops("« etapes » attend un objet : { \"Tournage\": { \"date\": \"2026-10-20T10:00\", \"faite\": true } }.");
   const steps = { ...c.steps };
   for (const [name, raw] of Object.entries(v as Args)) {
-    const k = stepOf(name);
-    if (!k) throw new Oops(`Étape inconnue : « ${name} ». Étapes : Écriture, Tournage, Montage.`);
+    const k = stepOf(d, name);
+    if (!k) throw new Oops(`Étape inconnue : « ${name} ». Étapes : ${d.profile.steps.map((s) => s.label).join(", ")}.`);
     const o = (raw ?? {}) as { date?: unknown; faite?: unknown };
-    const next = { ...steps[k] };
+    const next = { ...stepIn(c, k) };
     if (o.date !== undefined) {
       if (o.date === null || o.date === "") next.at = null;
       else if (AT.test(String(o.date)) && !isNaN(parse(String(o.date)).getTime())) next.at = String(o.date);
@@ -194,12 +195,12 @@ const S = { type: "string" } as const;
 const CHAMPS = { type: "object", description: "Champs de la fiche, nom → valeur. Pour un choix : « Attirer » ou « Attirer · Erreur ». Voir lire_organisation.", additionalProperties: true };
 const SCRIPT = { type: "object", description: "Parties du script, nom de la partie → texte (par exemple { \"Hook\": \"…\" }). Voir lire_organisation.", additionalProperties: { type: "string" } };
 const ETAPES = { type: "object", description: "Étapes à déplacer ou cocher : { \"Tournage\": { \"date\": \"AAAA-MM-JJTHH:MM\", \"faite\": true } }. Écriture, Tournage, Montage.", additionalProperties: { type: "object", properties: { date: { type: ["string", "null"] }, faite: { type: "boolean" } } } };
-const PUB = { type: ["string", "null"], description: "Date de publication en heure locale, AAAA-MM-JJTHH:MM. Les étapes (écriture, tournage, montage) se posent toutes seules à rebours. null = remettre en idée." };
+const PUB = { type: ["string", "null"], description: "Date de publication en heure locale, AAAA-MM-JJTHH:MM. Les étapes du créateur (écriture, tournage, montage) se posent toutes seules à rebours. null = remettre en idée." };
 
 export const TOOLS = [
   {
     name: "lire_semaine", title: "Lire une semaine",
-    description: "La semaine du créateur dans Semper : pour chaque jour, les étapes (écriture, tournage, montage) et les publications prévues, avec leur heure. Par défaut la semaine en cours.",
+    description: "La semaine du créateur dans Semper : pour chaque jour, les étapes du créateur (par défaut écriture, tournage, montage) et les publications prévues, avec leur heure. Par défaut la semaine en cours.",
     inputSchema: { type: "object", properties: { date: { ...S, description: "N'importe quel jour de la semaine voulue, AAAA-MM-JJ. Par défaut aujourd'hui." } } },
     annotations: { readOnlyHint: true },
     async run(ctx: Ctx, a: Args) {
@@ -210,7 +211,7 @@ export const TOOLS = [
       const agenda = days.map((day) => {
         const items: { heure: string; quoi: string; contenu: string; id: string; faite: boolean }[] = [];
         for (const c of d.contents) {
-          for (const s of STEPS) { const at = c.steps[s.key].at; if (at?.startsWith(day)) items.push({ heure: at.slice(11), quoi: s.label, contenu: c.title || "Sans titre", id: c.id, faite: c.steps[s.key].done }); }
+          for (const s of live(d.profile.steps)) { const at = stepIn(c, s.key).at; if (at?.startsWith(day)) items.push({ heure: at.slice(11), quoi: s.label, contenu: c.title || "Sans titre", id: c.id, faite: stepIn(c, s.key).done }); }
           if (c.publishAt?.startsWith(day)) items.push({ heure: c.publishAt.slice(11), quoi: "Publication", contenu: c.title || "Sans titre", id: c.id, faite: !!c.publishedAt });
         }
         return { jour: day, items: items.sort((x, y) => x.heure.localeCompare(y.heure)) };
@@ -223,7 +224,7 @@ export const TOOLS = [
     name: "lister_contenus", title: "Lister les contenus",
     description: "Les contenus (vidéos) du créateur avec leur statut, leur date de publication et les champs de leur fiche. Filtre possible par statut ou par texte.",
     inputSchema: { type: "object", properties: {
-      statut: { type: "string", enum: STATUS.map((s) => s.key), description: "idee, ecrire, tourner, monter, pret ou publie." },
+      statut: { ...S, description: "idee, ecrire, tourner, monter, pret, publie, ou le nom d'une étape ajoutée par le créateur (voir lire_organisation)." },
       recherche: { ...S, description: "Texte cherché dans le titre, les champs et le script." },
       limite: { type: "integer", minimum: 1, maximum: 200, description: "50 par défaut." },
     } },
@@ -232,7 +233,7 @@ export const TOOLS = [
       const d = await load(ctx);
       const q = String(a.recherche ?? "").trim().toLowerCase();
       const list = d.contents
-        .filter((c) => !a.statut || statusOf(c) === a.statut)
+        .filter((c) => !a.statut || statusOf(c, d.profile.steps) === a.statut)
         .filter((c) => !q || [c.title, ...Object.values(c.values).flat(), ...Object.values(c.script?.parts ?? {})].join(" ").toLowerCase().includes(q))
         .sort((x, y) => (x.publishAt ?? "9999").localeCompare(y.publishAt ?? "9999"));
       const n = Math.min(200, Math.max(1, Number(a.limite) || 50));
@@ -257,9 +258,9 @@ export const TOOLS = [
       if (!title) throw new Oops("Il faut un titre.");
       let c: Content = {
         id: randomUUID(), title, publishAt: null, publishedAt: null, values: {}, createdAt: new Date().toISOString(),
-        steps: { ecriture: { at: null, done: false }, tournage: { at: null, done: false }, montage: { at: null, done: false } },
+        steps: Object.fromEntries(d.profile.steps.map((s) => [s.key, { at: null, done: false }])),
       };
-      c = setScript(d, setFields(d, setSteps(setPublish(d, c, a.publication ?? undefined), a.etapes), a.champs), a.script, a.structure);
+      c = setScript(d, setFields(d, setSteps(d, setPublish(d, c, a.publication ?? undefined), a.etapes), a.champs), a.script, a.structure);
       await save(ctx, c, true);
       return { cree: full(d, c) };
     },
@@ -269,7 +270,7 @@ export const TOOLS = [
     description: "Change le titre, la date de publication, le statut, une étape (date, faite), les champs ou le script d'un contenu. Seul ce qui est donné change. Changer la date de publication déplace aussi ses étapes.",
     inputSchema: { type: "object", properties: {
       id: S, titre: S, publication: PUB, etapes: ETAPES,
-      statut: { type: "string", enum: STATUS.map((s) => s.key), description: "Les étapes d'avant sont marquées faites, celles d'après non. publie marque la vidéo publiée." },
+      statut: { ...S, description: "Clé ou nom d'un statut (voir lire_organisation). Les étapes d'avant sont marquées faites, celles d'après non. publie marque la vidéo publiée." },
       champs: CHAMPS, structure: { ...S, description: "Nom de la structure de script." }, script: SCRIPT,
     }, required: ["id"] },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
@@ -277,7 +278,7 @@ export const TOOLS = [
       const d = await load(ctx);
       let c = find(d, a.id);
       if (a.titre != null) { const t = String(a.titre).trim().slice(0, 200); if (!t) throw new Oops("Le titre ne peut pas être vide."); c = { ...c, title: t }; }
-      c = setScript(d, setFields(d, setSteps(setStatus(setPublish(d, c, a.publication), a.statut), a.etapes), a.champs), a.script, a.structure);
+      c = setScript(d, setFields(d, setSteps(d, setStatus(d, setPublish(d, c, a.publication), a.statut), a.etapes), a.champs), a.script, a.structure);
       await save(ctx, c, false);
       return { modifie: full(d, c) };
     },
@@ -303,8 +304,8 @@ export const TOOLS = [
       return {
         champs: d.fields.map((f) => ({ nom: f.label, type: f.type, ...(f.options.length ? { choix: f.options } : {}), ...(f.sub && Object.keys(f.sub).length ? { sous_choix: f.sub } : {}) })),
         structures: d.structures.map((s) => ({ nom: s.name, parties: s.parts.map((p) => p.label) })),
-        durees_minutes: Object.fromEntries(STEPS.map((s) => [s.label, d.profile.durations[s.key]])),
-        statuts: STATUS.map((s) => ({ cle: s.key, nom: s.label })),
+        durees_minutes: Object.fromEntries(d.profile.steps.map((s) => [s.label, s.minutes])),
+        statuts: statuses(d.profile.steps).map((s) => ({ cle: s.key, nom: s.label })),
         rythme_vise: d.profile.rythme, rythme_bloque_jusqu_au: locked(d),
         templates: [
           ...FIELD_TPLS.map((t) => ({ nom: t.name, sorte: "champ", ajoute: fieldAdded(t, d.fields) })),
@@ -443,7 +444,7 @@ export const TOOLS = [
   },
   {
     name: "modifier_reglages", title: "Régler le rythme et les durées",
-    description: "Change le rythme visé (vidéos publiées par semaine, de 1 à 14) et la durée de chaque étape (écriture, tournage, montage, en minutes, de 5 à 480). Les étapes déjà posées ne bougent pas.",
+    description: "Change le rythme visé (vidéos publiées par semaine, de 1 à 14) et la durée de chaque étape du créateur (en minutes, de 0 à 480 ; à 0, l'étape ne se pose plus au calendrier). Les étapes déjà posées ne bougent pas.",
     inputSchema: { type: "object", properties: {
       rythme: { type: "integer", minimum: 1, maximum: 14 },
       durees: { type: "object", description: "{ \"Écriture\": 30, \"Tournage\": 20, \"Montage\": 45 }, en minutes.", additionalProperties: { type: "integer" } },
@@ -462,18 +463,18 @@ export const TOOLS = [
       }
       if (a.durees != null) {
         if (typeof a.durees !== "object" || Array.isArray(a.durees)) throw new Oops("« durees » attend un objet : étape → minutes.");
-        const dur = { ...d.profile.durations } as Record<StepKey, number>;
+        const steps = d.profile.steps.map((s) => ({ ...s }));
         for (const [name, v] of Object.entries(a.durees as Args)) {
-          const k = stepOf(name);
+          const k = stepOf(d, name);
           if (!k) throw new Oops(`Étape inconnue : « ${name} ».`);
           const m = Math.round(Number(v) / 5) * 5;
-          if (!(m >= 5 && m <= 480)) throw new Oops("Une durée va de 5 à 480 minutes.");
-          dur[k] = m;
+          if (!(m >= 0 && m <= 480)) throw new Oops("Une durée va de 0 à 480 minutes.");
+          steps.find((s) => s.key === k)!.minutes = m;
         }
-        cols.durations = dur;
+        cols.steps = steps;
       }
       if (Object.keys(cols).length) await saveProfile(ctx, cols);
-      return { rythme_vise: (cols.rythme as number) ?? d.profile.rythme, durees_minutes: Object.fromEntries(STEPS.map((s) => [s.label, ((cols.durations ?? d.profile.durations) as Record<StepKey, number>)[s.key]])), ...(notes.length ? { note: notes.join(" ") } : {}) };
+      return { rythme_vise: (cols.rythme as number) ?? d.profile.rythme, durees_minutes: Object.fromEntries(((cols.steps as StepDef[] | undefined) ?? d.profile.steps).map((s) => [s.label, s.minutes])), ...(notes.length ? { note: notes.join(" ") } : {}) };
     },
   },
 ];

@@ -12,7 +12,7 @@ export default function IdeaRow({ c, del = false }: { c: Content; del?: boolean 
   const days = Array.from({ length: 7 }, (_, i) => addDays(new Date(), i));
   function place(d: Date) {
     const k = dayKey(d);
-    patchContent(c.id, (x, dd) => movePublish(x, `${k}T18:00`, dd.profile.durations));
+    patchContent(c.id, (x, dd) => movePublish(x, `${k}T18:00`, dd.profile.steps));
     setPlan(false);
     const p = parse(k);
     announce(`Planifiée ${DAYS[(p.getDay() + 6) % 7]} ${p.getDate()} ${MONTHS_SHORT[p.getMonth()]} à 18 h.`);

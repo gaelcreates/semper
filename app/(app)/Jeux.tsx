@@ -318,7 +318,7 @@ function Script({ done }: { done: Done }) {
   function create() {
     const at = nextSlot(d.contents);
     const script = { structureId: st?.id ?? null, parts: Object.fromEntries(parts.map((p) => [p.id, (v[p.id] ?? "").trim()])) };
-    if (src) patchContent(src.id, (c, dd) => ({ ...movePublish(c, at, dd.profile.durations), script }));
+    if (src) patchContent(src.id, (c, dd) => ({ ...movePublish(c, at, dd.profile.steps), script }));
     else addContent({ title, publishAt: at, script });
     const day = new Date(at);
     done("Contenu créé.", `Au calendrier le ${day.toLocaleDateString("fr-CH", { weekday: "long", day: "numeric", month: "long" })} à 18 h, avec son script.`);

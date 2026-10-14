@@ -7,7 +7,7 @@ import Month from "../Month";
 import { Kanban, List } from "../Board";
 import { FilterPill, useNarrow } from "../ui";
 import { DAYS, MONTHS, MONTHS_SHORT, addDays, dayKey, isoWeek, startOfWeek } from "../lib";
-import { SEP, STATUS, picked, statusOf, useData, type Content } from "../store";
+import { SEP, picked, statusOf, statuses as statusList, useData, type Content } from "../store";
 
 type View = "calendrier" | "kanban" | "liste";
 type Span = "semaine" | "mois";
@@ -41,7 +41,7 @@ export default function Calendrier() {
 
   const choice = d.fields.filter((f) => f.type === "choix" || f.type === "multi");
   const match = (c: Content) => {
-    if (statuses.length && !statuses.includes(statusOf(c))) return false;
+    if (statuses.length && !statuses.includes(statusOf(c, d.profile.steps))) return false;
     for (const f of choice) {
       const sel = picks[f.id] ?? [];
       if (sel.length && !picked(c, f).some((x) => sel.includes(x))) return false;
@@ -91,7 +91,7 @@ export default function Calendrier() {
 
       <div className="pl-filters">
         <label className="search"><DotIcon name="loupe" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher" aria-label="Rechercher" /></label>
-        <FilterPill label="Statut" options={STATUS} selected={statuses} onChange={setStatuses} />
+        <FilterPill label="Statut" options={statusList(d.profile.steps)} selected={statuses} onChange={setStatuses} />
         {choice.map((f) => (
           <FilterPill key={f.id} label={f.label} options={f.options.flatMap((o) => [{ key: o, label: o }, ...(f.sub?.[o] ?? []).map((so) => ({ key: o + SEP + so, label: so, sub: true }))])}
             selected={picks[f.id] ?? []} onChange={(s) => setPicks({ ...picks, [f.id]: s })} />
@@ -114,7 +114,7 @@ export default function Calendrier() {
       )}
 
       <div className="pl-body">
-        {week && <Week contents={list} days={days} dur={d.profile.durations} empty={!d.contents.length} />}
+        {week && <Week contents={list} days={days} steps={d.profile.steps} empty={!d.contents.length} />}
         {cal && span === "mois" && <Month contents={list} anchor={anchor} narrow={narrow} onDay={(x) => { setAnchor(x); setSpan("semaine"); }} />}
         {view === "kanban" && <Kanban contents={list} fields={d.fields} />}
         {view === "liste" && <List contents={list} fields={d.fields} total={d.contents.length} />}

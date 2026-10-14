@@ -578,3 +578,8 @@ alter table public.ig_links enable row level security;
 create policy "instagram relié : le sien" on public.ig_links for select to authenticated using (user_id = (select auth.uid()));
 -- La personne écrit l'état de sa lune elle-même (comme ses réglages).
 grant update (engagement) on public.profiles to authenticated;
+
+-- Les étapes de chacun (14 oct 2026) : [{ key, label, minutes }], dans l'ordre. Vide : les trois étapes de départ avec les durées de « durations ».
+alter table public.profiles add column steps jsonb;
+alter table public.profiles add constraint profiles_steps_size check (steps is null or (jsonb_typeof(steps) = 'array' and jsonb_array_length(steps) between 1 and 8 and pg_column_size(steps) < 8192));
+grant update (steps) on public.profiles to authenticated;

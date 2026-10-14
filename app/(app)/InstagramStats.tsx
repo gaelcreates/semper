@@ -19,9 +19,9 @@ const act = (p: Post) => p.likes + p.comments;
 const mean = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
 const FORMATS: { key: Post["type"]; label: string }[] = [{ key: "reel", label: "Reels" }, { key: "carrousel", label: "Carrousels" }, { key: "photo", label: "Photos" }];
 const SLOTS = [
-  { name: "Matin", phrase: "du matin", from: 5, to: 12 }, { name: "Midi", phrase: "de midi", from: 12, to: 15 },
-  { name: "Après-midi", phrase: "de l'après-midi", from: 15, to: 18 }, { name: "Soir", phrase: "du soir", from: 18, to: 23 },
-  { name: "Nuit", phrase: "de nuit", from: 23, to: 29 },
+  { name: "Matin", from: 5, to: 12 }, { name: "Midi", from: 12, to: 15 },
+  { name: "Après-midi", from: 15, to: 18 }, { name: "Soir", from: 18, to: 23 },
+  { name: "Nuit", from: 23, to: 29 },
 ];
 
 // Les chiffres Instagram, dans le Profil : tout ce que l'API officielle laisse lire, rangé pour décider quoi publier et quand.
@@ -105,16 +105,6 @@ export default function InstagramStats() {
   const slots = SLOTS.map((s) => ({ ...s, v: mean(posts.filter((p) => { const h = new Date(p.t).getHours(); const x = h < 5 ? h + 24 : h; return x >= s.from && x < s.to; }).map(act)) }));
   const top = [...posts].sort((a, b) => act(b) - act(a)).slice(0, 6);
 
-  // La lecture : quelques phrases, seulement quand les données les soutiennent
-  const read: string[] = [];
-  const f = [...formats].filter((x) => x.n >= 2).sort((a, b) => b.v - a.v);
-  if (f.length >= 2 && f[1].v > 0 && f[0].v / f[1].v >= 1.3) read.push(`Tes ${f[0].label.toLowerCase()} font ${dec(f[0].v / f[1].v)} fois plus d'interactions que tes ${f[1].label.toLowerCase()}.`);
-  const bestDay = [...days].sort((a, b) => b.v - a.v)[0];
-  if (posts.length >= 8 && bestDay.v) read.push(`Le ${bestDay.label.replace(".", "")} est ton meilleur jour.`);
-  const bestSlot = [...slots].sort((a, b) => b.v - a.v)[0];
-  if (posts.length >= 8 && bestSlot.v) read.push(`Tes publications ${bestSlot.phrase} marchent le mieux.`);
-  read.push(`Sur Instagram, tu tiens ${dec(real)} publication${real >= 2 ? "s" : ""} par semaine. Ton rythme visé : ${d.profile.rythme}.`);
-
   const series = [...rows].reverse().filter((r) => r.followers != null);
 
   return (
@@ -173,10 +163,6 @@ export default function InstagramStats() {
         </section>
       )}
 
-      <section className="box advice">
-        <span className="lbl">Lecture</span>
-        <ul className="read">{read.map((r) => <li key={r}>{r}</li>)}</ul>
-      </section>
     </>
   );
 }

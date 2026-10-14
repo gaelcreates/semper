@@ -3,10 +3,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { DAYS, addDays, dayKey, fmt, isoWeek, minutesOfDay, parse } from "./lib";
 import DotIcon from "../DotIcon";
-import { STEPS, createContent, movePublish, openSheet, patchContent, type Content, type StepKey } from "./store";
+import { createContent, live, movePublish, openSheet, patchContent, stepIn, type Content, type StepDef } from "./store";
 
 // La semaine : une colonne par jour, une ligne par heure. Chaque vidéo y pose ses blocs :
-// écriture, tournage, montage (durée fixée dans le profil) et la publication.
+// une par étape (durée réglée dans Organisation ; une étape à 0 minute ne se pose pas) et la publication.
 // Un bloc se déplace, il ne se redimensionne pas. Déplacer la publication entraîne ses étapes.
 // Au doigt, le bloc se prend après un appui long : un glissé simple fait défiler la journée.
 // Au clavier : Entrée ouvre la fiche, les flèches déplacent le bloc (15 min, un jour).
@@ -18,11 +18,11 @@ const MIN_H = 15; // hauteur visible minimale d'un bloc, en minutes ; le bloc su
 const PUB = 30; // la publication est un moment, affichée sur une demi-heure
 const GHOST = 18 * 60; // la première vidéo proposée, à 18 h
 
-type Item = { key: string; cid: string; kind: StepKey | "pub"; day: number; s: number; dur: number; done: boolean; title: string; label: string };
+type Item = { key: string; cid: string; kind: string; day: number; s: number; dur: number; done: boolean; title: string; label: string };
 type Drag = { it: Item; x: number; y: number; colW: number; moved: boolean; held: boolean };
 type Off = { key: string; cid: string; pub: boolean; days: number; mins: number; colW: number };
 
-export default function Week({ contents, days, dur, empty = false }: { contents: Content[]; days: Date[]; dur: Record<StepKey, number>; empty?: boolean }) {
+export default function Week({ contents, days, steps, empty = false }: { contents: Content[]; days: Date[]; steps: StepDef[]; empty?: boolean }) {
   const scroller = useRef<HTMLDivElement>(null);
   const drag = useRef<Drag | null>(null);
   const hold = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -43,7 +43,7 @@ export default function Week({ contents, days, dur, empty = false }: { contents:
   }, []);
 
   // On ouvre juste avant le premier bloc de la période, sinon vers 7 h 30 (16 h pour une première vidéo).
-  const items = build(contents, days, dur);
+  const items = build(contents, days, steps);
   const first = items.length ? Math.min(...items.map((i) => i.s)) - 30 : empty ? GHOST - 120 : 7.5 * 60;
   useLayoutEffect(() => {
     if (scroller.current) scroller.current.scrollTop = Math.max(0, first) * PX;
@@ -106,8 +106,8 @@ export default function Week({ contents, days, dur, empty = false }: { contents:
     d.setMinutes(it.s + mins);
     const at = fmt(d);
     const kind = it.kind;
-    if (kind === "pub") patchContent(it.cid, (c, data) => movePublish(c, at, data.profile.durations));
-    else patchContent(it.cid, (c) => ({ ...c, steps: { ...c.steps, [kind]: { ...c.steps[kind], at } } }));
+    if (kind === "pub") patchContent(it.cid, (c, data) => movePublish(c, at, data.profile.steps));
+    else patchContent(it.cid, (c) => ({ ...c, steps: { ...c.steps, [kind]: { ...stepIn(c, kind), at } } }));
   }
   // Flèches : haut et bas par quart d'heure, gauche et droite d'un jour (dans la période affichée).
   function key(e: React.KeyboardEvent, it: Item) {
@@ -164,7 +164,7 @@ export default function Week({ contents, days, dur, empty = false }: { contents:
                   type="button"
                   key={it.key}
                   data-k={it.key}
-                  className={`blk k-${it.kind}${it.done ? " done" : ""}${tight ? " tight" : ""}${moving ? " moving" : ""}`}
+                  className={`blk ${KINDS.includes(it.kind) ? `k-${it.kind}` : "k-step"}${it.done ? " done" : ""}${tight ? " tight" : ""}${moving ? " moving" : ""}`}
                   style={{
                     top: it.s * PX, height: h - 2, zIndex: moving ? 50 : 2 + z,
                     left: `calc(${(lane / n) * 100}% + 2px)`, width: `calc(${100 / n}% - 4px)`,
@@ -194,7 +194,10 @@ export default function Week({ contents, days, dur, empty = false }: { contents:
 const clamp = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
 const time = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 
-function build(contents: Content[], days: Date[], dur: Record<StepKey, number>): Item[] {
+// Les trois étapes de départ ont chacune leur teinte ; une étape ajoutée prend une teinte commune.
+const KINDS = ["ecriture", "tournage", "montage", "pub"];
+
+function build(contents: Content[], days: Date[], steps: StepDef[]): Item[] {
   const idx = new Map(days.map((d, i) => [dayKey(d), i]));
   const out: Item[] = [];
   const push = (c: Content, kind: Item["kind"], at: string | null, d: number, done: boolean, label: string) => {
@@ -204,7 +207,7 @@ function build(contents: Content[], days: Date[], dur: Record<StepKey, number>):
     out.push({ key: `${c.id}:${kind}`, cid: c.id, kind, day, s: minutesOfDay(parse(at)), dur: d, done, title: c.title, label });
   };
   for (const c of contents) {
-    STEPS.forEach(({ key, label }) => push(c, key, c.steps[key].at, dur[key], c.steps[key].done, label));
+    live(steps).forEach(({ key, label, minutes }) => push(c, key, stepIn(c, key).at, minutes, stepIn(c, key).done, label));
     push(c, "pub", c.publishAt, PUB, !!c.publishedAt, "Publication");
   }
   return out;

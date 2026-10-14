@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { isAuthRetryableFetchError } from "@supabase/supabase-js";
-import { FIELDS, SEP, STATUS, STEPS, STRUCTURES, movePublish, stamp, statusOf, uid } from "./rules";
+import { DEF_STEPS, FIELDS, SEP, STRUCTURES, movePublish, stamp, statusOf, statuses, uid, type StepDef } from "./rules";
 import { sb } from "../supabase";
 import { constance } from "./stats";
 import { gameOf, gesture, settle, today, type Event, type Game, type IgLink, type IgPost, type Lit } from "./jour";
@@ -13,9 +13,9 @@ import { gameOf, gesture, settle, today, type Event, type Game, type IgLink, typ
 // n'a pas bougé depuis la dernière lecture. Sinon on reprend la version de la base et on y repose
 // seulement ce qui a changé ici.
 
-export type StepKey = "ecriture" | "tournage" | "montage";
+export type StepKey = string; // une clé d'étape : « ecriture », « tournage », « montage » ou une étape ajoutée
 // Les règles (statuts, étapes à rebours) vivent dans rules.ts : le serveur s'en sert aussi (connecteur Claude).
-export { SEP, STEPS, STATUS, statusOf, withStatus, placeSteps, movePublish, stamp, structure, uid, type Status } from "./rules";
+export { SEP, STEPS, STATUS, DEF_STEPS, live, stepIn, statuses, statusOf, withStatus, placeSteps, movePublish, stamp, structure, uid, type Status, type StepDef } from "./rules";
 
 export type FieldType = "texte" | "long" | "choix" | "multi";
 export const FIELD_TYPES: { type: FieldType; label: string }[] = [
@@ -41,7 +41,7 @@ export type Content = {
   title: string;
   publishAt: string | null; // « 2026-09-29T19:00 », heure locale ; null = idée
   publishedAt: string | null; // posé quand la personne marque la vidéo publiée
-  steps: Record<StepKey, { at: string | null; done: boolean }>;
+  steps: Record<string, { at: string | null; done: boolean }>;
   values: Record<string, Value>;
   script?: { structureId: string | null; parts: Record<string, string> };
   createdAt: string;
@@ -49,7 +49,7 @@ export type Content = {
 };
 
 export type Profile = {
-  firstName: string; handle: string; email: string; rythme: number; durations: Record<StepKey, number>;
+  firstName: string; handle: string; email: string; rythme: number; steps: StepDef[];
   answers: Record<string, Value>; // réponses du premier passage (qualification)
   lockUntil: string | null; // rythme bloqué jusqu'à cette date (AAAA-MM-JJ), choisi par la personne
   avatar: string | null; // adresse publique de la photo de profil
@@ -82,7 +82,7 @@ const igOf = (r: Row | null | undefined): IgLink | null => (r ? {
 } : null);
 const profileOf = (r: Row): Profile => ({
   firstName: r.first_name as string, handle: r.handle as string, email: r.email as string, rythme: r.rythme as number,
-  durations: r.durations as Profile["durations"], answers: r.answers as Profile["answers"], lockUntil: r.rythme_locked_until as string | null,
+  steps: (r.steps as StepDef[] | null) ?? DEF_STEPS(r.durations as Record<string, number> | null), answers: r.answers as Profile["answers"], lockUntil: r.rythme_locked_until as string | null,
   avatar: (r.avatar_url as string | null) ?? null, createdAt: r.created_at as string,
 });
 
@@ -105,7 +105,7 @@ const known = (r: Row) => { const c = fromRow(r); base.set(c.id, { c, at: r.upda
 // Un contenu créé à l'instant et encore vierge n'est écrit nulle part : fermé tel quel, il disparaît.
 const fresh = new Set<string>();
 export const blank = (c: Content) =>
-  !c.title.trim() && !c.publishedAt && !STEPS.some((s) => c.steps[s.key].done)
+  !c.title.trim() && !c.publishedAt && !Object.values(c.steps).some((s) => s?.done)
   && !Object.values(c.values).some((v) => (Array.isArray(v) ? v.length : v))
   && !Object.values(c.script?.parts ?? {}).some((t) => t.trim());
 
@@ -497,7 +497,7 @@ export function setProfile(p: Partial<Profile>) {
   if (p.firstName !== undefined) cols.first_name = p.firstName;
   if (p.handle !== undefined) cols.handle = p.handle;
   if (p.rythme !== undefined) cols.rythme = p.rythme;
-  if (p.durations !== undefined) cols.durations = p.durations;
+  if (p.steps !== undefined) cols.steps = p.steps;
   if (p.answers !== undefined) cols.answers = p.answers;
   if (p.lockUntil !== undefined) cols.rythme_locked_until = p.lockUntil;
   if (p.avatar !== undefined) cols.avatar_url = p.avatar;
@@ -544,9 +544,10 @@ export function exportCsv() {
     const rest = Object.entries(parts).filter(([k, v]) => v.trim() && !st?.parts.some((p) => p.id === k)).map(([, v]) => v);
     return [...named, ...rest].join("\n");
   };
-  const head = ["Titre", "Statut", "Publication", "Publié le", ...STEPS.map((s) => s.label), ...d.fields.map((f) => f.label), "Script", "Créé le"];
-  const rows = d.contents.map((c) => [c.title, STATUS.find((s) => s.key === statusOf(c))?.label, at(c.publishAt), at(c.publishedAt),
-    ...STEPS.map((s) => at(c.steps[s.key].at)), ...d.fields.map((f) => val(c, f)), script(c), c.createdAt.slice(0, 10)]);
+  const steps = d.profile.steps, st = statuses(steps);
+  const head = ["Titre", "Statut", "Publication", "Publié le", ...steps.map((s) => s.label), ...d.fields.map((f) => f.label), "Script", "Créé le"];
+  const rows = d.contents.map((c) => [c.title, st.find((s) => s.key === statusOf(c, steps))?.label, at(c.publishAt), at(c.publishedAt),
+    ...steps.map((s) => at(c.steps[s.key]?.at)), ...d.fields.map((f) => val(c, f)), script(c), c.createdAt.slice(0, 10)]);
   const csv = "\uFEFF" + [head, ...rows].map((r) => r.map(cell).join(";")).join("\r\n");
   const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })), download: `semper-contenus-${new Date().toLocaleDateString("sv-SE")}.csv` });
   a.click();
@@ -571,9 +572,9 @@ export function createContent(publishAt: string | null = null): string {
   update((d) => {
     const c: Content = {
       id, title: "", publishAt: null, publishedAt: null, values: {}, createdAt: new Date().toISOString(),
-      steps: { ecriture: { at: null, done: false }, tournage: { at: null, done: false }, montage: { at: null, done: false } },
+      steps: Object.fromEntries(d.profile.steps.map((s) => [s.key, { at: null, done: false }])),
     };
-    return { ...d, contents: [...d.contents, publishAt ? movePublish(c, publishAt, d.profile.durations) : c] };
+    return { ...d, contents: [...d.contents, publishAt ? movePublish(c, publishAt, d.profile.steps) : c] };
   });
   push(id);
   return id;
@@ -677,9 +678,9 @@ export function addContent(c: Partial<Content> & { title: string }): string {
   update((d) => {
     const base: Content = {
       id, title: c.title, publishAt: null, publishedAt: null, values: c.values ?? {}, script: c.script, createdAt: new Date().toISOString(),
-      steps: { ecriture: { at: null, done: false }, tournage: { at: null, done: false }, montage: { at: null, done: false } },
+      steps: Object.fromEntries(d.profile.steps.map((s) => [s.key, { at: null, done: false }])),
     };
-    return { ...d, contents: [...d.contents, c.publishAt ? movePublish(base, c.publishAt, d.profile.durations) : base] };
+    return { ...d, contents: [...d.contents, c.publishAt ? movePublish(base, c.publishAt, d.profile.steps) : base] };
   });
   push(id);
   return id;

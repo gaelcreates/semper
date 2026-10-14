@@ -5,7 +5,7 @@ import DotIcon from "../../DotIcon";
 import { Stepper } from "../ui";
 import Rythme from "../Rythme";
 import { duration } from "../lib";
-import { FIELD_TYPES, STEPS, setFields, setProfile, setStructures, structure, uid, useData, type Content, type Field, type FieldType, type Structure } from "../store";
+import { FIELD_TYPES, setFields, setProfile, setStructures, structure, uid, useData, type Content, type Field, type FieldType, type StepDef, type Structure } from "../store";
 import { FIELD_TPLS, SCRIPT_TPLS, fieldAdded, fieldLabel, scriptAdded, type FieldTpl, type ScriptTpl } from "../templates";
 
 type Tab = "methode" | "scripts" | "templates";
@@ -57,15 +57,7 @@ export default function Organisation() {
             </section>
             <section className="box pf">
               <h2>Temps par étape</h2>
-              <ul className="org-rows">
-                {STEPS.map(({ key, label }) => (
-                  <li className="org-row" key={key}>
-                    <span>{label}</span>
-                    <Stepper label={label} value={p.durations[key]} min={5} max={480} step={5} format={duration}
-                      onChange={(n) => setProfile({ durations: { ...p.durations, [key]: n } })} />
-                  </li>
-                ))}
-              </ul>
+              <StepsEditor steps={p.steps} />
             </section>
           </div>
 
@@ -283,5 +275,48 @@ function Card({ name, meta, done, onAdd, wide = false, children }: { name: strin
       </header>
       {children}
     </article>
+  );
+}
+
+// Les étapes, dans l'ordre où elles se font avant la publication. Le nom se change sur place, le temps va de 0 à 8 h.
+// À 0 minute, l'étape reste dans la liste mais ne se pose plus au calendrier.
+function StepsEditor({ steps }: { steps: StepDef[] }) {
+  const [armed, setArmed] = useState<string | null>(null);
+  const set = (next: StepDef[]) => setProfile({ steps: next });
+  const patch = (k: string, x: Partial<StepDef>) => set(steps.map((s) => (s.key === k ? { ...s, ...x } : s)));
+  const move = (i: number, j: number) => { const n = [...steps]; [n[i], n[j]] = [n[j], n[i]]; set(n); };
+  return (
+    <>
+      <ul className="org-rows">
+        {steps.map((s, i) => (
+          <li className={`org-row step-row${s.minutes ? "" : " off"}`} key={s.key}>
+            <StepName value={s.label} onSave={(label) => patch(s.key, { label })} />
+            {!s.minutes && <small className="muted">Pas au calendrier</small>}
+            <Stepper label={s.label} value={s.minutes} min={0} max={480} step={5} format={(n) => (n ? duration(n) : "0 min")} onChange={(minutes) => patch(s.key, { minutes })} />
+            <span className="step-act">
+              <IconBtn icon="fleche" label={`Monter ${s.label}`} disabled={i === 0} onClick={() => move(i, i - 1)} />
+              <IconBtn icon="bas" label={`Descendre ${s.label}`} disabled={i === steps.length - 1} onClick={() => move(i, i + 1)} />
+              <IconBtn icon="croix" label={`Retirer ${s.label}`} disabled={steps.length <= 1} armed={armed === s.key ? "Retirer" : undefined}
+                onBlur={() => setArmed(null)} onClick={() => (armed === s.key ? (set(steps.filter((x) => x.key !== s.key)), setArmed(null)) : setArmed(s.key))} />
+            </span>
+          </li>
+        ))}
+      </ul>
+      {steps.length < 8 && (
+        <button type="button" className="link step-add" onClick={() => set([...steps, { key: `e-${uid().slice(0, 8)}`, label: "Nouvelle étape", minutes: 15 }])}>
+          <DotIcon name="plus" /> Ajouter une étape
+        </button>
+      )}
+    </>
+  );
+}
+
+function StepName({ value, onSave }: { value: string; onSave: (v: string) => void }) {
+  const [v, setV] = useState(value);
+  useEffect(() => setV(value), [value]);
+  return (
+    <input className="step-name" value={v} aria-label="Nom de l'étape" maxLength={40}
+      onChange={(e) => setV(e.target.value)} onBlur={() => { const t = v.trim(); if (t && t !== value) onSave(t); else setV(value); }}
+      onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }} />
   );
 }

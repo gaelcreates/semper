@@ -90,3 +90,8 @@ Publication automatique, connexion aux comptes Meta ou TikTok, date d'ouverture.
 - Page `/aujourdhui` (accueil après connexion), page `/idees` (Idees.tsx : une idée passe dans les 7 prochains jours en deux clics), jeux dans `Jeux.tsx`, preuve de publication dans `Preuve.tsx`, relier Instagram dans `IgCard.tsx` (Profil).
 - Vérification : code dans la bio, puis `igSyncUser` (instagram.ts) relie chaque vidéo à la publication Instagram du même jour (`contents.ig_post`). Seul le serveur écrit `ig_post` (déclencheur `keep_ig_post`) et `ig_links` (lecture seule côté personne). Instagram relié : seules les vidéos vérifiées comptent pour le rythme.
 - Il faut META_ACCESS_TOKEN pour lire Instagram ; sans lui, « La vérification n'est pas encore ouverte ».
+
+## Étapes personnalisables (14 oct 2026)
+- `profiles.steps` : liste [{ key, label, minutes }] dans l'ordre (1 à 8). Vide : les trois de départ (`DEF_STEPS`, durées lues dans `durations`). Réglée dans Organisation > Méthode (nom, temps de 0 à 8 h, ordre, ajout, retrait).
+- Une étape à 0 minute ne se pose pas au calendrier et ne compte pas pour le statut (`live()`). Statuts : Idée, une colonne par étape active (les trois de départ gardent « ecrire / tourner / monter »), Prêt, Publié (`statuses(steps)`).
+- Toujours passer `d.profile.steps` à `movePublish`, `statusOf`, `withStatus` ; lire une étape d'un contenu avec `stepIn(c, key)` (une étape ajoutée n'existe pas encore dans les anciens contenus).

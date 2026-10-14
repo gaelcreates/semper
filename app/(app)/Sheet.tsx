@@ -9,7 +9,7 @@ import ProofRow from "./Preuve";
 import { today } from "./jour";
 import { constance, titleOf } from "./stats";
 import {
-  SEP, STATUS, STEPS, announce, closeSheet, deleteContent, movePublish, openSheet, patchContent, statusOf, subKey, useData, withStatus,
+  SEP, announce, live, stepIn, statuses, closeSheet, deleteContent, movePublish, openSheet, patchContent, statusOf, subKey, useData, withStatus,
   type Content, type Field, type Structure, type Value,
 } from "./store";
 
@@ -19,7 +19,7 @@ import {
 export default function Sheet({ id }: { id: string }) {
   const d = useData()!;
   const c = d.contents.find((x) => x.id === id);
-  const dur = d.profile.durations;
+  const dur = d.profile.steps;
   const [full, setFull] = useState(() => { try { return localStorage.getItem("semper:full") === "1"; } catch { return false; } });
   // Le cadre se déforme d'un format à l'autre (View Transitions) ; sans cette API, le changement est direct.
   const toggleFull = () => {
@@ -57,14 +57,14 @@ export default function Sheet({ id }: { id: string }) {
 
   if (!c) return null;
   const set = (fn: (c: Content) => Content) => patchContent(id, fn);
-  const st = statusOf(c);
+  const st = statusOf(c, dur);
   const date = c.publishAt?.slice(0, 10) ?? "";
   const time = c.publishAt?.slice(11, 16) ?? "";
 
   // Marquer publié : si la semaine devient tenue, on l'annonce, et le nouveau titre s'il change.
   function publish() {
     if (c!.publishedAt) return set((c) => ({ ...c, publishedAt: null }));
-    const next = withStatus(c!, "publie");
+    const next = withStatus(c!, "publie", dur);
     const before = constance(d).streak;
     const after = constance({ ...d, contents: d.contents.map((x) => (x.id === id ? next : x)) }).streak;
     set(() => next);
@@ -78,7 +78,7 @@ export default function Sheet({ id }: { id: string }) {
     <div className="veil sheet-veil" onPointerDown={(e) => e.target === e.currentTarget && close()}>
       <aside className={`sheet${full ? " full" : ""}`} role="dialog" aria-modal="true" aria-label="Fiche de contenu" ref={box} tabIndex={-1}>
         <header className="sheet-head">
-          <span className={`chip st-${st}`}>{STATUS.find((s) => s.key === st)!.label}</span>
+          <span className={`chip st-${st}`}>{statuses(dur).find((s) => s.key === st)?.label}</span>
           <span className="sheet-tools">
             <button type="button" className="x grow" onClick={toggleFull} aria-label={full ? "Réduire" : "Plein écran"}><DotIcon name={full ? "reduire" : "agrandir"} /></button>
             <button type="button" className="x" onClick={close} aria-label="Fermer"><DotIcon name="croix" /></button>
@@ -109,16 +109,16 @@ export default function Sheet({ id }: { id: string }) {
         <section className="sheet-sec">
           <span className="lbl">Étapes</span>
           <ul className="steps-l">
-            {STEPS.map(({ key, label }) => {
-              const s = c.steps[key];
+            {live(dur).map(({ key, label, minutes }) => {
+              const s = stepIn(c, key);
               return (
                 <li key={key} className={s.done ? "done" : ""}>
-                  <button type="button" className="chk" aria-pressed={s.done} aria-label={`${label} ${key === "ecriture" ? "faite" : "fait"}`}
+                  <button type="button" className="chk" aria-pressed={s.done} aria-label={`${label} : faite`}
                     onClick={() => set((c) => ({ ...c, steps: { ...c.steps, [key]: { ...s, done: !s.done } } }))}>
                     {s.done && <DotIcon name="check" />}
                   </button>
                   <span className="st-name">{label}</span>
-                  <span className="st-dur disp">{duration(dur[key])}</span>
+                  <span className="st-dur disp">{duration(minutes)}</span>
                   <input type="datetime-local" step={900} value={s.at ?? ""} aria-label={`${label} : quand`}
                     onChange={(e) => set((c) => ({ ...c, steps: { ...c.steps, [key]: { ...s, at: e.target.value || null } } }))} />
                 </li>

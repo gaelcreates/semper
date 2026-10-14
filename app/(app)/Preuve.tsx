@@ -176,7 +176,7 @@ function Skip({ c, onClose }: { c: Content; onClose: () => void }) {
         <div className="pr-days">
           {days.map((x) => (
             <button type="button" key={dayKey(x)} onClick={() => {
-              patchContent(c.id, (y, dd) => ({ ...movePublish(y, `${dayKey(x)}T${time}`, dd.profile.durations), publishedAt: null }));
+              patchContent(c.id, (y, dd) => ({ ...movePublish(y, `${dayKey(x)}T${time}`, dd.profile.steps), publishedAt: null }));
               onClose();
               announce(`Replacée ${dayKey(x) === today() ? "aujourd'hui" : `le ${day(dayKey(x))}`}.`);
             }}><span>{DAYS[(x.getDay() + 6) % 7]}</span><b className="disp">{x.getDate()}</b></button>
