@@ -545,3 +545,36 @@ create table public.mcp_tokens (
 );
 alter table public.mcp_tokens enable row level security;
 revoke all on public.mcp_tokens from anon, authenticated;
+
+-- La lune et le jeu du jour (14 oct 2026) : l'état tient dans le profil (la personne le modifie elle-même, rien de certifié).
+alter table public.profiles add column engagement jsonb;
+alter table public.profiles add constraint profiles_engagement_size check (engagement is null or pg_column_size(engagement) < 65536);
+
+-- Vérification Instagram : la publication reliée à chaque vidéo. Seul le serveur l'écrit.
+alter table public.contents add column ig_post jsonb;
+create function public.keep_ig_post() returns trigger
+language plpgsql set search_path = ''
+as $$
+begin
+  if current_user in ('authenticated', 'anon') then
+    if tg_op = 'INSERT' then new.ig_post := null; else new.ig_post := old.ig_post; end if;
+  end if;
+  return new;
+end $$;
+revoke execute on function public.keep_ig_post() from public, anon, authenticated;
+create trigger keep_ig_post before insert or update on public.contents for each row execute function public.keep_ig_post();
+
+-- Le compte Instagram relié : pseudo, code à coller dans la bio, preuve, dernières publications relevées.
+-- Lecture seule pour la personne : seul le serveur écrit.
+create table public.ig_links (
+  user_id uuid primary key references auth.users on delete cascade,
+  handle text not null,
+  code text not null,
+  verified_at timestamptz,
+  synced_at timestamptz,
+  posts jsonb not null default '[]'
+);
+alter table public.ig_links enable row level security;
+create policy "instagram relié : le sien" on public.ig_links for select to authenticated using (user_id = (select auth.uid()));
+-- La personne écrit l'état de sa lune elle-même (comme ses réglages).
+grant update (engagement) on public.profiles to authenticated;

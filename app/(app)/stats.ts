@@ -1,16 +1,20 @@
 import type { Data } from "./store";
 import { addDays, dayKey, parse, startOfWeek } from "./lib";
+import { pubDay } from "./jour";
 
 // Constance : une semaine est tenue quand le nombre de vidéos publiées atteint le rythme visé.
-// La date qui compte est celle prévue au calendrier, sinon le jour où la vidéo a été marquée publiée.
+// Instagram relié : seules les publications vérifiées comptent, au jour où elles sont sorties.
+// Sans Instagram : la date prévue au calendrier, sinon le jour où la vidéo a été marquée publiée.
 export function constance(d: Data, today = new Date()) {
   const r = Math.max(1, d.profile.rythme);
   const byDay = new Map<string, number>();
   const byWeek = new Map<string, number>();
   let total = 0;
+  const verified = !!d.ig?.verified;
   for (const c of d.contents) {
-    if (!c.publishedAt) continue;
-    const at = parse(c.publishAt ?? c.publishedAt);
+    const k0 = pubDay(c, verified);
+    if (!k0) continue;
+    const at = parse(k0);
     total++;
     const k = dayKey(at), w = dayKey(startOfWeek(at));
     byDay.set(k, (byDay.get(k) ?? 0) + 1);
@@ -31,7 +35,9 @@ export function constance(d: Data, today = new Date()) {
     record = Math.max(record, run);
   }
 
-  const s = { byDay, total, rythme: r, thisWeek: count(cur), streak: streakWeeks.size, record, streakWeeks };
+  // Semaines tenues d'affilée jusqu'à une semaine donnée (lundi « AAAA-MM-JJ ») : c'est ce qui rapporte les jokers.
+  const streakTo = (w: string) => { let n = 0; for (let x = parse(w); held(x) && n < 520; x = addDays(x, -7)) n++; return n; };
+  const s = { byDay, byWeek, total, rythme: r, thisWeek: count(cur), streak: streakWeeks.size, record, streakWeeks, streakTo, verified };
   return { ...s, advice: advice(d, s.thisWeek, r, count, today) };
 }
 

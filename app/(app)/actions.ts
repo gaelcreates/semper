@@ -1,7 +1,9 @@
 "use server";
 
 import { admin, userFrom } from "../server";
-import { metaLink, snapshot } from "../instagram";
+import { igRead, igSyncUser, metaLink, snapshot } from "../instagram";
+import { cleanHandle } from "./lib";
+import type { IgPost } from "./jour";
 import { addToAudience, issueCode, moveInAudience, verifyCode } from "../(start)/codes";
 import { allow, ip } from "../limit";
 import { createHash, randomBytes } from "crypto";
@@ -104,5 +106,70 @@ export async function claudeRevoke(token: string): Promise<boolean> {
   const user = await userFrom(token);
   if (!user) return false;
   const { error } = await admin().from("mcp_tokens").delete().eq("user_id", user.id);
+  return !error;
+}
+
+// ---------- Instagram relié, pour vérifier les publications
+// 1. La personne donne son pseudo : un code lui est donné, à coller dans sa bio.
+// 2. Semper lit la bio : le code y est, le compte est à elle. Ses publications sont relevées et reliées au calendrier.
+// Personne ne peut relier une publication à la main dans la base : seul ce fichier écrit ig_links et ig_post.
+type Row = Record<string, unknown>;
+export type IgStep = { state: "ok" | "off" | "absent" | "nocode" | "later" | "error"; link?: Row | null; rows?: Row[] };
+
+export async function igStart(token: string, raw: string): Promise<Row | null> {
+  const user = await userFrom(token);
+  const handle = cleanHandle(raw).toLowerCase();
+  if (!user || !handle || !(await allow(`ig-start:${user.id}`, 10, 3600))) return null;
+  const code = `SMP-${String(randomBytes(2).readUInt16BE(0) % 9000 + 1000)}`;
+  const a = admin();
+  const { data } = await a.from("ig_links").upsert({ user_id: user.id, handle, code, verified_at: null, synced_at: null, posts: [] }).select("*").single();
+  await a.from("profiles").update({ handle }).eq("id", user.id);
+  return data;
+}
+
+export async function igCheck(token: string): Promise<IgStep> {
+  const user = await userFrom(token);
+  if (!user) return { state: "error" };
+  if (!(await allow(`ig-check:${user.id}`, 10, 3600))) return { state: "later" };
+  const a = admin();
+  const { data: l } = await a.from("ig_links").select("*").eq("user_id", user.id).maybeSingle();
+  if (!l) return { state: "error" };
+  const r = await igRead(l.handle);
+  if (r === "off") return { state: "off" };
+  if (!r) return { state: "absent" };
+  if (!r.bio.toUpperCase().includes(l.code)) return { state: "nocode" };
+  await a.from("ig_links").update({ verified_at: new Date().toISOString() }).eq("user_id", user.id);
+  return igSyncUser(user.id);
+}
+
+// Relevé à la demande (« Vérifier maintenant », ouverture de l'espace) : douze par heure au plus.
+export async function igSync(token: string): Promise<IgStep> {
+  const user = await userFrom(token);
+  if (!user) return { state: "error" };
+  if (!(await allow(`ig-sync:${user.id}`, 12, 3600))) return { state: "later" };
+  return igSyncUser(user.id);
+}
+
+// Relier une vidéo à une publication choisie par la personne, même si la date ne colle pas.
+export async function igLink(token: string, contentId: string, postId: string): Promise<Row | null> {
+  const user = await userFrom(token);
+  if (!user) return null;
+  const a = admin();
+  const { data: l } = await a.from("ig_links").select("verified_at, posts").eq("user_id", user.id).maybeSingle();
+  const post = (l?.posts as IgPost[] | undefined)?.find((p) => p.id === postId);
+  if (!l?.verified_at || !post) return null;
+  const { data: other } = await a.from("contents").select("id").eq("user_id", user.id).eq("ig_post->>id", postId).neq("id", contentId).limit(1);
+  if (other?.length) return null;
+  const { data: c } = await a.from("contents").select("published_at").eq("id", contentId).eq("user_id", user.id).maybeSingle();
+  if (!c) return null;
+  const { data } = await a.from("contents").update({ ig_post: post, published_at: c.published_at ?? post.at, updated_at: new Date().toISOString() })
+    .eq("id", contentId).eq("user_id", user.id).select("*").single();
+  return data;
+}
+
+export async function igForget(token: string): Promise<boolean> {
+  const user = await userFrom(token);
+  if (!user) return false;
+  const { error } = await admin().from("ig_links").delete().eq("user_id", user.id);
   return !error;
 }

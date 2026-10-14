@@ -5,6 +5,8 @@ import { flushSync } from "react-dom";
 import Link from "next/link";
 import DotIcon from "../DotIcon";
 import { duration } from "./lib";
+import ProofRow from "./Preuve";
+import { today } from "./jour";
 import { constance, titleOf } from "./stats";
 import {
   SEP, STATUS, STEPS, announce, closeSheet, deleteContent, movePublish, openSheet, patchContent, statusOf, subKey, useData, withStatus,
@@ -96,9 +98,12 @@ export default function Sheet({ id }: { id: string }) {
             <input type="time" step={900} value={time} disabled={!date} aria-label="Heure"
               onChange={(e) => e.target.value && set((c) => movePublish(c, `${date}T${e.target.value}`, dur))} />
           </div>
-          <button type="button" className={`pub-btn${c.publishedAt ? " on" : ""}`} onClick={publish}>
-            {c.publishedAt ? <><DotIcon name="check" /> Publié</> : "Marquer publié"}
-          </button>
+          {/* Instagram relié : la preuve remplace le bouton, la vidéo se vérifie au lieu de se déclarer. */}
+          {d.ig?.verified && c.publishAt && c.publishAt.slice(0, 10) <= today() ? <ProofRow c={c} compact /> : !d.ig?.verified && (
+            <button type="button" className={`pub-btn${c.publishedAt ? " on" : ""}`} onClick={publish}>
+              {c.publishedAt ? <><DotIcon name="check" /> Publié</> : "Marquer publié"}
+            </button>
+          )}
         </section>
 
         <section className="sheet-sec">

@@ -1,3 +1,4 @@
+import { gameOf } from "../../(app)/jour";
 import { randomUUID } from "crypto";
 import { admin } from "../../server";
 import { addDays, dayKey, parse, startOfWeek } from "../../(app)/lib";
@@ -24,9 +25,10 @@ function now() {
 
 async function load({ uid }: Ctx): Promise<Data> {
   const a = admin();
-  const [{ data: p, error: e1 }, { data: rows, error: e2 }] = await Promise.all([
-    a.from("profiles").select("first_name, rythme, rythme_locked_until, durations, fields, structures, created_at").eq("id", uid).single(),
+  const [{ data: p, error: e1 }, { data: rows, error: e2 }, { data: ig }] = await Promise.all([
+    a.from("profiles").select("first_name, rythme, rythme_locked_until, durations, fields, structures, created_at, engagement").eq("id", uid).single(),
     a.from("contents").select("*").eq("user_id", uid),
+    a.from("ig_links").select("handle, code, verified_at, synced_at").eq("user_id", uid).maybeSingle(),
   ]);
   if (e1 || e2 || !p) throw new Error("lecture");
   // Compte jamais ouvert dans l'espace : la fiche de départ, écrite comme le fait l'espace à la première visite.
@@ -36,12 +38,14 @@ async function load({ uid }: Ctx): Promise<Data> {
   }
   const contents: Content[] = (rows ?? []).map((r) => ({
     id: r.id, title: r.title, publishAt: r.publish_at, publishedAt: r.published_at, steps: r.steps,
-    values: r.field_values ?? {}, script: r.script ?? undefined, createdAt: r.created_at,
+    values: r.field_values ?? {}, script: r.script ?? undefined, createdAt: r.created_at, igPost: r.ig_post ?? null,
   }));
   return {
     v: 1,
     profile: { firstName: p.first_name, rythme: p.rythme, lockUntil: p.rythme_locked_until, durations: p.durations, createdAt: p.created_at } as Data["profile"],
     fields: (p.fields as Field[] | null) ?? [], structures: (p.structures as Structure[] | null) ?? [], contents,
+    game: gameOf(p.engagement),
+    ig: ig ? { handle: ig.handle, code: ig.code, verified: !!ig.verified_at, syncedAt: ig.synced_at, posts: [] } : null,
   };
 }
 

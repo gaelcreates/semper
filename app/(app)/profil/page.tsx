@@ -6,6 +6,7 @@ import Install from "../Install";
 import InstagramStats from "../InstagramStats";
 import Avatar from "../Avatar";
 import Claude from "../Claude";
+import IgCard, { JeuPrefs } from "../IgCard";
 import { cleanHandle } from "../lib";
 import { exportCsv, forget, setAvatar, setEmail, setProfile, signOut, useData } from "../store";
 import { confirmEmail, deleteAccount, requestEmail, type EmailStep } from "../actions";
@@ -41,6 +42,10 @@ export default function Profil() {
           <Email current={p.email} />
         </div>
       </section>
+
+      <IgCard />
+
+      <JeuPrefs />
 
       <Claude />
 

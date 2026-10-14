@@ -4,6 +4,8 @@ import { useSyncExternalStore } from "react";
 import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { FIELDS, SEP, STATUS, STEPS, STRUCTURES, movePublish, stamp, statusOf, uid } from "./rules";
 import { sb } from "../supabase";
+import { constance } from "./stats";
+import { gameOf, gesture, settle, today, type Event, type Game, type IgLink, type IgPost, type Lit, type SkillKey } from "./jour";
 
 // Les données de l'espace, chargées depuis Supabase à la connexion et gardées en mémoire.
 // L'interface lit et modifie la copie en mémoire ; chaque action l'écrit aussi dans Supabase.
@@ -43,6 +45,7 @@ export type Content = {
   values: Record<string, Value>;
   script?: { structureId: string | null; parts: Record<string, string> };
   createdAt: string;
+  igPost?: IgPost | null; // la publication Instagram reliée, posée par le serveur seulement
 };
 
 export type Profile = {
@@ -53,7 +56,7 @@ export type Profile = {
   createdAt: string;
 };
 
-export type Data = { v: 1; profile: Profile; fields: Field[]; structures: Structure[]; contents: Content[] };
+export type Data = { v: 1; profile: Profile; fields: Field[]; structures: Structure[]; contents: Content[]; game: Game; ig: IgLink | null };
 
 
 
@@ -72,8 +75,11 @@ export function useData(): Data | null {
 const fromRow = (r: Row): Content => ({
   id: r.id as string, title: r.title as string, publishAt: r.publish_at as string | null, publishedAt: r.published_at as string | null,
   steps: r.steps as Content["steps"], values: (r.field_values ?? {}) as Content["values"], script: (r.script ?? undefined) as Content["script"],
-  createdAt: r.created_at as string,
+  createdAt: r.created_at as string, igPost: (r.ig_post ?? null) as IgPost | null,
 });
+const igOf = (r: Row | null | undefined): IgLink | null => (r ? {
+  handle: r.handle as string, code: r.code as string, verified: !!r.verified_at, syncedAt: (r.synced_at as string | null) ?? null, posts: (r.posts ?? []) as IgPost[],
+} : null);
 const profileOf = (r: Row): Profile => ({
   firstName: r.first_name as string, handle: r.handle as string, email: r.email as string, rythme: r.rythme as number,
   durations: r.durations as Profile["durations"], answers: r.answers as Profile["answers"], lockUntil: r.rythme_locked_until as string | null,
@@ -127,9 +133,10 @@ async function first(): Promise<Load> {
   token = session.access_token;
   exp = session.expires_at ?? 0;
   watch();
-  const [p, c] = await Promise.all([
+  const [p, c, ig] = await Promise.all([
     s.from("profiles").select("*").eq("id", me).single(),
     s.from("contents").select("*").eq("user_id", me),
+    s.from("ig_links").select("*").eq("user_id", me).maybeSingle(),
   ]);
   if (!p.data || !c.data) {
     const st = [p.status, c.status];
@@ -149,9 +156,12 @@ async function first(): Promise<Load> {
     fields: r.fields ?? FIELDS(),
     structures: r.structures ?? STRUCTURES(),
     contents: c.data.map(known),
+    game: gameOf(r.engagement),
+    ig: igOf(ig.data),
   };
   loadedAt = Date.now();
   unstash(c.data);
+  if (!needsSync()) tick(); // sinon la coque relève Instagram d'abord, puis clôt les jours
   emit();
   save(s.from("profiles").update({ seen_at: new Date().toISOString(), fields: data.fields, structures: data.structures }).eq("id", me));
   seen();
@@ -176,9 +186,10 @@ async function refresh() {
   const n = wrote;
   try {
     const s = sb();
-    const [p, c] = await Promise.all([
+    const [p, c, ig] = await Promise.all([
       s.from("profiles").select("*").eq("id", me).single(),
       s.from("contents").select("*").eq("user_id", me),
+      s.from("ig_links").select("*").eq("user_id", me).maybeSingle(),
     ]);
     if (!p.data || !c.data || !data || wrote !== n) return;
     loadedAt = Date.now();
@@ -195,8 +206,9 @@ async function refresh() {
     const still = !Object.keys(profileCols).length && !profileBusy;
     const r = p.data;
     data = still
-      ? { ...data, contents: out, profile: { ...profileOf(r), email: r.email ?? data.profile.email }, fields: r.fields ?? data.fields, structures: r.structures ?? data.structures }
-      : { ...data, contents: out };
+      ? { ...data, contents: out, profile: { ...profileOf(r), email: r.email ?? data.profile.email }, fields: r.fields ?? data.fields, structures: r.structures ?? data.structures, game: r.engagement ? gameOf(r.engagement) : data.game, ig: igOf(ig.data) }
+      : { ...data, contents: out, ig: igOf(ig.data) };
+    tick();
     emit();
     seen();
   } finally {
@@ -605,6 +617,72 @@ export function deleteContent(id: string, quiet = false) {
       announce(null);
     },
   });
+}
+
+// ---------- la lune
+// Instagram relié et pas relevé depuis 30 minutes : un relevé passe avant de clore les jours écoulés.
+export const needsSync = () => !!data?.ig?.verified && (!data.ig.syncedAt || Date.now() - Date.parse(data.ig.syncedAt) > 30 * 60000);
+// Un nouveau jour (au chargement, au retour sur l'onglet) : les jours écoulés sont clos l'un après l'autre.
+// Ce qui s'est passé pendant l'absence est dit une fois.
+const SAID: Partial<Record<Event, string>> = {
+  joker: "Un joker a protégé ta lune.",
+  broken: "Ta lune s'est fissurée. Trois jeux aujourd'hui la réparent.",
+  out: "Ta lune s'est éteinte. Un jeu la rallume.",
+  restart: "Pas réparée à temps : ta lune repart à 1.",
+  "joker+": "Deux semaines tenues : un joker de plus.",
+};
+export function tick() {
+  if (!data) return;
+  const d = data;
+  const posted = new Set(d.contents.map((c) => c.igPost?.at.slice(0, 10)).filter(Boolean) as string[]);
+  const { g, events } = settle(d.game, today(), posted, constance(d).streakTo);
+  if (g === d.game) return;
+  data = { ...d, game: g };
+  pushProfile({ engagement: g });
+  const last = [...events].reverse().find((e) => SAID[e]);
+  if (last && !demo) setTimeout(() => announce(SAID[last]!), 600);
+}
+export function setGame(fn: (g: Game) => Game) {
+  update((d) => ({ ...d, game: fn(d.game) }));
+  if (data) pushProfile({ engagement: data.game });
+}
+// Un jeu terminé (ou une publication vérifiée aujourd'hui) : renvoie ce qui arrive à la lune.
+export function play(id: string, skill?: SkillKey, pts = 0): Lit {
+  tick();
+  if (!data) return null;
+  const { g, event } = gesture(data.game, id, skill, pts);
+  if (g === data.game) return null;
+  update((d) => ({ ...d, game: g }));
+  pushProfile({ engagement: g });
+  return event;
+}
+
+// Ce que le serveur a écrit (publication reliée) : la copie en mémoire suit, sans réécrire la base.
+export function applyRows(rows: Row[]) {
+  if (!rows.length) return;
+  update((d) => {
+    const next = rows.map(known);
+    return { ...d, contents: [...d.contents.filter((c) => !next.some((x) => x.id === c.id)), ...next] };
+  });
+  wrote++;
+  const day = today();
+  if (rows.some((r) => (r.ig_post as IgPost | null)?.at?.slice(0, 10) === day)) play("publication");
+}
+export function setIg(row: Row | null) {
+  update((d) => ({ ...d, ig: igOf(row) }));
+}
+// Un contenu complet d'un coup (idée ou vidéo écrite par un jeu).
+export function addContent(c: Partial<Content> & { title: string }): string {
+  const id = uid();
+  update((d) => {
+    const base: Content = {
+      id, title: c.title, publishAt: null, publishedAt: null, values: c.values ?? {}, script: c.script, createdAt: new Date().toISOString(),
+      steps: { ecriture: { at: null, done: false }, tournage: { at: null, done: false }, montage: { at: null, done: false } },
+    };
+    return { ...d, contents: [...d.contents, c.publishAt ? movePublish(base, c.publishAt, d.profile.durations) : base] };
+  });
+  push(id);
+  return id;
 }
 
 // ---------- état d'interface : la fiche ouverte

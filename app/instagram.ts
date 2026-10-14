@@ -1,4 +1,5 @@
 import { admin } from "./server";
+import type { IgPost } from "./(app)/jour";
 
 // Relevé Instagram par l'API officielle de Meta (Business Discovery), interrogée avec le compte pro de Gael.
 // Marche pour les comptes pro et créateur ; un compte perso ne renvoie rien.
@@ -70,4 +71,47 @@ export async function snapshot(handle: string) {
   const day = new Date().toISOString().slice(0, 10);
   await admin().from("ig_snapshots").upsert({ handle: handle.toLowerCase(), day, ...s });
   return { followers: s.followers };
+}
+
+// ---------- vérification des publications
+// L'heure d'une publication, en heure de Suisse (comme le calendrier) : « AAAA-MM-JJTHH:MM ».
+const ZURICH = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+export const local = (t: string | Date) => ZURICH.format(typeof t === "string" ? new Date(t.replace(/\+0000$/, "Z")) : t).replace(" ", "T");
+
+// La bio et les dernières publications d'un compte. « off » : Semper n'est pas relié à Meta. null : compte introuvable ou perso.
+export async function igRead(handle: string): Promise<{ bio: string; posts: IgPost[] } | null | "off"> {
+  if (!(await metaLink())) return "off";
+  const s = await fetchIg(handle);
+  if (!s) return null;
+  return {
+    bio: s.profile.bio,
+    posts: s.posts.map((p) => ({ id: p.link, at: local(p.t), link: p.link, img: p.img, cap: (p.caption.split("\n")[0] || "Publication").slice(0, 90) })),
+  };
+}
+
+// Relevé d'un compte relié : on garde ses 60 dernières publications, puis chaque vidéo du calendrier passée ou du jour
+// est reliée à la publication sortie le même jour. Une publication ne sert qu'une fois. Renvoie les contenus modifiés.
+export async function igSyncUser(userId: string) {
+  const a = admin();
+  const { data: l } = await a.from("ig_links").select("*").eq("user_id", userId).maybeSingle();
+  if (!l?.verified_at) return { state: "off" as const, link: l, rows: [] };
+  const r = await igRead(l.handle);
+  if (r === "off" || !r) return { state: r === "off" ? ("off" as const) : ("absent" as const), link: l, rows: [] };
+  const seen = new Map<string, IgPost>([...(l.posts as IgPost[]), ...r.posts].map((p) => [p.id, p]));
+  const posts = [...seen.values()].sort((x, y) => y.at.localeCompare(x.at)).slice(0, 60);
+  const now = new Date().toISOString();
+  const { data: link } = await a.from("ig_links").update({ posts, synced_at: now }).eq("user_id", userId).select("*").single();
+  const day = local(new Date()).slice(0, 10);
+  const { data: cs } = await a.from("contents").select("id, publish_at, published_at, ig_post").eq("user_id", userId)
+    .not("publish_at", "is", null).lte("publish_at", `${day}T23:59`);
+  const taken = new Set((cs ?? []).map((c) => (c.ig_post as IgPost | null)?.id).filter(Boolean));
+  const rows: Record<string, unknown>[] = [];
+  for (const c of (cs ?? []).filter((x) => !x.ig_post).sort((x, y) => x.publish_at.localeCompare(y.publish_at))) {
+    const p = posts.find((x) => x.at.slice(0, 10) === c.publish_at.slice(0, 10) && !taken.has(x.id));
+    if (!p) continue;
+    taken.add(p.id);
+    const { data: row } = await a.from("contents").update({ ig_post: p, published_at: c.published_at ?? p.at, updated_at: now }).eq("id", c.id).select("*").single();
+    if (row) rows.push(row);
+  }
+  return { state: "ok" as const, link, rows };
 }

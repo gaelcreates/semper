@@ -1,5 +1,6 @@
 import { addDays, fmt, startOfWeek } from "./lib";
 import type { Content, Data, StepKey } from "./store";
+import { newGame } from "./jour";
 
 // L'espace de démonstration, montré dans la vitrine (iframe nommée « semper-demo ») : le vrai Semper, avec
 // une créatrice fictive. Tout est calé sur la semaine en cours, pour que l'aperçu ne vieillisse jamais.
@@ -61,5 +62,12 @@ export function demoData(now = new Date()): Data {
     }],
     structures: [{ id: "demo-simple", name: "Simple", parts: PARTS }],
     contents: [...week, ...history],
+    // Une lune de 9 jours, déjà allumée aujourd'hui par le jeu du jour.
+    game: {
+      ...newGame(fmt(now).slice(0, 10)), moon: 9, best: 21, jokers: 2, done: ["hook"], onboarded: true,
+      skills: { idees: 240, accroche: 310, structure: 180, constance: 420 },
+      hist: Object.fromEntries(Array.from({ length: 30 }, (_, i) => [fmt(addDays(now, -1 - i)).slice(0, 10), i === 9 ? "joker" : "on"])),
+    },
+    ig: null,
   };
 }

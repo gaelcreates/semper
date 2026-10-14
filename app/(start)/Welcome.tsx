@@ -46,7 +46,7 @@ export default function Welcome() {
 
   // Déjà connecté : pas besoin de s'inscrire, on entre directement.
   useEffect(() => {
-    if (sbReady()) sb().auth.getSession().then(({ data }) => { if (data.session) location.replace("/calendrier"); });
+    if (sbReady()) sb().auth.getSession().then(({ data }) => { if (data.session) location.replace("/aujourdhui"); });
   }, []);
 
   const ok =
@@ -98,7 +98,7 @@ export default function Welcome() {
 
       {sent ? (
         <Code email={email} resend={() => request()} onBack={() => { setSent(false); setStep(0); setRedo(true); }}
-          onDone={async (t) => { await refreshInstagram(t).catch(() => {}); location.replace("/calendrier"); }} />
+          onDone={async (t) => { await refreshInstagram(t).catch(() => {}); location.replace("/aujourdhui"); }} />
       ) : (
       <form className="onb-q" key={q.key} onSubmit={(e) => { e.preventDefault(); if (ok) next(); else if (why) setErr(why); }}>
         <span className="lbl disp">{String(step + 1).padStart(2, "0")}</span>

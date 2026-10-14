@@ -1,12 +1,13 @@
 import { timingSafeEqual } from "crypto";
 import { admin } from "../../server";
-import { snapshot } from "../../instagram";
+import { igSyncUser, snapshot } from "../../instagram";
 import { addToAudience } from "../../(start)/codes";
 
 // Le passage quotidien, lancé par le cron de Vercel (vercel.json) avec CRON_SECRET :
 // 1. filet de sécurité Resend : les comptes des 3 derniers jours sont (re)mis dans l'audience, au cas où l'ajout
 //    de l'inscription aurait échoué (Resend ne crée pas de doublon) ;
-// 2. relevé Instagram de tous les comptes.
+// 2. relevé Instagram de tous les comptes ;
+// 3. comptes reliés : leurs publications sont relevées et reliées au calendrier (vérification).
 // Le secret se compare en temps constant : la durée de la réponse ne dit rien de sa valeur.
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -19,5 +20,8 @@ export async function GET(req: Request) {
   const handles = [...new Set((data ?? []).map((p) => p.handle.toLowerCase()))];
   let ok = 0;
   for (const h of handles) if (await snapshot(h)) ok++;
-  return Response.json({ resend: recent?.length ?? 0, comptes: handles.length, releves: ok });
+  const { data: links } = await admin().from("ig_links").select("user_id").not("verified_at", "is", null);
+  let relies = 0;
+  for (const l of links ?? []) relies += (await igSyncUser(l.user_id)).rows.length;
+  return Response.json({ resend: recent?.length ?? 0, comptes: handles.length, releves: ok, verifies: links?.length ?? 0, relies });
 }

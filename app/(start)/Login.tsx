@@ -19,7 +19,7 @@ export default function Login() {
 
   // Déjà connecté : pas besoin d'un nouveau code, on entre directement.
   useEffect(() => {
-    if (sbReady()) sb().auth.getSession().then(({ data }) => { if (data.session) location.replace("/calendrier"); });
+    if (sbReady()) sb().auth.getSession().then(({ data }) => { if (data.session) location.replace("/aujourdhui"); });
   }, []);
 
   const request = async () => { const r = await sendCode(m); return r.ok ? "" : sendError(r.code); };
@@ -39,7 +39,7 @@ export default function Login() {
     <div className="onb">
       <header className="onb-top"><Link href="/" aria-label="Semper, accueil"><Logo /></Link></header>
       {sent ? (
-        <Code email={m} resend={request} onBack={() => setSent(false)} onDone={() => location.replace("/calendrier")} />
+        <Code email={m} resend={request} onBack={() => setSent(false)} onDone={() => location.replace("/aujourdhui")} />
       ) : (
         <form className="onb-q" onSubmit={submit} noValidate>
           <span className="lbl">Connexion</span>

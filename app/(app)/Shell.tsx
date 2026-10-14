@@ -8,15 +8,18 @@ import DotIcon from "../DotIcon";
 import ThemeToggle from "../ThemeToggle";
 import Sheet from "./Sheet";
 import Moon from "./Moon";
+import Lune from "./Lune";
+import { moonDays, moonState, phaseName, toFix } from "./jour";
+import { igSync } from "./actions";
 import Orbit from "../Orbit";
 import Install from "./Install";
-import { constance, titleOf } from "./stats";
 import Avatar from "./Avatar";
-import { announce, createContent, load, loadDemo, openSheet, openedSheet, useData, useNote, useOpen } from "./store";
+import { announce, applyRows, createContent, load, loadDemo, needsSync, openSheet, openedSheet, setIg, tick, useData, useNote, useOpen } from "./store";
 import { DEMO_FRAME, demoData } from "./demo";
 import { sb } from "../supabase";
 
 const nav = [
+  { href: "/aujourdhui", label: "Aujourd'hui", icon: "jour" },
   { href: "/calendrier", label: "Calendrier", icon: "cal" },
   { href: "/constance", label: "Constance", icon: "lune" },
   { href: "/organisation", label: "Organisation", icon: "orga" },
@@ -42,7 +45,19 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [demo] = useState(() => typeof window !== "undefined" && window.name === DEMO_FRAME);
   const start = () => {
     if (demo) return loadDemo(demoData());
-    load().then((r) => (r === "none" ? router.replace("/connexion") : setFail(r === "ok" ? null : r)));
+    load().then(async (r) => {
+      if (r === "none") return router.replace("/connexion");
+      setFail(r === "ok" ? null : r);
+      // Instagram relié et pas relevé depuis un moment : on relève avant de clore les jours écoulés,
+      // pour qu'une publication d'hier compte bien pour hier.
+      if (r === "ok" && needsSync()) {
+        const t = (await sb().auth.getSession()).data.session?.access_token ?? "";
+        const res = await Promise.race([igSync(t).catch(() => null), new Promise<null>((ok) => setTimeout(() => ok(null), 8000))]);
+        if (res?.link) setIg(res.link);
+        if (res?.rows?.length) applyRows(res.rows);
+        tick();
+      }
+    });
   };
   useEffect(() => { start(); }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
   const ready = !!d;
@@ -69,17 +84,21 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", key);
   }, []);
 
-  const streak = d ? constance(d).streak : 0;
-  const title = titleOf(streak).title;
+  const g = d?.game;
+  // Les vidéos qui attendent une réponse (publication pas trouvée) : une pastille sur Aujourd'hui.
+  const fix = d ? toFix(d.contents, d.ig).length : 0;
+  const count = (href: string) => (href === "/aujourdhui" && fix > 0 ? <b className="ws-cnt disp">{fix}</b> : null);
+  const days = g ? moonDays(g) : 0;
+  const title = g ? (g.broken ? "Fissurée" : phaseName(g.moon)) : "";
 
   return (
     <div className="ws">
       <aside className="ws-side">
-        <Link href="/calendrier" className="brand" aria-label="Semper"><Logo /></Link>
+        <Link href="/aujourdhui" className="brand" aria-label="Semper"><Logo /></Link>
         <button type="button" className="btn ws-new" onClick={newContent}><DotIcon name="ajout" /> Nouveau contenu</button>
         <nav className="ws-nav">
           {links.map((n) => (
-            <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "on" : ""}><DotIcon name={n.icon} />{n.label}</Link>
+            <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "on" : ""}><DotIcon name={n.icon} />{n.label}{count(n.href)}</Link>
           ))}
         </nav>
         <Install />
@@ -90,18 +109,18 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </Link>
         )}
         <div className="ws-foot">
-          <Link href="/constance" className="ws-streak" aria-label={`${title}, ${streak} semaines tenues`}>
-            <Moon streak={streak} n={11} />
-            <span><b>{title}</b><span className="lbl">{streak} sem.</span></span>
+          <Link href="/aujourdhui" className="ws-streak" aria-label={`${title}, ${days} jours d'affilée`}>
+            {g && <Lune n={days} state={moonState(g)} />}
+            <span><b>{title}</b><span className="lbl">{days} j.</span></span>
           </Link>
           <ThemeToggle />
         </div>
       </aside>
 
       <header className="ws-top">
-        <Link href="/calendrier" className="brand" aria-label="Semper"><Logo /></Link>
+        <Link href="/aujourdhui" className="brand" aria-label="Semper"><Logo /></Link>
         <span className="ws-top-r">
-          <Link href="/constance" className="ws-top-moon" aria-label={`${title}, ${streak} semaines tenues`}><Moon streak={streak} n={9} /></Link>
+          <Link href="/aujourdhui" className="ws-top-moon" aria-label={`${title}, ${days} jours d'affilée`}>{g && <Lune n={days} state={moonState(g)} />}</Link>
           <ThemeToggle />
           {d && <Link href="/profil" aria-label="Profil"><Avatar size={40} /></Link>}
         </span>
@@ -114,7 +133,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       </main>
 
       <nav className="ws-tabs">
-        {links.map((n) => <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "on" : ""}><DotIcon name={n.icon} /><span>{n.label}</span></Link>)}
+        {links.map((n) => <Link key={n.href} href={n.href} className={path.startsWith(n.href) ? "on" : ""}><DotIcon name={n.icon} /><span>{n.label}</span>{count(n.href)}</Link>)}
       </nav>
       <button type="button" className="ws-fab" onClick={newContent} aria-label="Nouveau contenu"><DotIcon name="ajout" /></button>
       <Note />
