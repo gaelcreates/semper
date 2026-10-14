@@ -21,6 +21,7 @@ import { sb } from "../supabase";
 const nav = [
   { href: "/aujourdhui", label: "Aujourd'hui", icon: "jour" },
   { href: "/calendrier", label: "Calendrier", icon: "cal" },
+  { href: "/idees", label: "Idées", icon: "idees" },
   { href: "/constance", label: "Constance", icon: "lune" },
   { href: "/organisation", label: "Organisation", icon: "orga" },
   { href: "/profil", label: "Profil", icon: "profil" },

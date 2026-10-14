@@ -7,7 +7,7 @@ import type { Content } from "./store";
 // comptent les jours d'affilée. Un jour sans rien : un joker la protège, sinon elle se fissure. Trois jeux le
 // lendemain la réparent ; passé ce jour, elle s'éteint. Les jokers se gagnent en tenant son rythme de publication.
 
-export type SkillKey = "idees" | "accroche" | "structure" | "constance";
+export type Focus = "idees" | "accroche" | "structure";
 export type Hist = "on" | "joker" | "miss";
 export type Game = {
   day: string;                    // dernier jour réglé (AAAA-MM-JJ), heure locale
@@ -18,9 +18,8 @@ export type Game = {
   broken: { prev: number } | null; // fissurée : à réparer aujourd'hui
   hist: Record<string, Hist>;     // les 120 derniers jours
   planned: string[];              // jours de vacances couverts d'avance par un joker
-  skills: Record<SkillKey, number>;
   mode: "semper" | "choix";       // le jeu du jour : imposé, ou trois propositions
-  focus: SkillKey[];              // ce que la personne veut travailler
+  focus: Focus[];              // ce que la personne veut travailler
   onboarded: boolean;
 };
 
@@ -33,11 +32,14 @@ const nextDay = (k: string) => dayKey(addDays(parse(k), 1));
 export function newGame(day = today()): Game {
   return {
     day, done: [], moon: 0, best: 0, jokers: 0, broken: null, hist: {}, planned: [],
-    skills: { idees: 0, accroche: 0, structure: 0, constance: 0 }, mode: "semper", focus: ["accroche", "idees"], onboarded: false,
+    mode: "semper", focus: ["accroche", "idees"], onboarded: false,
   };
 }
 // Un état lu en base peut venir d'une version plus ancienne : on complète ce qui manque.
-export const gameOf = (raw: unknown, day = today()): Game => ({ ...newGame(day), ...(raw && typeof raw === "object" ? (raw as Partial<Game>) : {}) });
+export function gameOf(raw: unknown, day = today()): Game {
+  const { skills: _, ...g } = (raw && typeof raw === "object" ? raw : {}) as Partial<Game> & { skills?: unknown }; // les compétences ont été retirées
+  return { ...newGame(day), ...g };
+}
 
 export const lit = (g: Game) => g.done.length > 0 && !g.broken;
 export type MoonState = "lit" | "wait" | "broken" | "off";
@@ -95,11 +97,9 @@ export function settle(g0: Game, day: string, posted: Set<string>, streakTo: (we
 
 // Un geste du jour. Le premier allume la lune ; une lune fissurée se répare au troisième.
 export type Lit = "lit" | "repaired" | null;
-export function gesture(g0: Game, id: string, skill?: SkillKey, pts = 0): { g: Game; event: Lit } {
+export function gesture(g0: Game, id: string): { g: Game; event: Lit } {
   if (id === "publication" && g0.done.includes(id)) return { g: g0, event: null };
-  const g: Game = { ...g0, done: [...g0.done, id], skills: { ...g0.skills } };
-  if (skill) g.skills[skill] = (g.skills[skill] ?? 0) + pts;
-  g.skills.constance = (g.skills.constance ?? 0) + (g0.done.length ? 0 : 10);
+  const g: Game = { ...g0, done: [...g0.done, id] };
   let event: Lit = null;
   if (g.broken && g.done.length >= REPAIR) { g.moon = g.broken.prev + 1; g.broken = null; event = "repaired"; }
   else if (!g.broken && !g0.done.length) { g.moon++; event = "lit"; }
@@ -107,35 +107,30 @@ export function gesture(g0: Game, id: string, skill?: SkillKey, pts = 0): { g: G
   return { g, event };
 }
 
-export const levelOf = (n: number) => (n < 100 ? "Débutant" : n < 300 ? "En progrès" : n < 600 ? "Solide" : "Expert");
-
 // ---------- les jeux
 // « cree » fait avancer un contenu (idée, hook, script), « entraine » apprend un geste du métier.
 export type GameId = "hook" | "coupe" | "duel" | "tirage" | "question" | "recyclage" | "tri" | "script" | "objectif";
-export type GameInfo = { id: GameId; badge: string; name: string; desc: string; time: string; kind: "cree" | "entraine"; skill: SkillKey };
+export type GameInfo = { id: GameId; badge: string; name: string; desc: string; time: string; kind: "cree" | "entraine"; focus: Focus };
 export const GAMES: GameInfo[] = [
-  { id: "hook", badge: "30", name: "Hook en 30 secondes", desc: "Un sujet tiré au sort, 30 secondes pour la première phrase.", time: "1 min", kind: "cree", skill: "accroche" },
-  { id: "coupe", badge: "✂", name: "Coupe !", desc: "Un hook trop long à réduire sous 12 mots, sans perdre l'idée.", time: "1 min", kind: "entraine", skill: "accroche" },
-  { id: "duel", badge: "VS", name: "Duel de hooks", desc: "Lequel arrête le pouce ? Choisis, puis découvre pourquoi.", time: "1 min", kind: "entraine", skill: "accroche" },
-  { id: "tirage", badge: "3", name: "La machine à idées", desc: "Format, sujet, contrainte : trois rouleaux, une idée de vidéo.", time: "30 s", kind: "cree", skill: "idees" },
-  { id: "question", badge: "?", name: "La question du jour", desc: "Une question, ta réponse devient une idée.", time: "2 min", kind: "cree", skill: "idees" },
-  { id: "recyclage", badge: "↻", name: "Recyclage", desc: "Une de tes vidéos publiées, trois angles neufs.", time: "1 min", kind: "cree", skill: "idees" },
-  { id: "tri", badge: "→", name: "Tri express", desc: "Tes idées défilent : garder, plus tard ou jeter.", time: "1 min", kind: "entraine", skill: "idees" },
-  { id: "script", badge: "S", name: "Script éclair", desc: "Une idée, 90 secondes pour poser le script. Le contenu entre au calendrier.", time: "2 min", kind: "cree", skill: "structure" },
-  { id: "objectif", badge: "A", name: "Le bon objectif", desc: "Attirer, attacher ou convertir ? Cinq idées à classer.", time: "1 min", kind: "entraine", skill: "structure" },
+  { id: "hook", badge: "30", name: "Hook en 30 secondes", desc: "Un sujet tiré au sort, 30 secondes pour la première phrase.", time: "1 min", kind: "cree", focus: "accroche" },
+  { id: "coupe", badge: "✂", name: "Coupe !", desc: "Un hook trop long à réduire sous 12 mots, sans perdre l'idée.", time: "1 min", kind: "entraine", focus: "accroche" },
+  { id: "duel", badge: "VS", name: "Duel de hooks", desc: "Lequel arrête le pouce ? Choisis, puis découvre pourquoi.", time: "1 min", kind: "entraine", focus: "accroche" },
+  { id: "tirage", badge: "3", name: "La machine à idées", desc: "Format, sujet, contrainte : trois rouleaux, une idée de vidéo.", time: "30 s", kind: "cree", focus: "idees" },
+  { id: "question", badge: "?", name: "La question du jour", desc: "Une question, ta réponse devient une idée.", time: "2 min", kind: "cree", focus: "idees" },
+  { id: "recyclage", badge: "↻", name: "Recyclage", desc: "Une de tes vidéos publiées, trois angles neufs.", time: "1 min", kind: "cree", focus: "idees" },
+  { id: "tri", badge: "→", name: "Tri express", desc: "Tes idées défilent : garder, plus tard ou jeter.", time: "1 min", kind: "entraine", focus: "idees" },
+  { id: "script", badge: "S", name: "Script éclair", desc: "Une idée, 90 secondes pour poser le script. Le contenu entre au calendrier.", time: "2 min", kind: "cree", focus: "structure" },
+  { id: "objectif", badge: "A", name: "Le bon objectif", desc: "Attirer, attacher ou convertir ? Cinq idées à classer.", time: "1 min", kind: "entraine", focus: "structure" },
 ];
-export const FOCUS: { key: SkillKey; label: string }[] = [
+export const FOCUS: { key: Focus; label: string }[] = [
   { key: "accroche", label: "Mieux accrocher" },
   { key: "idees", label: "Trouver des idées" },
   { key: "structure", label: "Structurer mes vidéos" },
 ];
-export const SKILLS: { key: SkillKey; label: string }[] = [
-  { key: "idees", label: "Idées" }, { key: "accroche", label: "Accroche" }, { key: "structure", label: "Structure" }, { key: "constance", label: "Constance" },
-];
 export const gameInfo = (id: string) => GAMES.find((x) => x.id === id);
 
 // Le jeu du jour : tiré dans les priorités de la personne, il change chaque jour.
-const pool = (g: Game) => { const p = GAMES.filter((x) => g.focus.includes(x.skill)); return p.length ? p : GAMES; };
+const pool = (g: Game) => { const p = GAMES.filter((x) => g.focus.includes(x.focus)); return p.length ? p : GAMES; };
 const dayIndex = (day: string) => Math.round(parse(day).getTime() / 864e5);
 export const dailyGame = (g: Game, day = g.day) => pool(g)[dayIndex(day) % pool(g).length];
 export function choices(g: Game, day = g.day) {

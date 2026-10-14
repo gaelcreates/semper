@@ -85,8 +85,8 @@ Publication automatique, connexion aux comptes Meta ou TikTok, date d'ouverture.
 - Serveur distant : chaque déploiement met à jour le connecteur pour tout le monde, les adresses restent valables. Ne jamais renommer un outil existant (les conversations en cours s'en servent) : en ajouter, ou ajouter des paramètres facultatifs.
 - Mac : `app/mac/route.ts` sert l'installation en une ligne (`curl -fsSL https://trysemper.app/mac | sh`), sans quarantaine, en secours du DMG non signé.
 
-## La lune du jour et la vérification Instagram (branche engagement, 14 oct 2026)
+## La lune du jour et la vérification Instagram (14 oct 2026, en ligne)
 - Règles pures dans `app/(app)/jour.ts` (pas `lune.ts` : le disque Mac confond avec `Lune.tsx`). La lune : un jeu ou une publication vérifiée par jour ; joker sinon fissure ; 3 jeux le lendemain réparent ; jokers gagnés par 2 semaines tenues (3 au plus). État dans `profiles.engagement`, clos jour par jour par `settle()` (store `tick()`).
-- Page `/aujourdhui` (accueil après connexion), jeux dans `Jeux.tsx`, preuve de publication dans `Preuve.tsx`, relier Instagram dans `IgCard.tsx` (Profil).
+- Page `/aujourdhui` (accueil après connexion), page `/idees` (Idees.tsx : une idée passe dans les 7 prochains jours en deux clics), jeux dans `Jeux.tsx`, preuve de publication dans `Preuve.tsx`, relier Instagram dans `IgCard.tsx` (Profil).
 - Vérification : code dans la bio, puis `igSyncUser` (instagram.ts) relie chaque vidéo à la publication Instagram du même jour (`contents.ig_post`). Seul le serveur écrit `ig_post` (déclencheur `keep_ig_post`) et `ig_links` (lecture seule côté personne). Instagram relié : seules les vidéos vérifiées comptent pour le rythme.
 - Il faut META_ACCESS_TOKEN pour lire Instagram ; sans lui, « La vérification n'est pas encore ouverte ».

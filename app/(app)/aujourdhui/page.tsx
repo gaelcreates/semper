@@ -5,11 +5,12 @@ import Link from "next/link";
 import Lune from "../Lune";
 import Jeu from "../Jeux";
 import ProofRow from "../Preuve";
+import IdeaRow, { ideasOf } from "../Idees";
 import { DAYS, MONTHS, addDays, dayKey, parse, startOfWeek } from "../lib";
 import { constance } from "../stats";
 import {
-  FOCUS, GAMES, MAX_JOKERS, REPAIR, SKILLS, choices, dailyGame, levelOf, lit, moonDays, moonState, phaseName, toFix,
-  type GameId, type GameInfo, type SkillKey,
+  FOCUS, GAMES, MAX_JOKERS, REPAIR, choices, dailyGame, lit, moonDays, moonState, phaseName, toFix,
+  type Focus, type GameId, type GameInfo,
 } from "../jour";
 import { setGame, useData } from "../store";
 
@@ -28,6 +29,7 @@ export default function Aujourdhui() {
   const toNext = s.streakTo(dayKey(addDays(startOfWeek(new Date()), -7))) % 2;
   const todays = d.contents.filter((c) => c.publishAt?.startsWith(k)).sort((a, b) => a.publishAt!.localeCompare(b.publishAt!));
   const fix = toFix(d.contents, d.ig, k);
+  const ideas = ideasOf(d.contents);
 
   // La lune vient de se fissurer : on la voit tomber une fois par jour.
   useEffect(() => {
@@ -79,7 +81,7 @@ export default function Aujourdhui() {
         <section className="box aj-daily">
           <span className="aj-badge disp">{daily.badge}</span>
           <div>
-            <span className="lbl">Ton jeu du jour · {FOCUS.find((f) => f.key === daily.skill)?.label ?? "Constance"}</span>
+            <span className="lbl">Ton jeu du jour · {FOCUS.find((f) => f.key === daily.focus)?.label}</span>
             <h2>{daily.name}</h2>
             <p>{daily.desc}</p>
           </div>
@@ -115,17 +117,9 @@ export default function Aujourdhui() {
         </div>
       )}
 
-      <h2 className="aj-sec">Tes compétences</h2>
-      <div className="aj-skills">
-        {SKILLS.map((x) => (
-          <div key={x.key} className="box aj-skill">
-            <span className="lbl">{x.label}</span>
-            <b className="disp">{g.skills[x.key] ?? 0}</b>
-            <span className="aj-bar"><i style={{ width: `${Math.min(100, (g.skills[x.key] ?? 0) / 6)}%` }} /></span>
-            <small className="muted">{levelOf(g.skills[x.key] ?? 0)}</small>
-          </div>
-        ))}
-      </div>
+      <h2 className="aj-sec">Tes idées{ideas.length > 0 && <Link className="link push" href="/idees">Toutes ({ideas.length})</Link>}</h2>
+      {ideas.length ? <div className="ideas">{ideas.slice(0, 3).map((c) => <IdeaRow key={c.id} c={c} />)}</div>
+        : <p className="muted">Aucune idée pour l&apos;instant. <Link className="link" href="/idees">En noter une</Link></p>}
 
       {game && <Jeu id={game} onClose={() => setOpen(null)} />}
       {vac && <Vacances onClose={() => setVac(false)} />}
@@ -207,7 +201,7 @@ function Vacances({ onClose }: { onClose: () => void }) {
 function Accueil() {
   const g = useData()!.game;
   const [step, setStep] = useState(0);
-  const [focus, setFocus] = useState<SkillKey[]>(g.focus);
+  const [focus, setFocus] = useState<Focus[]>(g.focus);
   const [mode, setMode] = useState(g.mode);
   const [n, setN] = useState(1);
   useEffect(() => {

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import DotIcon from "../DotIcon";
 import Lune from "./Lune";
 import { addDays, dayKey } from "./lib";
-import { REPAIR, SKILLS, gameInfo, moonDays, moonState, type GameId, type Lit, type SkillKey } from "./jour";
+import { REPAIR, gameInfo, moonDays, moonState, type GameId, type Lit } from "./jour";
 import { addContent, deleteContent, movePublish, patchContent, play, useData, type Content } from "./store";
 
 // Les mini-jeux du jour : deux minutes, et chacun fait avancer un contenu ou apprend un geste du métier.
@@ -37,11 +37,11 @@ const OBJECTIFS = [
 ];
 const SAMPLE_IDEAS = ["Ma routine de tournage du dimanche", "Ce que j'aurais aimé savoir à 100 abonnés", "Réagir à une vidéo de mon domaine", "Le jour où un client m'a dit non"];
 
-type Done = (title: string, text: string, skill?: SkillKey, pts?: number) => void;
+type Done = (title: string, text: string) => void;
 const idea = (title: string) => addContent({ title: title.trim().slice(0, 200) });
 
 export default function Jeu({ id, onClose }: { id: GameId; onClose: () => void }) {
-  const [win, setWin] = useState<{ event: Lit; title: string; text: string; gain: string | null } | null>(null);
+  const [win, setWin] = useState<{ event: Lit; title: string; text: string } | null>(null);
   const [key, setKey] = useState(0);
   const box = useRef<HTMLDivElement>(null);
   const g = gameInfo(id)!;
@@ -54,10 +54,7 @@ export default function Jeu({ id, onClose }: { id: GameId; onClose: () => void }
     return () => { window.removeEventListener("keydown", esc); prev?.focus?.(); };
   }, [onClose]);
 
-  const done: Done = (title, text, skill, pts = 12) => {
-    const event = play(id, skill ?? g.skill, pts);
-    setWin({ event, title, text, gain: pts ? `+${pts} ${SKILLS.find((s) => s.key === (skill ?? g.skill))!.label}` : null });
-  };
+  const done: Done = (title, text) => setWin({ event: play(id), title, text });
 
   return (
     <div className="veil jeu-veil" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -81,7 +78,7 @@ export default function Jeu({ id, onClose }: { id: GameId; onClose: () => void }
   );
 }
 
-function Win({ event, title, text, gain, onClose }: { event: Lit; title: string; text: string; gain: string | null; onClose: () => void }) {
+function Win({ event, title, text, onClose }: { event: Lit; title: string; text: string; onClose: () => void }) {
   const gm = useData()!.game;
   const left = REPAIR - gm.done.length;
   const msg = event === "repaired" ? `Lune réparée : ${gm.moon} jours` : event === "lit" ? `Lune allumée : ${gm.moon} ${gm.moon > 1 ? "jours" : "jour"}`
@@ -91,7 +88,6 @@ function Win({ event, title, text, gain, onClose }: { event: Lit; title: string;
       <Lune n={moonDays(gm)} state={moonState(gm)} className={event ? "pop" : ""} />
       <h3>{msg}</h3>
       <p>{text}{event === "lit" ? " Reviens demain : elle grandit." : ""}</p>
-      {gain && <span className="jeu-gain disp">{gain}</span>}
       <button type="button" className="btn" onClick={onClose} autoFocus>{gm.broken ? "Jeu suivant" : "Continuer"}</button>
     </div>
   );
@@ -148,7 +144,7 @@ function Coupe({ done }: { done: Done }) {
         <textarea className="inp long" rows={2} autoFocus value={t} onChange={(e) => setT(e.target.value)} placeholder="Ta version courte" />
         <div className="jeu-act between">
           <span className={`disp jeu-words${ok ? " ok" : ""}`}>{n} mot{n > 1 ? "s" : ""}</span>
-          <button type="button" className="btn" disabled={!ok} onClick={() => { idea(t); done(`${n} mots.`, n <= 8 ? "Court et net : c'est ce qui retient le pouce." : "Bien. Sous 8 mots, c'est encore plus fort.", "accroche", n <= 8 ? 20 : 14); }}>Valider</button>
+          <button type="button" className="btn" disabled={!ok} onClick={() => { idea(t); done(`${n} mots.`, n <= 8 ? "Court et net : c'est ce qui retient le pouce." : "Bien. Sous 8 mots, c'est encore plus fort."); }}>Valider</button>
         </div>
       </div>
     </>
@@ -176,7 +172,7 @@ function Duel({ done }: { done: Done }) {
           <div className="jeu-act">
             <button type="button" className="btn" onClick={() => {
               if (i < list.length - 1) { setI(i + 1); setMe(null); }
-              else done(`${good} sur ${list.length}.`, "Une tension, une promesse, une personne à qui on parle : c'est ce qui arrête le pouce.", "accroche", good * 6);
+              else done(`${good} sur ${list.length}.`, "Une tension, une promesse, une personne à qui on parle : c'est ce qui arrête le pouce.");
             }}>{i < list.length - 1 ? "Duel suivant" : "Terminer"}</button>
           </div>
         )}
@@ -270,7 +266,7 @@ function Tri({ done }: { done: Done }) {
       setGone(null);
       const rest = deck.slice(1);
       setDeck(rest);
-      if (!rest.length) done("Tri fini.", `${kept + (a === "r" ? 1 : 0)} idée${kept + (a === "r" ? 1 : 0) > 1 ? "s" : ""} gardée${kept + (a === "r" ? 1 : 0) > 1 ? "s" : ""}.`, "idees", 8);
+      if (!rest.length) done("Tri fini.", `${kept + (a === "r" ? 1 : 0)} idée${kept + (a === "r" ? 1 : 0) > 1 ? "s" : ""} gardée${kept + (a === "r" ? 1 : 0) > 1 ? "s" : ""}.`);
     }, 260);
   };
   useEffect(() => {
@@ -325,7 +321,7 @@ function Script({ done }: { done: Done }) {
     if (src) patchContent(src.id, (c, dd) => ({ ...movePublish(c, at, dd.profile.durations), script }));
     else addContent({ title, publishAt: at, script });
     const day = new Date(at);
-    done("Contenu créé.", `Au calendrier le ${day.toLocaleDateString("fr-CH", { weekday: "long", day: "numeric", month: "long" })} à 18 h, avec son script.`, "structure", full ? 18 : 10);
+    done("Contenu créé.", `Au calendrier le ${day.toLocaleDateString("fr-CH", { weekday: "long", day: "numeric", month: "long" })} à 18 h, avec son script.`);
   }
   return (
     <>
@@ -363,7 +359,7 @@ function Objectif({ done }: { done: Done }) {
           <div className="jeu-act">
             <button type="button" className="btn" onClick={() => {
               if (i < OBJECTIFS.length - 1) { setI(i + 1); setMe(null); }
-              else done(`${good} sur ${OBJECTIFS.length}.`, "Savoir à quoi sert une vidéo, c'est choisir le bon format et le bon appel.", "structure", good * 4);
+              else done(`${good} sur ${OBJECTIFS.length}.`, "Savoir à quoi sert une vidéo, c'est choisir le bon format et le bon appel.");
             }}>{i < OBJECTIFS.length - 1 ? "Suivante" : "Terminer"}</button>
           </div>
         )}

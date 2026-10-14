@@ -5,7 +5,7 @@ import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { FIELDS, SEP, STATUS, STEPS, STRUCTURES, movePublish, stamp, statusOf, uid } from "./rules";
 import { sb } from "../supabase";
 import { constance } from "./stats";
-import { gameOf, gesture, settle, today, type Event, type Game, type IgLink, type IgPost, type Lit, type SkillKey } from "./jour";
+import { gameOf, gesture, settle, today, type Event, type Game, type IgLink, type IgPost, type Lit } from "./jour";
 
 // Les données de l'espace, chargées depuis Supabase à la connexion et gardées en mémoire.
 // L'interface lit et modifie la copie en mémoire ; chaque action l'écrit aussi dans Supabase.
@@ -647,10 +647,10 @@ export function setGame(fn: (g: Game) => Game) {
   if (data) pushProfile({ engagement: data.game });
 }
 // Un jeu terminé (ou une publication vérifiée aujourd'hui) : renvoie ce qui arrive à la lune.
-export function play(id: string, skill?: SkillKey, pts = 0): Lit {
+export function play(id: string): Lit {
   tick();
   if (!data) return null;
-  const { g, event } = gesture(data.game, id, skill, pts);
+  const { g, event } = gesture(data.game, id);
   if (g === data.game) return null;
   update((d) => ({ ...d, game: g }));
   pushProfile({ engagement: g });

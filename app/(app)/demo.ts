@@ -65,7 +65,6 @@ export function demoData(now = new Date()): Data {
     // Une lune de 9 jours, déjà allumée aujourd'hui par le jeu du jour.
     game: {
       ...newGame(fmt(now).slice(0, 10)), moon: 9, best: 21, jokers: 2, done: ["hook"], onboarded: true,
-      skills: { idees: 240, accroche: 310, structure: 180, constance: 420 },
       hist: Object.fromEntries(Array.from({ length: 30 }, (_, i) => [fmt(addDays(now, -1 - i)).slice(0, 10), i === 9 ? "joker" : "on"])),
     },
     ig: null,

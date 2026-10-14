@@ -923,10 +923,6 @@ div.install-help { position: relative; padding-right: 34px; }
 .aj-all[open] summary::after { content: "–"; }
 .aj-callout { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 18px 20px; border-radius: 18px; background: rgba(255, 197, 8, 0.14); }
 .aj-callout > span { display: grid; gap: 2px; font-size: 14px; }
-.aj-skills { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.aj-skill { display: grid; gap: 8px; padding: 16px; }
-.aj-skill b { font-size: 26px; }
-.aj-skill small { font-size: 12px; }
 
 /* Les jeux et les petites fenêtres */
 .jeu-veil { display: grid; place-items: center; padding: 20px; z-index: 70; background: rgba(var(--bgr), 0.7); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
@@ -972,7 +968,6 @@ div.install-help { position: relative; padding-right: 34px; }
 .jeu-win .lune { width: 120px; height: 120px; }
 .jeu-win h3 { font-size: 22px; letter-spacing: -0.02em; }
 .jeu-win p { max-width: 44ch; color: var(--ink2); }
-.jeu-gain { padding: 5px 10px; border-radius: 999px; background: var(--ink); color: var(--gold); font-size: 12px; }
 
 /* Premier passage de la lune */
 .aj-onb { display: grid; justify-items: center; gap: 12px; text-align: center; }
@@ -1064,26 +1059,6 @@ div.install-help { position: relative; padding-right: 34px; }
 .ladder li small { font-size: 11px; line-height: 1.3; }
 .ladder .lune { width: 44px; height: 44px; }
 .ladder .seal { position: absolute; top: 4px; right: 4px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: var(--gold); font-size: 10px; font-weight: 900; }
-.cs-nav { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-.cs-nav .x:disabled { opacity: 0.3; cursor: default; }
-.rg-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
-.rg-day { display: grid; justify-items: center; gap: 8px; padding: 12px 4px; border-radius: 14px; }
-.rg-day.today { background: var(--bg); }
-.rg-day svg { width: 100%; max-width: 84px; aspect-ratio: 1; }
-.rg-day .lbl { font-size: 10px; }
-.rg-pub { min-height: 16px; font-size: 11px; color: var(--ink2); }
-.rg-pub.r { color: var(--brick); }
-.rg-track, .rg { fill: none; stroke-width: 11; }
-.rg-track { stroke-opacity: 0.14; }
-.rg { stroke-linecap: round; }
-.rg-track.a, .rg.a { stroke: var(--gold); }
-.rg-track.b, .rg.b { stroke: var(--ink); }
-.rg-track.c, .rg.c { stroke: var(--brick); }
-.rg-legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 12.5px; color: var(--ink2); }
-.rg-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 50%; vertical-align: -1px; }
-.rg-legend i.a { background: var(--gold); }
-.rg-legend i.b { background: var(--ink); }
-.rg-legend i.c { background: var(--brick); }
 
 @media (max-width: 1180px) {
   .cs-tro .ladder { grid-template-columns: repeat(5, minmax(0, 1fr)); }
@@ -1091,7 +1066,6 @@ div.install-help { position: relative; padding-right: 34px; }
 @media (max-width: 960px) {
   .aj-top { grid-template-columns: minmax(0, 1fr); }
   .aj-games { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .aj-skills { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
   .aj-hero { grid-template-columns: auto minmax(0, 1fr); gap: 16px; padding: 20px; align-items: start; }
@@ -1112,9 +1086,33 @@ div.install-help { position: relative; padding-right: 34px; }
   .pr-days { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .ig-steps, .ig-found { grid-template-columns: minmax(0, 1fr); }
   .cs-tro .ladder { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .rg-week { gap: 2px; }
-  .rg-pub { display: none; }
 }
 .ws-cnt { display: grid; place-items: center; min-width: 18px; height: 18px; margin-left: auto; padding: 0 5px; border-radius: 999px; background: var(--brick); color: #fff; font-size: 10px; }
 .ws-tabs a { position: relative; }
 .ws-tabs .ws-cnt { position: absolute; top: 2px; left: calc(50% + 6px); margin: 0; }
+
+/* Idées */
+.ideas { display: grid; gap: 8px; }
+.idea { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+.idea-t { min-width: 0; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.idea-t:hover { text-decoration: underline; text-underline-offset: 3px; }
+.idea-act { display: flex; gap: 8px; align-items: center; }
+.idea-days { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.idea-days button { display: grid; gap: 4px; justify-items: center; padding: 8px 4px; border: 0; border-radius: 12px; background: none; box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; transition: background 200ms; }
+.idea-days button:hover { background: var(--ink); color: var(--gold); box-shadow: none; }
+.idea-days b { font-size: 17px; }
+.idea-add { display: flex; gap: 10px; }
+.idea-add .inp { flex: 1; }
+.aj-sec .push { margin-left: auto; font-size: 14px; font-weight: 400; letter-spacing: 0; }
+
+/* L'année : les jours ratés en pointillés */
+.hm-grid i.miss { box-sizing: border-box; background: none; border: 1.5px dashed var(--brick); transform: none; }
+.hm-legend { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 16px; font-size: 12.5px; color: var(--ink2); }
+.hm-legend i { display: inline-block; box-sizing: border-box; width: 10px; height: 10px; margin-right: 6px; border-radius: 50%; vertical-align: -1px; }
+.hm-legend i.on { background: var(--ink); }
+.hm-legend i.g { background: var(--gold); }
+.hm-legend i.miss { border: 1.5px dashed var(--brick); }
+@media (max-width: 760px) {
+  .idea-t { white-space: normal; }
+  .idea-days { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
