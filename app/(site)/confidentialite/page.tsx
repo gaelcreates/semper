@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Politique de confidentialité · Sem
 
 export default function Page() {
   return (
-    <Legal title="Politique de confidentialité" updated="8 octobre 2026">
+    <Legal title="Politique de confidentialité" updated="15 octobre 2026">
       <h2>Qui est responsable</h2>
       <p>
         Le site trysemper.app et l&apos;application Semper sont édités par {site.owner}, {site.postalAddress}. Pour
@@ -16,8 +16,8 @@ export default function Page() {
       <h2>La liste et la lettre</h2>
       <p>
         Quand tu laisses ton adresse e-mail dans un formulaire du site, nous la gardons pour te prévenir de
-        l&apos;ouverture de Semper et t&apos;envoyer la lettre «&nbsp;Créer, toujours&nbsp;». Nous nous appuyons sur ton
-        consentement. Chaque e-mail contient un lien de désabonnement&nbsp;: dès que tu l&apos;utilises, ton adresse
+        l&apos;ouverture de Semper et t&apos;envoyer la lettre «&nbsp;Créer, toujours&nbsp;», avec la date d&apos;inscription et
+        le site ou le lien qui t&apos;a amené ici. Nous nous appuyons sur ton consentement. Chaque e-mail contient un lien de désabonnement&nbsp;: dès que tu l&apos;utilises, ton adresse
         sort de la liste d&apos;envoi.
       </p>
 
@@ -43,10 +43,16 @@ export default function Page() {
         l&apos;interface officielle de Meta. Semper ne se connecte jamais à ton compte et ne publie rien. Un compte
         personnel ne renvoie rien. Retire ton pseudo pour arrêter le relevé.
       </p>
+      <p>
+        Si tu relies ton compte pour vérifier tes publications, tu colles un code dans ta bio quelques minutes&nbsp;:
+        Semper le lit pour s&apos;assurer que le compte est à toi. Ensuite, Semper garde la date, le lien et la
+        légende de tes dernières publications publiques pour les relier à ton calendrier. Délie ton compte dans ton
+        profil pour arrêter.
+      </p>
 
       <h2>Qui y a accès</h2>
       <p>
-        Tes données de compte sont stockées chez Supabase, dans un centre de données à Zurich. Les e-mails partent
+        Tes données de compte et ton adresse de la liste sont stockées chez Supabase, dans un centre de données à Zurich. Les e-mails partent
         par Resend, Inc. (États-Unis), et le site est hébergé par Vercel, Inc. (États-Unis). Les chiffres Instagram
         viennent de Meta Platforms, Inc. Ces prestataires traitent les données pour notre compte, sur instruction,
         avec des garanties contractuelles conformes au droit suisse et au droit européen.
