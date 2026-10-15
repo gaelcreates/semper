@@ -583,3 +583,15 @@ grant update (engagement) on public.profiles to authenticated;
 alter table public.profiles add column steps jsonb;
 alter table public.profiles add constraint profiles_steps_size check (steps is null or (jsonb_typeof(steps) = 'array' and jsonb_array_length(steps) between 1 and 8 and pg_column_size(steps) < 8192));
 grant update (steps) on public.profiles to authenticated;
+
+-- La waitlist gardée chez nous d'abord (15 oct 2026) : une inscription n'est jamais perdue, même si Resend refuse (trop d'appels, panne).
+-- Le passage quotidien envoie à Resend ce qui n'y est pas encore. Serveur seulement.
+create table public.waitlist (
+  email text primary key check (email = lower(email) and char_length(email) <= 254),
+  source text check (char_length(source) <= 80),
+  created_at timestamptz not null default now(),
+  synced_at timestamptz
+);
+create index waitlist_a_envoyer on public.waitlist (created_at) where synced_at is null;
+alter table public.waitlist enable row level security;
+revoke all on public.waitlist from anon, authenticated;

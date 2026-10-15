@@ -15,6 +15,15 @@ export default function JoinForm({ label = "Rejoindre la waitlist", light = fals
   const id = useId();
   const fix = suggest(email);
 
+  // La source de l'inscription : ?ref= ou ?utm_source= du lien, sinon le site d'où la personne arrive.
+  const [src, setSrc] = useState("");
+  useEffect(() => {
+    const q = new URLSearchParams(location.search);
+    let from = q.get("ref") || q.get("utm_source") || "";
+    if (!from && document.referrer) { try { const h = new URL(document.referrer).hostname; if (h !== location.hostname) from = h; } catch {} }
+    setSrc(from.slice(0, 80));
+  }, []);
+
   // Arrivée par un lien vers le bloc du formulaire (#rejoindre, #recevoir) : le champ prend la main.
   useEffect(() => {
     const go = (hash: string) => {
@@ -40,6 +49,7 @@ export default function JoinForm({ label = "Rejoindre la waitlist", light = fals
   return (
     <form className={`form${light ? " on-light" : ""}`} action={action} onSubmit={() => setSent(email)} noValidate>
       <input className="trap" name="site" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+      <input type="hidden" name="src" value={src} />
       <label className="sr" htmlFor={id}>Adresse e-mail</label>
       <input
         ref={input}
