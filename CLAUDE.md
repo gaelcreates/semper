@@ -26,7 +26,7 @@ Symbole : un anneau vu en perspective, ouvert en haut (30° à 330°), épais de
 `app/icon.svg` : signe noir sur fond blanc, fixe (la version qui tournait a été retirée le 22 sept).
 
 ## Formulaire
-`actions.ts` ajoute l'adresse à une audience Resend. Variables : `RESEND_API_KEY`, `RESEND_AUDIENCE_ID` (voir `.env.example`). Sans elles, le formulaire répond « les inscriptions ouvrent dans quelques heures ». Champ piège `site` contre les robots.
+`actions.ts` garde d'abord l'adresse dans la table `waitlist` (avec sa source : `?ref=` ou `?utm_source=` du lien, sinon le site d'origine), puis l'ajoute à l'audience Resend (deux nouvelles tentatives si Resend refuse ; Resend accepte 10 appels par seconde). Ce qui n'est pas passé part au passage quotidien (`api/instagram`). Testé le 15 oct 2026 : 40 inscriptions simultanées, 40 gardées, 2 rattrapées par le passage. Variables : `RESEND_API_KEY`, `RESEND_AUDIENCE_ID` (voir `.env.example`). Sans elles, le formulaire répond « les inscriptions ouvrent dans quelques heures ». Champ piège `site` contre les robots.
 
 ## Domaine et déploiement
 Domaine `trysemper.app` (Hostinger, DNS chez Hostinger, e-mail pro sur le même domaine donc ne jamais changer les nameservers). Dépôt `gaelcreates/semper`, déployé sur Vercel (projet `semper`, adresse de secours semper-psi.vercel.app). Un push sur `main` redéploie.
