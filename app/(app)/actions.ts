@@ -190,7 +190,7 @@ export async function sendFeedback(token: string, body: string, page: string): P
     await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: "Semper <bonjour@trysemper.app>", to: site.contactEmail, subject: `Feedback · ${user.email ?? "Semper"}`, text: `${text}\n\n${user.email ?? ""} · ${where ?? ""}` }),
+      body: JSON.stringify({ from: "Semper <contact@trysemper.app>", to: site.contactEmail, subject: `Feedback · ${user.email ?? "Semper"}`, text: `${text}\n\n${user.email ?? ""} · ${where ?? ""}` }),
     }).catch(() => null);
   }
   return true;

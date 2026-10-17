@@ -6,7 +6,7 @@ export const site = {
     "Tes idées, tes vidéos et ton rythme au même endroit. Une série qui compte chaque semaine tenue. Gratuit, sans rien à configurer.",
   owner: "Gael Fischer",
   // Adresse de contact affichée sur les pages légales.
-  contactEmail: "bonjour@trysemper.app",
+  contactEmail: "contact@trysemper.app",
   // Adresse postale exigée par la loi suisse pour un site commercial.
   postalAddress: "Vaud, Suisse",
 };

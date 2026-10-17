@@ -61,7 +61,7 @@ export async function sendWelcome(email: string, prenom?: string) {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: "Gael de Semper <bonjour@trysemper.app>", to: email, subject, html, text }),
+      body: JSON.stringify({ from: "Gael de Semper <contact@trysemper.app>", to: email, subject, html, text }),
     });
     if (!res.ok) console.error("bienvenue", res.status);
     return res.ok;
