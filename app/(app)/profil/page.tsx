@@ -67,7 +67,7 @@ export default function Profil() {
         <nav className="pf-legal">
           <Link href="/confidentialite">Confidentialité</Link>
           <Link href="/conditions">Conditions</Link>
-          <a href="mailto:gaelcreates@gmail.com?subject=Semper">Contact</a>
+          <a href="mailto:bonjour@trysemper.app?subject=Semper">Contact</a>
         </nav>
       </div>
     </div>

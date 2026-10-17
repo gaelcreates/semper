@@ -9,6 +9,7 @@ import ThemeToggle from "../ThemeToggle";
 import Sheet from "./Sheet";
 import Moon from "./Moon";
 import Lune from "./Lune";
+import Feedback from "./Feedback";
 import { moonDays, moonState, phaseName, toFix } from "./jour";
 import { igSync } from "./actions";
 import Orbit from "../Orbit";
@@ -103,6 +104,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
         <Install />
+        {!demo && d && <Feedback row />}
         {d && (
           <Link href="/profil" className={`ws-me${path.startsWith("/profil") ? " on" : ""}`}>
             <Avatar />
@@ -122,6 +124,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <Link href="/aujourdhui" className="brand" aria-label="Semper"><Logo /></Link>
         <span className="ws-top-r">
           <Link href="/aujourdhui" className="ws-top-moon" aria-label={`${title}, ${days} jours d'affilée`}>{g && <Lune n={days} state={moonState(g)} />}</Link>
+          {!demo && d && <Feedback />}
           <ThemeToggle />
           {d && <Link href="/profil" aria-label="Profil"><Avatar size={40} /></Link>}
         </span>

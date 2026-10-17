@@ -18,7 +18,9 @@ const MIN_H = 15; // hauteur visible minimale d'un bloc, en minutes ; le bloc su
 const PUB = 30; // la publication est un moment, affichée sur une demi-heure
 const GHOST = 18 * 60; // la première vidéo proposée, à 18 h
 
-type Item = { key: string; cid: string; kind: string; day: number; s: number; dur: number; done: boolean; title: string; label: string };
+const GROUP_H = 44; // hauteur d'une vidéo regroupée, en minutes (titre + pastilles)
+// parts : les blocs d'une même vidéo trop serrés pour être lus séparément, réunis en une seule carte.
+type Item = { key: string; cid: string; kind: string; day: number; s: number; dur: number; done: boolean; title: string; label: string; parts?: Item[] };
 type Drag = { it: Item; x: number; y: number; colW: number; moved: boolean; held: boolean };
 type Off = { key: string; cid: string; pub: boolean; days: number; mins: number; colW: number };
 
@@ -50,7 +52,7 @@ export default function Week({ contents, days, steps, empty = false }: { content
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dayKey(days[0]), days.length]);
 
-  const byDay = days.map((_, i) => lanes(items.filter((it) => it.day === i)));
+  const byDay = days.map((_, i) => lanes(group(items.filter((it) => it.day === i))));
 
   function offsets(g: Drag, e: { clientX: number; clientY: number }) {
     const days = shift(g, e.clientX);
@@ -72,7 +74,7 @@ export default function Week({ contents, days, steps, empty = false }: { content
       if (drag.current !== g) return;
       g.held = true;
       navigator.vibrate?.(10);
-      setOff({ key: it.key, cid: it.cid, pub: it.kind === "pub", colW: g.colW, days: 0, mins: 0 });
+      setOff({ key: it.key, cid: it.cid, pub: it.kind === "pub" || !!it.parts, colW: g.colW, days: 0, mins: 0 });
     }, 300);
   }
   function move(e: React.PointerEvent) {
@@ -83,7 +85,7 @@ export default function Week({ contents, days, steps, empty = false }: { content
     if (!g.held) { if (dist > 8) { clearTimeout(hold.current); drag.current = null; } return; }
     if (!g.moved && dist < 5) return;
     g.moved = true;
-    setOff({ key: g.it.key, cid: g.it.cid, pub: g.it.kind === "pub", colW: g.colW, ...offsets(g, e) });
+    setOff({ key: g.it.key, cid: g.it.cid, pub: g.it.kind === "pub" || !!g.it.parts, colW: g.colW, ...offsets(g, e) });
   }
   function up(e: React.PointerEvent) {
     const g = drag.current;
@@ -100,8 +102,14 @@ export default function Week({ contents, days, steps, empty = false }: { content
     drag.current = null;
     setOff(null);
   }
-  function place(it: Item, nd: number, mins: number) {
+  function place(it: Item, nd: number, mins: number): void {
     if (!nd && !mins) return;
+    // Une vidéo regroupée se déplace d'un bloc : par sa publication (les étapes suivent), sinon étape par étape.
+    if (it.parts) {
+      const pub = it.parts.find((p) => p.kind === "pub");
+      if (pub) place(pub, nd, mins); else it.parts.forEach((p) => place(p, nd, mins));
+      return;
+    }
     const d = addDays(days[it.day], nd);
     d.setMinutes(it.s + mins);
     const at = fmt(d);
@@ -157,14 +165,15 @@ export default function Week({ contents, days, steps, empty = false }: { content
             )}
             {byDay[i].map(({ it, lane, n }, z) => {
               const moving = off && (off.key === it.key || (off.pub && off.cid === it.cid));
-              const h = Math.max(it.dur, MIN_H) * PX;
-              const tight = h < 44;
+              const h = vis(it) * PX;
+              const tight = !it.parts && h < 44;
+              const pub = it.parts?.find((p) => p.kind === "pub");
               return (
                 <button
                   type="button"
                   key={it.key}
                   data-k={it.key}
-                  className={`blk ${KINDS.includes(it.kind) ? `k-${it.kind}` : "k-step"}${it.done ? " done" : ""}${tight ? " tight" : ""}${moving ? " moving" : ""}`}
+                  className={`blk ${it.parts ? `grp ${pub ? "k-pub" : "k-step"}` : KINDS.includes(it.kind) ? `k-${it.kind}` : "k-step"}${it.done ? " done" : ""}${tight ? " tight" : ""}${moving ? " moving" : ""}`}
                   style={{
                     top: it.s * PX, height: h - 2, zIndex: moving ? 50 : 2 + z,
                     left: `calc(${(lane / n) * 100}% + 2px)`, width: `calc(${100 / n}% - 4px)`,
@@ -176,9 +185,16 @@ export default function Week({ contents, days, steps, empty = false }: { content
                   onPointerCancel={cancel}
                   onClick={(e) => { e.stopPropagation(); if (e.detail === 0) openSheet(it.cid); }}
                   onKeyDown={(e) => key(e, it)}
-                  aria-label={`${it.label}, ${it.title || "sans titre"}, ${time(it.s)}`}
+                  aria-label={`${it.label}, ${it.title || "sans titre"}, ${time(pub?.s ?? it.s)}`}
                 >
-                  {it.kind === "pub"
+                  {it.parts ? (
+                    <>
+                      <span className="grp-t">{pub && <b className="disp">{time(pub.s)}</b>}<span>{it.title || "Sans titre"}</span></span>
+                      <span className="grp-steps">
+                        {it.parts.filter((p) => p.kind !== "pub").map((p) => <i key={p.key} className={p.done ? "on" : ""} title={`${p.label}, ${time(p.s)}`}>{p.label[0]}</i>)}
+                      </span>
+                    </>
+                  ) : it.kind === "pub"
                     ? <><b className="disp">{time(it.s)}</b><span>{it.title || "Sans titre"}</span></>
                     : <><small className="lbl">{tight ? it.label[0] : it.label}</small><span>{it.title || "Sans titre"}</span></>}
                 </button>
@@ -213,6 +229,35 @@ function build(contents: Content[], days: Date[], steps: StepDef[]): Item[] {
   return out;
 }
 
+// La hauteur affichée d'un bloc, en minutes.
+const vis = (it: Item) => Math.max(it.dur, it.parts ? GROUP_H : MIN_H);
+
+// Les blocs d'une même vidéo qui se chevaucheraient à l'écran (étapes courtes, collées à la publication)
+// deviennent une seule carte : le titre, l'heure de publication et une pastille par étape.
+function group(items: Item[]): Item[] {
+  const out: Item[] = [];
+  const byC = new Map<string, Item[]>();
+  for (const it of items) byC.set(it.cid, [...(byC.get(it.cid) ?? []), it]);
+  for (const list of byC.values()) {
+    const sorted = [...list].sort((a, b) => a.s - b.s);
+    let chain: Item[] = [];
+    const flush = () => {
+      if (chain.length > 1) {
+        const first = chain[0], end = Math.max(...chain.map((x) => x.s + x.dur));
+        out.push({ ...first, key: `${first.cid}:grp:${first.kind}`, kind: chain.some((x) => x.kind === "pub") ? "pub" : "grp", dur: end - first.s, done: chain.every((x) => x.done), label: "Vidéo", parts: chain });
+      } else out.push(...chain);
+      chain = [];
+    };
+    for (const it of sorted) {
+      const prev = chain[chain.length - 1];
+      if (prev && it.s >= prev.s + Math.max(prev.dur, 30)) flush();
+      chain.push(it);
+    }
+    flush();
+  }
+  return out;
+}
+
 // Blocs qui se chevauchent : côte à côte, chacun dans son couloir.
 function lanes(items: Item[]) {
   const sorted = [...items].sort((a, b) => a.s - b.s);
@@ -223,7 +268,7 @@ function lanes(items: Item[]) {
   const flush = () => { group.forEach((g) => (g.n = ends.length)); out.push(...group); group = []; ends = []; };
   for (const it of sorted) {
     if (it.s >= groupEnd) flush();
-    const e = it.s + it.dur;
+    const e = it.s + vis(it);
     let lane = ends.findIndex((x) => x <= it.s);
     if (lane < 0) { lane = ends.length; ends.push(e); } else ends[lane] = e;
     group.push({ it, lane, n: 0 });

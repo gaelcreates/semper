@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Politique de confidentialité · Sem
 
 export default function Page() {
   return (
-    <Legal title="Politique de confidentialité" updated="15 octobre 2026">
+    <Legal title="Politique de confidentialité" updated="17 octobre 2026">
       <h2>Qui est responsable</h2>
       <p>
         Le site trysemper.app et l&apos;application Semper sont édités par {site.owner}, {site.postalAddress}. Pour

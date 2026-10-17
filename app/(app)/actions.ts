@@ -8,6 +8,7 @@ import { addToAudience, issueCode, moveInAudience, verifyCode } from "../(start)
 import { allow, ip } from "../limit";
 import { createHash, randomBytes } from "crypto";
 import { headers } from "next/headers";
+import { site } from "../site";
 
 // Relevé Instagram immédiat pour la personne connectée (au premier passage ou quand elle change de pseudo).
 // « off » : Semper n'est pas encore relié à Meta. « absent » : le compte ne renvoie rien (perso, mauvais pseudo).
@@ -172,4 +173,25 @@ export async function igForget(token: string): Promise<boolean> {
   if (!user) return false;
   const { error } = await admin().from("ig_links").delete().eq("user_id", user.id);
   return !error;
+}
+
+// Un retour écrit depuis l'espace : gardé en base (lu dans l'admin), puis envoyé par e-mail à Semper.
+// Dix par heure et par compte au plus. Un e-mail qui échoue ne fait pas échouer l'envoi : le retour est en base.
+export async function sendFeedback(token: string, body: string, page: string): Promise<boolean> {
+  const user = await userFrom(token);
+  const text = body.trim().slice(0, 2000);
+  if (!user || !text) return false;
+  if (!(await allow(`feedback:${user.id}`, 10, 3600))) return false;
+  const where = page.replace(/[^\w/-]/g, "").slice(0, 80) || null;
+  const { error } = await admin().from("feedback").insert({ user_id: user.id, email: user.email ?? null, body: text, page: where });
+  if (error) return false;
+  const key = process.env.RESEND_API_KEY;
+  if (key) {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: "Semper <bonjour@trysemper.app>", to: site.contactEmail, subject: `Feedback · ${user.email ?? "Semper"}`, text: `${text}\n\n${user.email ?? ""} · ${where ?? ""}` }),
+    }).catch(() => null);
+  }
+  return true;
 }

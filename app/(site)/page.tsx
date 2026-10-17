@@ -6,21 +6,22 @@ import Mark from "../Mark";
 import Curve from "../Curve";
 import Stand from "../Stand";
 import Orbit from "../Orbit";
-import Moon from "../(app)/Moon";
+import LaunchDate from "../Launch";
 import { site } from "../site";
 import Link from "next/link";
 import { FORMATS, lettres } from "./lettre/lettres";
 
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
+const OPEN = "26 octobre";
 
 const faq = [
   { q: "C'est vraiment gratuit\u00a0?", a: "Oui. Pour un créateur seul, sans limite de fiches et sans carte bancaire. Les espaces d'équipe arriveront plus tard dans une offre payante. Le créateur seul reste gratuit." },
-  { q: "Quand est-ce que ça ouvre\u00a0?", a: "Bientôt, sans date annoncée pour ne pas en promettre une fausse. Les inscrits sur la liste sont prévenus en premier et entrent en premier." },
+  { q: "Quand est-ce que ça ouvre\u00a0?", a: "Le 26 octobre 2026. Les inscrits sur la liste sont prévenus en premier et entrent en premier." },
   { q: "Ça marche sur mon téléphone\u00a0?", a: "Oui, dans ton navigateur, dès le premier jour. Pas de store, pas de téléchargement. Tu peux l'ajouter à ton écran d'accueil comme une application." },
   { q: "Semper marche avec Claude\u00a0?", a: "Oui. Dans ton Profil, tu crées ton adresse Semper et tu la colles dans Claude, rubrique Connecteurs. Claude lit ta semaine, crée tes vidéos, écrit tes scripts et les fait avancer. Il ne publie rien à ta place." },
   { q: "Est-ce que Semper publie à ma place\u00a0?", a: "Non. Semper organise, suit et compte. Tu publies toi-même sur tes plateformes, comme aujourd'hui. Aucune connexion à tes comptes n'est demandée." },
   { q: "Et mes données\u00a0?", a: "Chaque geste est sauvegardé immédiatement. Tes fiches t'appartiennent et tu peux demander leur suppression à tout moment, voir la page Confidentialité." },
-  { q: "Pourquoi une série et pas des points\u00a0?", a: "Parce que ce qui fait grandir un compte, c'est la constance, pas le volume. Semper compte les semaines tenues à ton rythme, jamais le nombre de vidéos." },
+  { q: "Pourquoi une série et pas des points\u00a0?", a: "Parce que ce qui fait grandir un compte, c'est la constance, pas le volume. Semper compte tes jours tenus et tes semaines à ton rythme, jamais le nombre de vidéos." },
 ];
 
 // Données structurées pour Google, Bing et les assistants IA : qui est Semper, ce que c'est, et la FAQ.
@@ -57,19 +58,19 @@ export default function Page() {
         {/* ---------- 00 · Accueil */}
         <section className="hero" id="haut">
           <div className="wrap hero-in">
-            <span className="pill fade"><i className="dot" /> Ouverture bientôt<span className="pill-more"> · Gratuit pour les créateurs</span></span>
+            <LaunchDate />
             <h1 className="title">
               <span className="line"><span className="b">Reste régulier.</span></span>{" "}
               <span className="line"><span className="w">Pour de bon.</span></span>
             </h1>
             <p className="lead fade d1">
               Tu sais quoi filmer. Ce qui te fait décrocher, c&apos;est de tenir le rythme semaine après semaine.
-              Semper suit chaque vidéo de l&apos;idée à la publication, et compte chaque semaine tenue.
+              Semper suit chaque vidéo de l&apos;idée à la publication, et compte chaque jour tenu.
               Et c&apos;est entièrement gratuit.
             </p>
             <div className="hero-form fade d2" id="rejoindre">
               <JoinForm />
-              <p className="fine">Sans carte bancaire · Tu seras prévenu à l&apos;ouverture</p>
+              <p className="fine">100 % gratuit · Sans carte bancaire · Ouverture le {OPEN}</p>
             </div>
           </div>
 
@@ -110,61 +111,6 @@ export default function Page() {
         </section>
 
 
-        {/* ---------- 02 · L'outil */}
-        <section className="s" id="produit">
-          <div className="wrap">
-            <div className="head">
-              <h2 data-reveal style={{ ["--i" as string]: 1 }}>Un calendrier qui tient ton rythme. <span className="w">Pas un logiciel de plus.</span></h2>
-              <p className="story" data-reveal style={{ ["--i" as string]: 2 }}>
-                Une fiche par vidéo, trois vues sur les mêmes fiches, et une série qui compte tes semaines. Rien à configurer.
-              </p>
-            </div>
-
-            <div className="cards">
-              <article className="card" data-spot data-reveal style={{ ["--i" as string]: 1 }}>
-                <div className="cv cv-fiche">
-                  <div className="fiche">
-                    <div className="fiche-t">Pourquoi tu t&apos;arrêtes</div>
-                    <div className="fiche-m"><span>Convertir · Offre</span><span>Lun 21 · 19 h</span></div>
-                    <div className="fiche-steps">
-                      {steps.map((s, i) => <span key={s} className={`chip st st${i}`}>{s}</span>)}
-                    </div>
-                  </div>
-                </div>
-                <h3>Une fiche par vidéo</h3>
-                <p>Chaque contenu avance par statut, de l&apos;idée à la publication. La fiche et les statuts s&apos;adaptent à ta façon de travailler.</p>
-              </article>
-
-              <article className="card" data-spot data-reveal style={{ ["--i" as string]: 2 }}>
-                <div className="cv cv-views">
-                  <div className="vw v1"><i /><i /><i /><i /><i /><i /><i /></div>
-                  <div className="vw v2"><i /><i /><i /></div>
-                  <div className="vw v3"><i /><i /><i /><i /></div>
-                  <div className="vw-tabs"><span>Calendrier</span><span>Kanban</span><span>Liste</span></div>
-                </div>
-                <h3>Trois vues, une seule vérité</h3>
-                <p>Liste, kanban ou calendrier, sur les mêmes fiches. La semaine par défaut, parce que c&apos;est là que tu travailles.</p>
-              </article>
-
-              <article className="card" data-spot data-reveal style={{ ["--i" as string]: 3 }}>
-                <div className="cv cv-serie">
-                  <Moon streak={7} n={15} orbit />
-                  <div className="serie-n"><b>7</b><span>semaines tenues<br /><em className="disp">Lune gibbeuse</em></span></div>
-                </div>
-                <h3>Ta série</h3>
-                <p>Tu fixes ton rythme. Chaque semaine tenue fait grandir ta lune. Semper ne récompense jamais le volume, seulement la constance.</p>
-              </article>
-            </div>
-
-            <ul className="promises">
-              <li data-reveal style={{ ["--i" as string]: 1 }}><Mark /><span>Gratuit, sans limite pour un créateur seul.</span></li>
-              <li data-reveal style={{ ["--i" as string]: 2 }}><Mark /><span>Aucune perte de données. Chaque geste est sauvegardé immédiatement.</span></li>
-              <li data-reveal style={{ ["--i" as string]: 3 }}><Mark /><span>Sur ton téléphone dès le premier jour, sans passer par un store.</span></li>
-            </ul>
-            <p className="claude-note" data-reveal style={{ ["--i" as string]: 4 }}><i className="dot" /> Relié à Claude&nbsp;: demande-lui ta semaine, il crée tes vidéos et écrit tes scripts.</p>
-          </div>
-        </section>
-
         <Join />
 
         {/* ---------- 03 · Comment ça marche */}
@@ -173,7 +119,7 @@ export default function Page() {
             <div className="head">
               <h2 data-reveal style={{ ["--i" as string]: 1 }}>Trois gestes. <span className="w">Chaque semaine.</span></h2>
               <p className="story" data-reveal style={{ ["--i" as string]: 2 }}>
-                Pas de formation, pas de réglages. Tu notes, tu fais avancer, tu tiens ta semaine.
+                Pas de formation, pas de réglages. Tu notes, tu fais avancer, tu tiens ton rythme.
               </p>
             </div>
             <ol className="steps">
@@ -181,7 +127,7 @@ export default function Page() {
                 <span className="step-n">1</span>
                 <h3>Note l&apos;idée</h3>
                 <p>Une fiche en un geste, depuis ton téléphone ou ton ordinateur. Titre, objectif, date. Le reste attendra.</p>
-                <div className="step-v"><span className="chip s-idee">Idée</span><b>Le piège du volume</b></div>
+                <div className="step-v"><span className="chip s-idee">Idée</span><b className="type">Le piège du volume</b></div>
               </li>
               <li className="card" data-spot data-reveal style={{ ["--i" as string]: 2 }}>
                 <span className="step-n">2</span>
@@ -191,11 +137,47 @@ export default function Page() {
               </li>
               <li className="card" data-spot data-reveal style={{ ["--i" as string]: 3 }}>
                 <span className="step-n">3</span>
-                <h3>Tiens ta semaine</h3>
-                <p>Tu as fixé ton rythme. Chaque semaine tenue allonge ta série. Une semaine, jamais un volume.</p>
-                <div className="step-v"><div className="streak-row">{Array.from({ length: 8 }).map((_, i) => <i key={i} className={i < 7 ? "on" : "now"} />)}</div><b>7 semaines</b></div>
+                <h3>Tiens ton rythme</h3>
+                <p>Chaque jour tenu fait grandir ta lune. Un jour raté, un joker le couvre. Jamais un volume.</p>
+                <div className="step-v"><div className="streak-row">{Array.from({ length: 8 }).map((_, i) => <i key={i} className={i < 7 ? "on" : "now"} />)}</div><b>7 jours</b></div>
               </li>
             </ol>
+            <ul className="promises">
+              <li data-reveal style={{ ["--i" as string]: 1 }}><Mark /><span>Gratuit, sans limite pour un créateur seul.</span></li>
+              <li data-reveal style={{ ["--i" as string]: 2 }}><Mark /><span>Aucune perte de données. Chaque geste est sauvegardé immédiatement.</span></li>
+              <li data-reveal style={{ ["--i" as string]: 3 }}><Mark /><span>Sur ton téléphone dès le premier jour, sans passer par un store.</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <Join />
+
+        {/* ---------- 03 bis · Claude */}
+        <section className="s" id="claude">
+          <div className="wrap claude">
+            <div className="claude-text">
+              <h2 data-reveal style={{ ["--i" as string]: 1 }}>Claude parle à Semper. <span className="w">Directement.</span></h2>
+              <p className="story" data-reveal style={{ ["--i" as string]: 2 }}>
+                Un connecteur intégré&nbsp;: ton adresse Semper se colle dans Claude, rubrique Connecteurs. Claude lit ta semaine,
+                crée tes fiches, écrit tes scripts et les fait avancer. Il ne publie rien à ta place.
+              </p>
+            </div>
+            <div className="cl-win" aria-hidden="true" data-reveal style={{ ["--i" as string]: 3 }}>
+              <div className="cl-top"><span className="cl-dots"><i /><i /><i /></span><span>Claude</span></div>
+              <div className="cl-body">
+                <p className="cl-me">Qu&apos;est-ce qui sort cette semaine sur Semper&nbsp;?</p>
+                <div className="cl-ai">
+                  <span className="cl-tool"><i />Semper · lire_semaine</span>
+                  <p>Une vidéo jeudi à 18&nbsp;h&nbsp;: «&nbsp;3 erreurs de calendrier&nbsp;». Le tournage est prévu demain à 9&nbsp;h, et le script n&apos;est pas encore écrit.</p>
+                </div>
+                <p className="cl-me">Écris-le en problème-solution.</p>
+                <div className="cl-ai">
+                  <span className="cl-tool"><i />Semper · modifier_contenu</span>
+                  <p>C&apos;est fait. Le script est dans ta fiche, en trois parties&nbsp;: le problème, la solution, l&apos;appel à l&apos;action.</p>
+                </div>
+              </div>
+              <div className="cl-input"><span>Répondre à Claude…</span><i /></div>
+            </div>
           </div>
         </section>
 
@@ -294,7 +276,7 @@ export default function Page() {
             <span className="final-mark"><Orbit size={96} lap={6} trail={220} /></span>
             <h2 data-reveal style={{ ["--i" as string]: 1 }}>Ta prochaine série <span className="w">commence ici.</span></h2>
             <p className="story" data-reveal style={{ ["--i" as string]: 2 }}>
-              Ouverture bientôt. Les premiers inscrits entrent en premier.
+              Ouverture le {OPEN}. Les premiers inscrits entrent en premier.
             </p>
             <div className="final-form" data-reveal style={{ ["--i" as string]: 3 }}>
               <JoinForm label="Me prévenir à l'ouverture" />

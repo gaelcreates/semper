@@ -901,3 +901,69 @@ h2 { letter-spacing: -0.035em; }
 .app-frame { display: block; width: 100%; height: clamp(560px, 56vw, 700px); border: 0; background: var(--bg); opacity: 0; transition: opacity 500ms var(--ease); }
 .app-frame.on { opacity: 1; }
 @media (max-width: 860px) { .app-frame { height: 720px; } }
+
+/* ---------- Trois gestes : au survol, la carte passe au noir, les autres s'effacent, son visuel se joue. */
+.steps .card { transition: transform 600ms var(--ease), background 400ms, color 400ms, opacity 400ms, box-shadow 600ms var(--ease), border-color 400ms; }
+.steps .card p { transition: color 400ms; }
+.steps .step-v { transition: background 400ms, border-color 400ms; }
+.steps .step-n { transition: background 400ms, color 400ms, transform 600ms var(--ease); }
+.steps .type { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; }
+@media (hover: hover) {
+  .steps:hover .card:not(:hover) { opacity: 0.45; transform: scale(0.97); }
+  .steps .card:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); transform: translateY(-10px) scale(1.03); box-shadow: 0 40px 80px -30px rgba(var(--fgr), 0.55); }
+  .steps .card:hover::before { opacity: 1; background: radial-gradient(260px circle at var(--x, 50%) var(--y, 50%), rgba(255, 197, 8, 0.18), transparent 65%); }
+  .steps .card:hover p { color: rgba(var(--bgr), 0.72); }
+  .steps .card:hover .step-n { background: var(--gold); color: #0e0e0e; transform: scale(1.18) rotate(-8deg); }
+  .steps .card:hover .step-v { background: rgba(var(--bgr), 0.06); border-color: rgba(var(--bgr), 0.14); }
+  .steps .card:hover .chip { background: rgba(var(--bgr), 0.12); color: var(--bg); }
+  .steps .card:hover .streak-row i { border-color: rgba(var(--bgr), 0.3); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  /* 1 · l'idée se tape */
+  .steps .card:hover .type { animation: typing 900ms steps(18) both, caret 500ms step-end 900ms 3; border-right: 2px solid var(--gold); }
+  /* 2 · les statuts s'allument l'un après l'autre, Publié en or */
+  .steps .card:hover .steps-v .chip { animation: chipon 400ms var(--ease) both; }
+  .steps .card:hover .steps-v .chip:nth-child(2) { animation-delay: 160ms; }
+  .steps .card:hover .steps-v .chip:nth-child(3) { animation-delay: 320ms; }
+  .steps .card:hover .steps-v .chip:nth-child(4) { animation-delay: 480ms; }
+  .steps .card:hover .steps-v .chip:nth-child(5) { animation: chipgold 500ms var(--ease) 640ms both; }
+  /* 3 · la série se remplit en or, point après point */
+  .steps .card:hover .streak-row i.on { animation: dotgold 400ms var(--ease) both; }
+  .steps .card:hover .streak-row i.now { animation: dotgold 400ms var(--ease) 480ms both; }
+  .steps .card:hover .streak-row i.on:nth-child(2) { animation-delay: 60ms; }
+  .steps .card:hover .streak-row i.on:nth-child(3) { animation-delay: 120ms; }
+  .steps .card:hover .streak-row i.on:nth-child(4) { animation-delay: 180ms; }
+  .steps .card:hover .streak-row i.on:nth-child(5) { animation-delay: 240ms; }
+  .steps .card:hover .streak-row i.on:nth-child(6) { animation-delay: 300ms; }
+  .steps .card:hover .streak-row i.on:nth-child(7) { animation-delay: 360ms; }
+}
+@keyframes typing { from { width: 0; } to { width: 18ch; } }
+@keyframes caret { 50% { border-color: transparent; } }
+@keyframes chipon { from { background: rgba(var(--bgr), 0.12); color: var(--bg); transform: scale(0.9); } to { background: var(--bg); color: var(--ink); transform: scale(1); } }
+@keyframes chipgold { 0% { transform: scale(0.9); } 60% { transform: scale(1.15); } 100% { background: var(--gold); color: #0e0e0e; transform: scale(1); } }
+@keyframes dotgold { 0% { transform: scale(0.6); } 60% { transform: scale(1.25); } 100% { background: var(--gold); border-color: var(--gold); transform: scale(1); } }
+
+/* ---------- Claude : une fenêtre de conversation dans l'esprit de l'application Claude */
+.claude { display: grid; grid-template-columns: 1fr 1.05fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
+.cl-win { --cl-bg: #faf9f5; --cl-ink: #141413; --cl-mute: #73726c; --cl-me: #f0eee6; --cl-line: rgba(31, 30, 29, 0.12);
+  border-radius: 18px; overflow: hidden; background: var(--cl-bg); color: var(--cl-ink); border: 1px solid var(--cl-line); box-shadow: var(--shadow); text-align: left; }
+:root[data-theme="dark"] .cl-win { --cl-bg: #262624; --cl-ink: #faf9f5; --cl-mute: #9c9a92; --cl-me: #141413; --cl-line: rgba(250, 249, 245, 0.12); }
+.cl-top { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--cl-line); font-size: 13px; font-weight: 700; }
+.cl-dots { display: flex; gap: 6px; }
+.cl-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--cl-line); }
+.cl-body { display: grid; gap: 16px; padding: 22px 22px 8px; }
+.cl-me { justify-self: end; max-width: 82%; padding: 10px 14px; border-radius: 14px; background: var(--cl-me); font-size: 14.5px; line-height: 1.45; }
+.cl-ai { display: grid; gap: 10px; max-width: 94%; }
+.cl-ai p { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; font-size: 16px; line-height: 1.55; }
+.cl-tool { display: inline-flex; align-items: center; gap: 8px; width: max-content; padding: 5px 10px; border: 1px solid var(--cl-line); border-radius: 8px; font-size: 12px; color: var(--cl-mute); }
+.cl-tool i { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+.cl-input { display: flex; align-items: center; justify-content: space-between; margin: 14px 16px 16px; padding: 12px 12px 12px 16px; border: 1px solid var(--cl-line); border-radius: 14px; font-size: 14px; color: var(--cl-mute); }
+.cl-input i { width: 28px; height: 28px; border-radius: 8px; background: var(--cl-ink); opacity: 0.15; }
+@media (max-width: 900px) { .claude { grid-template-columns: 1fr; } }
+
+/* ---------- L'ouverture du 26 octobre */
+.launch { display: inline-flex; align-items: center; gap: 14px; padding: 10px 20px 10px 16px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--card); box-shadow: 0 10px 30px -18px rgba(var(--fgr), 0.3); }
+.launch > b { font-size: 30px; line-height: 1; color: var(--ink); }
+.launch > span { display: grid; gap: 2px; text-align: left; font-size: 14px; font-weight: 700; }
+.launch .lbl { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+@media (max-width: 600px) { .launch { gap: 10px; padding: 8px 14px 8px 12px; } .launch > b { font-size: 22px; } .launch > span { font-size: 12.5px; white-space: nowrap; } }

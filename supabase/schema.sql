@@ -595,3 +595,18 @@ create table public.waitlist (
 create index waitlist_a_envoyer on public.waitlist (created_at) where synced_at is null;
 alter table public.waitlist enable row level security;
 revoke all on public.waitlist from anon, authenticated;
+
+-- Feedback (17 oct 2026) : écrit depuis l'espace par le serveur (action sendFeedback), lu par l'admin seulement.
+create table public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users on delete cascade,
+  email text,
+  body text not null check (char_length(body) between 1 and 2000),
+  page text check (char_length(page) <= 80),
+  created_at timestamptz not null default now()
+);
+create index feedback_recent on public.feedback (created_at desc);
+alter table public.feedback enable row level security;
+revoke all on public.feedback from anon, authenticated;
+grant select on public.feedback to authenticated;
+create policy "feedback : admin seulement" on public.feedback for select using (public.is_admin());

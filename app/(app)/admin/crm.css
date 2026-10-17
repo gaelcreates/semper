@@ -203,3 +203,4 @@
   .cr-act { margin-inline: -16px; padding-inline: 16px; }
   .cr-dl { grid-template-columns: 112px minmax(0, 1fr); }
 }
+.cr-fb { margin-left: auto; }

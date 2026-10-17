@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Conditions d'utilisation · Semper" 
 
 export default function Page() {
   return (
-    <Legal title="Conditions d'utilisation" updated="8 octobre 2026">
+    <Legal title="Conditions d'utilisation" updated="17 octobre 2026">
       <h2>Ce que couvre ce texte</h2>
       <p>
         Ces conditions s&apos;appliquent au site trysemper.app, à sa liste d&apos;attente et à l&apos;application

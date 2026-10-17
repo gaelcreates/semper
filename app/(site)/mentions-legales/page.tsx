@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Mentions légales · Semper" };
 
 export default function Page() {
   return (
-    <Legal title="Mentions légales" updated="8 octobre 2026">
+    <Legal title="Mentions légales" updated="17 octobre 2026">
       <h2>Éditeur</h2>
       <p>
         {site.owner}<br />

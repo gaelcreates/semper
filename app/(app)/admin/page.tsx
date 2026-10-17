@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./crm.css";
 import { announce, useData } from "../store";
@@ -368,7 +369,7 @@ export default function Admin() {
 
   return (
     <div className="page wide cr">
-      <header className="page-head"><h1>Inscrits</h1><b className="disp count">{people.length}</b></header>
+      <header className="page-head"><h1>Inscrits</h1><b className="disp count">{people.length}</b><Link href="/admin/feedback" className="btn btn-ghost btn-sm cr-fb">Feedback</Link></header>
 
       <div className="cr-kpi">
         <button type="button" className="box cr-today" onClick={() => set({ vue: "aujourdhui", tri: "", mode: "liste" })}>

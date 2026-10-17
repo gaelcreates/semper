@@ -14,8 +14,8 @@ export function TopBar({ home = false }: { home?: boolean }) {
         {home && (
           <nav className="menu" aria-label="Sections">
             <a href="#probleme">Le problème</a>
-            <a href="#produit">L&apos;outil</a>
             <a href="#methode">Comment ça marche</a>
+            <a href="#claude">Claude</a>
             <a href="#mission">La mission</a>
             <a href="#lettre">La lettre</a>
             <a href="#questions">Questions</a>
