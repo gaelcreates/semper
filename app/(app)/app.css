@@ -1184,4 +1184,3 @@ div.install-help { position: relative; padding-right: 34px; }
 .ad-links li { display: flex; justify-content: space-between; gap: 12px; color: var(--ink2); }
 .ad-links li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 760px) { .ad-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ad-rows li { grid-template-columns: minmax(0, 1fr) auto; } .ad-rows li > :nth-child(2), .ad-rows li > :nth-child(3) { display: none; } }
-.blk.narrow { padding-right: 6px; } .blk.narrow::after { display: none; }

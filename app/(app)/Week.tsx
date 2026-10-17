@@ -14,13 +14,11 @@ import { createContent, live, movePublish, openSheet, patchContent, stepIn, type
 const HOUR = 64;
 const PX = HOUR / 60;
 const SNAP = 15;
-const MIN_H = 22; // hauteur visible minimale d'un bloc, en minutes : une ligne lisible
+const MIN_H = 15; // hauteur visible minimale d'un bloc, en minutes ; le bloc suivant passe par-dessus
 const PUB = 30; // la publication est un moment, affichée sur une demi-heure
 const GHOST = 18 * 60; // la première vidéo proposée, à 18 h
 
-// y : là où le bloc s'affiche (en minutes). D'ordinaire son heure ; des étapes trop courtes pour être lues
-// remontent juste ce qu'il faut pour s'empiler au-dessus de l'étape suivante, la publication restant à son heure.
-type Item = { key: string; cid: string; kind: string; day: number; s: number; y: number; dur: number; done: boolean; title: string; label: string };
+type Item = { key: string; cid: string; kind: string; day: number; s: number; dur: number; done: boolean; title: string; label: string };
 type Drag = { it: Item; x: number; y: number; colW: number; moved: boolean; held: boolean };
 type Off = { key: string; cid: string; pub: boolean; days: number; mins: number; colW: number };
 
@@ -52,7 +50,7 @@ export default function Week({ contents, days, steps, empty = false }: { content
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dayKey(days[0]), days.length]);
 
-  const byDay = days.map((_, i) => lanes(stack(items.filter((it) => it.day === i))));
+  const byDay = days.map((_, i) => lanes(items.filter((it) => it.day === i)));
 
   function offsets(g: Drag, e: { clientX: number; clientY: number }) {
     const days = shift(g, e.clientX);
@@ -159,16 +157,16 @@ export default function Week({ contents, days, steps, empty = false }: { content
             )}
             {byDay[i].map(({ it, lane, n }, z) => {
               const moving = off && (off.key === it.key || (off.pub && off.cid === it.cid));
-              const h = vis(it) * PX;
+              const h = Math.max(it.dur, MIN_H) * PX;
               const tight = h < 44;
               return (
                 <button
                   type="button"
                   key={it.key}
                   data-k={it.key}
-                  className={`blk ${KINDS.includes(it.kind) ? `k-${it.kind}` : "k-step"}${it.done ? " done" : ""}${tight ? " tight" : ""}${n > 1 ? " narrow" : ""}${moving ? " moving" : ""}`}
+                  className={`blk ${KINDS.includes(it.kind) ? `k-${it.kind}` : "k-step"}${it.done ? " done" : ""}${tight ? " tight" : ""}${moving ? " moving" : ""}`}
                   style={{
-                    top: it.y * PX, height: h - 2, zIndex: moving ? 50 : 2 + z,
+                    top: it.s * PX, height: h - 2, zIndex: moving ? 50 : 2 + z,
                     left: `calc(${(lane / n) * 100}% + 2px)`, width: `calc(${100 / n}% - 4px)`,
                     transform: moving ? `translate(${off.days * off.colW}px, ${off.mins * PX}px)` : undefined,
                   }}
@@ -206,8 +204,7 @@ function build(contents: Content[], days: Date[], steps: StepDef[]): Item[] {
     if (!at) return;
     const day = idx.get(at.slice(0, 10));
     if (day === undefined) return;
-    const s = minutesOfDay(parse(at));
-    out.push({ key: `${c.id}:${kind}`, cid: c.id, kind, day, s, y: s, dur: d, done, title: c.title, label });
+    out.push({ key: `${c.id}:${kind}`, cid: c.id, kind, day, s: minutesOfDay(parse(at)), dur: d, done, title: c.title, label });
   };
   for (const c of contents) {
     live(steps).forEach(({ key, label, minutes }) => push(c, key, stepIn(c, key).at, minutes, stepIn(c, key).done, label));
@@ -216,54 +213,22 @@ function build(contents: Content[], days: Date[], steps: StepDef[]): Item[] {
   return out;
 }
 
-// La hauteur affichée d'un bloc, en minutes.
-const vis = (it: Item) => Math.max(it.dur, MIN_H);
-
-// Les blocs d'une même vidéo qui se chevaucheraient à l'écran (étapes courtes, collées à la publication) :
-// en partant du plus tardif, chaque bloc remonte juste au-dessus du suivant. Tous restent visibles, dans l'ordre.
-function stack(items: Item[]): Item[] {
-  const byC = new Map<string, Item[]>();
-  for (const it of items) byC.set(it.cid, [...(byC.get(it.cid) ?? []), it]);
-  const out: Item[] = [];
-  for (const list of byC.values()) {
-    const sorted = [...list].sort((a, b) => a.s - b.s);
-    for (let i = sorted.length - 2; i >= 0; i--) {
-      const next = sorted[i + 1];
-      sorted[i] = { ...sorted[i], y: Math.max(0, Math.min(sorted[i].s, next.y - vis(sorted[i]))) };
-    }
-    out.push(...sorted);
-  }
-  return out;
-}
-
-// Vidéos qui se chevauchent : côte à côte, chacune dans son couloir, ses blocs collés ensemble.
+// Blocs qui se chevauchent : côte à côte, chacun dans son couloir.
 function lanes(items: Item[]) {
-  const byC = new Map<string, Item[]>();
-  for (const it of items) byC.set(it.cid, [...(byC.get(it.cid) ?? []), it]);
-  // Une vidéo se découpe en grappes de blocs qui se touchent : seule une grappe prend un couloir.
-  const chains: Item[][] = [];
-  for (const list of byC.values()) {
-    let cur: Item[] = [];
-    for (const it of [...list].sort((x, y) => x.y - y.y)) {
-      const last = cur[cur.length - 1];
-      if (last && it.y > last.y + vis(last)) { chains.push(cur); cur = []; }
-      cur.push(it);
-    }
-    if (cur.length) chains.push(cur);
-  }
-  const spans = chains.map((list) => ({ list, a: list[0].y, b: Math.max(...list.map((x) => x.y + vis(x))) })).sort((x, y) => x.a - y.a);
+  const sorted = [...items].sort((a, b) => a.s - b.s);
   const out: { it: Item; lane: number; n: number }[] = [];
-  let group: { list: Item[]; lane: number }[] = [];
+  let group: { it: Item; lane: number; n: number }[] = [];
   let ends: number[] = [];
   let groupEnd = -1;
-  const flush = () => { group.forEach((g) => g.list.forEach((it) => out.push({ it, lane: g.lane, n: ends.length }))); group = []; ends = []; };
-  for (const sp of spans) {
-    if (sp.a >= groupEnd) flush();
-    let lane = ends.findIndex((x) => x <= sp.a);
-    if (lane < 0) { lane = ends.length; ends.push(sp.b); } else ends[lane] = sp.b;
-    group.push({ list: sp.list, lane });
-    groupEnd = Math.max(groupEnd, sp.b);
+  const flush = () => { group.forEach((g) => (g.n = ends.length)); out.push(...group); group = []; ends = []; };
+  for (const it of sorted) {
+    if (it.s >= groupEnd) flush();
+    const e = it.s + it.dur;
+    let lane = ends.findIndex((x) => x <= it.s);
+    if (lane < 0) { lane = ends.length; ends.push(e); } else ends[lane] = e;
+    group.push({ it, lane, n: 0 });
+    groupEnd = Math.max(groupEnd, e);
   }
   flush();
-  return out.sort((x, y) => x.it.y - y.it.y);
+  return out;
 }
