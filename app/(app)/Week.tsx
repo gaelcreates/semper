@@ -20,7 +20,10 @@ const GHOST = 18 * 60; // la première vidéo proposée, à 18 h
 
 type Item = { key: string; cid: string; kind: string; day: number; s: number; dur: number; done: boolean; title: string; label: string };
 type Drag = { it: Item; x: number; y: number; colW: number; moved: boolean; held: boolean };
-type Off = { key: string; cid: string; pub: boolean; days: number; mins: number; colW: number };
+// dx, dy : le bloc suit le pointeur au pixel ; days, mins : la place où il se posera (au quart d'heure).
+// land : on a lâché, le bloc glisse jusqu'à sa place avant que la donnée change.
+type Off = { key: string; cid: string; pub: boolean; days: number; mins: number; colW: number; dx: number; dy: number; land?: boolean };
+const LAND = 180; // ms pour se poser
 
 export default function Week({ contents, days, steps, empty = false }: { contents: Content[]; days: Date[]; steps: StepDef[]; empty?: boolean }) {
   const scroller = useRef<HTMLDivElement>(null);
@@ -28,6 +31,8 @@ export default function Week({ contents, days, steps, empty = false }: { content
   const hold = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [off, setOff] = useState<Off | null>(null);
   const [now, setNow] = useState(() => new Date());
+  // Les blocs qui viennent d'être posés : pas d'animation de position au moment où la donnée change (ils y sont déjà).
+  const settled = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60000);
@@ -72,7 +77,7 @@ export default function Week({ contents, days, steps, empty = false }: { content
       if (drag.current !== g) return;
       g.held = true;
       navigator.vibrate?.(10);
-      setOff({ key: it.key, cid: it.cid, pub: it.kind === "pub", colW: g.colW, days: 0, mins: 0 });
+      setOff({ key: it.key, cid: it.cid, pub: it.kind === "pub", colW: g.colW, days: 0, mins: 0, dx: 0, dy: 0 });
     }, 300);
   }
   function move(e: React.PointerEvent) {
@@ -83,17 +88,23 @@ export default function Week({ contents, days, steps, empty = false }: { content
     if (!g.held) { if (dist > 8) { clearTimeout(hold.current); drag.current = null; } return; }
     if (!g.moved && dist < 5) return;
     g.moved = true;
-    setOff({ key: g.it.key, cid: g.it.cid, pub: g.it.kind === "pub", colW: g.colW, ...offsets(g, e) });
+    setOff({ key: g.it.key, cid: g.it.cid, pub: g.it.kind === "pub", colW: g.colW, ...offsets(g, e), dx: e.clientX - g.x, dy: e.clientY - g.y });
   }
   function up(e: React.PointerEvent) {
     const g = drag.current;
     drag.current = null;
     clearTimeout(hold.current);
-    setOff(null);
-    if (!g) return;
-    if (!g.moved) return openSheet(g.it.cid);
+    if (!g || !g.moved) { setOff(null); if (g) openSheet(g.it.cid); return; }
+    // Le bloc glisse jusqu'à sa place, puis la donnée change : aucun saut.
     const o = offsets(g, e);
-    place(g.it, o.days, o.mins);
+    const pub = g.it.kind === "pub";
+    setOff({ key: g.it.key, cid: g.it.cid, pub, colW: g.colW, ...o, dx: 0, dy: 0, land: true });
+    setTimeout(() => {
+      settled.current = new Set(items.filter((x) => x.key === g.it.key || (pub && x.cid === g.it.cid)).map((x) => x.key));
+      place(g.it, o.days, o.mins);
+      setOff(null);
+      requestAnimationFrame(() => requestAnimationFrame(() => settled.current.clear()));
+    }, LAND);
   }
   function cancel() {
     clearTimeout(hold.current);
@@ -155,8 +166,16 @@ export default function Week({ contents, days, steps, empty = false }: { content
                 <DotIcon name="ajout" /><span>Première vidéo</span>
               </button>
             )}
+            {off && !off.land && (() => {
+              // Où le bloc se posera : un contour pointillé et l'heure.
+              const it = items.find((x) => x.key === off.key);
+              if (!it || it.day + off.days !== i || (!off.days && !off.mins)) return null;
+              const s = it.s + off.mins;
+              return <i className="blk-to" style={{ top: s * PX, height: Math.max(it.dur, MIN_H) * PX - 2 }}><b className="disp">{time(s)}</b></i>;
+            })()}
             {byDay[i].map(({ it, lane, n }, z) => {
               const moving = off && (off.key === it.key || (off.pub && off.cid === it.cid));
+              const fresh = settled.current.has(it.key);
               const h = Math.max(it.dur, MIN_H) * PX;
               const tight = h < 44;
               return (
@@ -164,11 +183,11 @@ export default function Week({ contents, days, steps, empty = false }: { content
                   type="button"
                   key={it.key}
                   data-k={it.key}
-                  className={`blk ${KINDS.includes(it.kind) ? `k-${it.kind}` : "k-step"}${it.done ? " done" : ""}${tight ? " tight" : ""}${moving ? " moving" : ""}`}
+                  className={`blk ${KINDS.includes(it.kind) ? `k-${it.kind}` : "k-step"}${it.done ? " done" : ""}${tight ? " tight" : ""}${moving ? (off.land ? " landing" : " moving") : ""}${fresh ? " nt" : ""}`}
                   style={{
                     top: it.s * PX, height: h - 2, zIndex: moving ? 50 : 2 + z,
                     left: `calc(${(lane / n) * 100}% + 2px)`, width: `calc(${100 / n}% - 4px)`,
-                    transform: moving ? `translate(${off.days * off.colW}px, ${off.mins * PX}px)` : undefined,
+                    transform: moving ? (off.land ? `translate(${off.days * off.colW}px, ${off.mins * PX}px)` : `translate(${off.dx}px, ${off.dy}px) scale(1.02)`) : undefined,
                   }}
                   onPointerDown={(e) => down(e, it)}
                   onPointerMove={move}
