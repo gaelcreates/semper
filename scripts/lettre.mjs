@@ -10,7 +10,7 @@
 //    ou date_envoi dans son contenu.py. Jamais l'annonce, jamais une édition marquée "site": False.
 //    Il lui faut titre_web et description dans contenu.py, sinon elle attend et le journal le dit.
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -22,6 +22,10 @@ const PUSH = process.argv.includes("--push");
 
 // Mêmes noms que gabarit/build.py.
 const BANNIERES = { annonce: "l-annonce", calendrier: "le-calendrier-de", regle: "la-regle", coulisses: "les-coulisses", piege: "le-piege", chiffre: "le-chiffre" };
+
+// Lire puis écrire plutôt que cpSync : le dossier Newsletter vit sur Google Drive, et la copie
+// directe d'un fichier Drive échoue (EDEADLK) quand le job tourne seul à 20 h.
+const cpSync = (src, dest) => writeFileSync(dest, readFileSync(src));
 
 const git = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
 const png = (dir) => (existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".png")) : []);
