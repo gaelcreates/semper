@@ -610,3 +610,7 @@ alter table public.feedback enable row level security;
 revoke all on public.feedback from anon, authenticated;
 grant select on public.feedback to authenticated;
 create policy "feedback : admin seulement" on public.feedback for select using (public.is_admin());
+
+-- Waitlist lisible par l'admin (17 oct 2026), page /admin/waitlist.
+grant select on public.waitlist to authenticated;
+create policy "waitlist : admin seulement" on public.waitlist for select using (public.is_admin());

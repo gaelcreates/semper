@@ -2,11 +2,13 @@ import Link from "next/link";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
 import Reveal from "./Reveal";
+import { isOpen } from "./site";
 
 // Barre du haut et pied de page communs à toutes les pages.
-// Partout : se connecter et rejoindre la waitlist. Le menu des sections n'existe que sur l'accueil.
+// Partout : se connecter et rejoindre la waitlist (ou créer son compte, une fois ouvert). Le menu des sections n'existe que sur l'accueil.
 export function TopBar({ home = false }: { home?: boolean }) {
-  const join = <span className="roll"><span><span className="full">Rejoindre la waitlist</span><span className="short">Rejoindre</span></span></span>;
+  const open = isOpen();
+  const join = <span className="roll"><span><span className="full">{open ? "Créer mon compte" : "Rejoindre la waitlist"}</span><span className="short">{open ? "Commencer" : "Rejoindre"}</span></span></span>;
   return (
     <header className="topbar">
       <div className="wrap nav">
@@ -24,7 +26,7 @@ export function TopBar({ home = false }: { home?: boolean }) {
         <div className="nav-right">
           <ThemeToggle />
           <Link href="/connexion" prefetch={false} className="link nav-login"><span className="full">Se connecter</span><span className="short">Connexion</span></Link>
-          {home ? <a href="#rejoindre" className="btn btn-sm">{join}</a> : <Link href="/#rejoindre" className="btn btn-sm">{join}</Link>}
+          {open ? <Link href="/commencer" className="btn btn-sm">{join}</Link> : home ? <a href="#rejoindre" className="btn btn-sm">{join}</a> : <Link href="/#rejoindre" className="btn btn-sm">{join}</Link>}
         </div>
       </div>
     </header>

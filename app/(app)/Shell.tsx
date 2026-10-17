@@ -28,7 +28,7 @@ const nav = [
   { href: "/profil", label: "Profil", icon: "profil" },
 ] as const;
 // Le CRM, seulement pour les comptes admin (la base le garantit aussi, voir is_admin).
-const admin = { href: "/admin", label: "Inscrits", icon: "serie" } as const;
+const admin = { href: "/admin", label: "Admin", icon: "serie" } as const;
 
 export const newContent = () => openSheet(createContent());
 

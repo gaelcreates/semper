@@ -7,16 +7,18 @@ import Curve from "../Curve";
 import Stand from "../Stand";
 import Orbit from "../Orbit";
 import LaunchDate from "../Launch";
-import { site } from "../site";
+import { isOpen, site } from "../site";
 import Link from "next/link";
 import { FORMATS, lettres } from "./lettre/lettres";
 
 const steps = ["Idée", "À écrire", "À tourner", "À monter", "Publié"];
 const OPEN = "26 octobre";
 
-const faq = [
+const faqOf = (open: boolean) => [
   { q: "C'est vraiment gratuit\u00a0?", a: "Oui. Pour un créateur seul, sans limite de fiches et sans carte bancaire. Les espaces d'équipe arriveront plus tard dans une offre payante. Le créateur seul reste gratuit." },
-  { q: "Quand est-ce que ça ouvre\u00a0?", a: "Le 26 octobre 2026. Les inscrits sur la liste sont prévenus en premier et entrent en premier." },
+  open
+    ? { q: "C'est ouvert\u00a0?", a: "Oui, depuis le 26 octobre 2026. Crée ton compte en une minute, sans carte bancaire." }
+    : { q: "Quand est-ce que ça ouvre\u00a0?", a: "Le 26 octobre 2026. Les inscrits sur la liste sont prévenus en premier et entrent en premier." },
   { q: "Ça marche sur mon téléphone\u00a0?", a: "Oui, dans ton navigateur, dès le premier jour. Pas de store, pas de téléchargement. Tu peux l'ajouter à ton écran d'accueil comme une application." },
   { q: "Semper marche avec Claude\u00a0?", a: "Oui. Dans ton Profil, tu crées ton adresse Semper et tu la colles dans Claude, rubrique Connecteurs. Claude lit ta semaine, crée tes vidéos, écrit tes scripts et les fait avancer. Il ne publie rien à ta place." },
   { q: "Est-ce que Semper publie à ma place\u00a0?", a: "Non. Semper organise, suit et compte. Tu publies toi-même sur tes plateformes, comme aujourd'hui. Aucune connexion à tes comptes n'est demandée." },
@@ -25,7 +27,7 @@ const faq = [
 ];
 
 // Données structurées pour Google, Bing et les assistants IA : qui est Semper, ce que c'est, et la FAQ.
-const jsonLd = {
+const jsonLdOf = (faq: { q: string; a: string }[]) => ({
   "@context": "https://schema.org",
   "@graph": [
     { "@type": "Organization", "@id": `${site.url}/#org`, name: "Semper", url: site.url, logo: `${site.url}/icon.svg`, email: site.contactEmail, address: { "@type": "PostalAddress", addressRegion: "Vaud", addressCountry: "CH" } },
@@ -33,7 +35,7 @@ const jsonLd = {
     { "@type": "SoftwareApplication", name: "Semper", url: site.url, applicationCategory: "BusinessApplication", operatingSystem: "Web", inLanguage: "fr", description: site.description, offers: { "@type": "Offer", price: "0", priceCurrency: "CHF" }, publisher: { "@id": `${site.url}/#org` } },
     { "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
   ],
-};
+});
 
 // Fil qui relie deux sections : la ligne se trace quand on arrive dessus.
 function Join() {
@@ -47,6 +49,9 @@ function Join() {
 
 
 export default function Page() {
+  const open = isOpen();
+  const faq = faqOf(open);
+  const jsonLd = jsonLdOf(faq);
   return (
     <>
       <Loader />
@@ -58,7 +63,7 @@ export default function Page() {
         {/* ---------- 00 · Accueil */}
         <section className="hero" id="haut">
           <div className="wrap hero-in">
-            <LaunchDate />
+            <LaunchDate open={open} />
             <h1 className="title">
               <span className="line"><span className="b">Reste régulier.</span></span>{" "}
               <span className="line"><span className="w">Pour de bon.</span></span>
@@ -68,10 +73,17 @@ export default function Page() {
               Semper suit chaque vidéo de l&apos;idée à la publication, et compte chaque jour tenu.
               Et c&apos;est entièrement gratuit.
             </p>
-            <div className="hero-form fade d2" id="rejoindre">
-              <JoinForm />
-              <p className="fine">100 % gratuit · Sans carte bancaire · Ouverture le {OPEN}</p>
-            </div>
+            {open ? (
+              <div className="hero-form fade d2" id="rejoindre">
+                <Link href="/commencer" className="btn btn-big">Créer mon compte</Link>
+                <p className="fine">100 % gratuit · Sans carte bancaire · Prêt en une minute</p>
+              </div>
+            ) : (
+              <div className="hero-form fade d2" id="rejoindre">
+                <JoinForm />
+                <p className="fine">100 % gratuit · Sans carte bancaire · Ouverture le {OPEN}</p>
+              </div>
+            )}
           </div>
 
           <div className="wrap mock-wrap">
@@ -276,10 +288,10 @@ export default function Page() {
             <span className="final-mark"><Orbit size={96} lap={6} trail={220} /></span>
             <h2 data-reveal style={{ ["--i" as string]: 1 }}>Ta prochaine série <span className="w">commence ici.</span></h2>
             <p className="story" data-reveal style={{ ["--i" as string]: 2 }}>
-              Ouverture le {OPEN}. Les premiers inscrits entrent en premier.
+              {open ? "C'est ouvert. Ta première semaine commence aujourd'hui." : `Ouverture le ${OPEN}. Les premiers inscrits entrent en premier.`}
             </p>
             <div className="final-form" data-reveal style={{ ["--i" as string]: 3 }}>
-              <JoinForm label="Me prévenir à l'ouverture" />
+              {open ? <Link href="/commencer" className="btn btn-big">Créer mon compte</Link> : <JoinForm label="Me prévenir à l'ouverture" />}
             </div>
           </div>
         </section>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { sb } from "../../../supabase";
 
 type Row = { id: string; user_id: string | null; email: string | null; body: string; page: string | null; created_at: string };
@@ -25,8 +24,8 @@ export default function Page() {
   }, []);
   if (!rows) return null;
   return (
-    <div className="page fb-page">
-      <header className="page-head"><h1>Feedback</h1><b className="disp count">{rows.length}</b><Link href="/admin" className="link">Inscrits</Link></header>
+    <div className="page wide fb-page">
+      <header className="page-head"><h1>Feedback</h1><b className="disp count">{rows.length}</b></header>
       {rows.length ? (
         <ol className="fb-list">
           {rows.map((r) => {

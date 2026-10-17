@@ -1148,7 +1148,6 @@ div.install-help { position: relative; padding-right: 34px; }
 .ws-fb-row .di { width: 15px; height: 15px; }
 .ws-fb-row + .ws-me { margin-top: 0; }
 .ws-side .install ~ .ws-fb-row { margin-top: 0; }
-.fb-page .page-head .link { margin-left: auto; }
 .fb-list { display: grid; gap: 10px; margin-top: 24px; }
 .fb-list li { display: grid; gap: 8px; padding: 18px 20px; }
 .fb-list p { white-space: pre-wrap; line-height: 1.5; }
@@ -1167,3 +1166,31 @@ div.install-help { position: relative; padding-right: 34px; }
 .ig-say ul { display: grid; gap: 10px; margin: 14px 0 12px; }
 .ig-say li { padding-left: 18px; position: relative; font-size: 16px; line-height: 1.4; }
 .ig-say li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+
+/* Admin : les rubriques */
+.ad-bar { margin-bottom: 18px; }
+.ad-tabs { width: max-content; max-width: 100%; overflow-x: auto; }
+.ad-tabs a { display: inline-grid; place-items: center; height: 34px; padding: 0 16px; border-radius: 3px; font-size: 13.5px; color: var(--muted); white-space: nowrap; transition: color 200ms, background 250ms var(--ease); }
+.ad-tabs a:hover { color: var(--ink); }
+.ad-tabs a.on { background: var(--ink); color: var(--bg); font-weight: 700; }
+.ad-src { display: grid; gap: 10px; margin: 14px 0 12px; }
+.ad-src li { display: grid; grid-template-columns: minmax(90px, 200px) minmax(0, 1fr) 48px; gap: 14px; align-items: center; font-size: 14px; }
+.ad-src li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ad-src li i { height: 8px; width: var(--w); min-width: 8px; border-radius: 999px; background: var(--gold); }
+.ad-src li b { text-align: right; font-size: 16px; }
+.ad-list-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ad-search { max-width: 260px; }
+.ad-rows { display: grid; margin-top: 12px; }
+.ad-rows li { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) 130px minmax(0, 1.2fr); gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+.ad-mail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.ad-warn { font-size: 14px; background: rgba(255, 197, 8, 0.12); }
+.ad-letter header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ad-letter h2 { font-size: 18px; }
+.ad-nums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+.ad-nums div { display: grid; gap: 4px; padding: 14px; border-radius: 12px; background: var(--bg); }
+.ad-nums b { font-size: 24px; }
+.ad-nums span { font-size: 12.5px; color: var(--muted); }
+.ad-links { display: grid; gap: 6px; margin-top: 12px; font-size: 13px; }
+.ad-links li { display: flex; justify-content: space-between; gap: 12px; color: var(--ink2); }
+.ad-links li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) { .ad-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ad-rows li { grid-template-columns: minmax(0, 1fr) auto; } .ad-rows li > :nth-child(2), .ad-rows li > :nth-child(3) { display: none; } }
